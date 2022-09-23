@@ -47,6 +47,7 @@ RC thread_t::run() {
 	myrand rdm;
 	rdm.init(get_thd_id());
 	RC rc = RCOK;
+
 	txn_man * m_txn;
 	rc = _wl->get_txn_man(m_txn, this);
 	assert (rc == RCOK);

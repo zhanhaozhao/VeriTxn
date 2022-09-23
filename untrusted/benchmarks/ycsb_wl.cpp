@@ -15,6 +15,7 @@
 #include "row_mvcc.h"
 #include "mem_alloc.h"
 #include "query.h"
+#include "ycsb_txn.h"
 
 int ycsb_wl::next_tid;
 
