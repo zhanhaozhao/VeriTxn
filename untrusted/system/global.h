@@ -36,9 +36,9 @@ class Stats;
 // class DL_detect;
 // class Manager;
 class Query_queue;
-class Plock;
+// class Plock;
 // class OptCC;
-class VLLMan;
+// class VLLMan;
 
 typedef uint32_t UInt32;
 typedef int32_t SInt32;
@@ -55,11 +55,11 @@ extern Stats stats;
 // extern DL_detect dl_detector;
 // extern Manager * glob_manager;
 extern Query_queue * query_queue;
-extern Plock part_lock_man;
+// extern Plock part_lock_man;
 // extern OptCC occ_man;
-#if CC_ALG == VLL
-extern VLLMan vll_man;
-#endif
+// #if CC_ALG == VLL
+// extern VLLMan vll_man;
+// #endif
 
 extern bool volatile warmup_finish;
 extern bool volatile enable_thread_mem_pool;

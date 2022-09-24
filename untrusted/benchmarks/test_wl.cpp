@@ -6,6 +6,8 @@
 #include "index_btree.h"
 #include "thread.h"
 
+#include "test_txn.h"
+
 RC TestWorkload::init() {
 	workload::init();
 	string path;

@@ -13,6 +13,8 @@
 #include "mem_alloc.h"
 #include "tpcc_const.h"
 
+#include "tpcc_txn.h"
+
 RC tpcc_wl::init() {
 	workload::init();
 	string path = "./untrusted/benchmarks/";

@@ -10,6 +10,8 @@
 #include "index_btree.h"
 #include "tpcc_const.h"
 
+#include "tpcc_txn.h"
+
 void tpcc_txn_man::init(thread_t * h_thd, workload * h_wl, uint64_t thd_id) {
 	txn_man::init(h_thd, h_wl, thd_id);
 	_wl = (tpcc_wl *) h_wl;

@@ -22,8 +22,8 @@ thread_t ** m_thds;
 void parser(int argc, char * argv[]);
 
 
-void main_ocall() {
-
+void main_ocall(thread_t * h_thd, base_query *& m_query) {
+	h_thd->generate_txn_for_run(m_query);
 }
 
 
@@ -72,7 +72,6 @@ int main(int argc, char* argv[])
 	printf("query_queue initialized!\n");
 
 	global_init2(); // call enclave
-
 // #if CC_ALG == HSTORE
 // 	part_lock_man.init();
 // #elif CC_ALG == OCC

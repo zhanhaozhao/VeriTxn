@@ -15,11 +15,12 @@ Stats stats;
 // Manager * glob_manager;
 
 Query_queue * query_queue;
-Plock part_lock_man;
+
+// Plock part_lock_man;
 // OptCC occ_man;
-#if CC_ALG == VLL
-VLLMan vll_man;
-#endif 
+// #if CC_ALG == VLL
+// VLLMan vll_man;
+// #endif 
 
 bool volatile warmup_finish = false;
 bool volatile enable_thread_mem_pool = false;

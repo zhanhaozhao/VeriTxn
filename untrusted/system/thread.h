@@ -10,6 +10,8 @@ class thread_t {
 public:
 	uint64_t _thd_id;
 	workload * _wl;
+	ts_t starttime;
+	base_query * m_query;
 
 	uint64_t 	get_thd_id();
 
@@ -24,10 +26,13 @@ public:
 	// to run with pthread.
 	// conversion is done within the function.
 	RC 			run();
+	void		generate_txn_for_run(base_query *& m_query);
+
 private:
 	uint64_t 	_host_cid;
 	uint64_t 	_cur_cid;
 	ts_t 		_curr_ts;
+
 	ts_t 		get_next_ts();
 
 	RC	 		runTest(txn_man * txn);
