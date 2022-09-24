@@ -54,8 +54,7 @@ RC thread_t::run() {
 	rdm.init(get_thd_id());
 	RC rc = RCOK;
 
-
-	run_txn_in_enc(this);
+	// run_txn_in_enc(this);
 	// txn_man * m_txn;
 	// rc = _wl->get_txn_man(m_txn, this);
 	// assert (rc == RCOK);
@@ -66,7 +65,10 @@ RC thread_t::run() {
 	while (true) {
 		starttime = get_sys_clock();
 
-		rc = run_txn_in_enc2(this, this->get_next_ts());
+		assert (0);
+
+		// assert (*this);
+		rc = run_txn_in_enc(this, this->get_next_ts());
 
 		if (rc == Abort) {
 			uint64_t penalty = 0;
@@ -167,7 +169,7 @@ thread_t::generate_txn_for_run(base_query *& m_query) {
 			m_query = query_queue->get_next_query( _thd_id );
 		}
 	}
-	this->m_query = m_query;
+	// this->m_query = m_query;
 	INC_STATS(_thd_id, time_query, get_sys_clock() - starttime);
 }
 

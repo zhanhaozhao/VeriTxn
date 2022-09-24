@@ -40,4 +40,5 @@ private:
 	// for MVCC 
 	volatile ts_t	_last_min_ts_time;
 	ts_t			_min_ts;
+	
 };

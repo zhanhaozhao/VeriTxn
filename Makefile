@@ -8,6 +8,7 @@ INCLUDE = -I. -I./storage -I./untrusted/system -I./untrusted/benchmarks/ -I./tru
 
 CFLAGS += $(INCLUDE) -D NOGRAPHITE=1 -no-pie -O0
 LDFLAGS = -Wall -L. -L./libs -pthread -g -lrt -std=c++0x -O0 -ljemalloc
+# -fsanitize=address -fno-omit-frame-pointer -static-libasan
 LDFLAGS += $(CFLAGS)
 
 CPPS = $(foreach dir, $(SRC_DIRS), $(wildcard $(dir)*.cpp))

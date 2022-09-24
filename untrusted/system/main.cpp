@@ -22,7 +22,7 @@ thread_t ** m_thds;
 void parser(int argc, char * argv[]);
 
 
-void main_ocall(thread_t * h_thd, base_query *& m_query) {
+void generate_txn_ocall(thread_t * h_thd, base_query *& m_query) {
 	h_thd->generate_txn_for_run(m_query);
 }
 

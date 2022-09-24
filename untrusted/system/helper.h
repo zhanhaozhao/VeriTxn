@@ -201,6 +201,7 @@ inline uint64_t get_sys_clock() {
   #endif
 #endif
 }
+
 class myrand {
 public:
 	void init(uint64_t seed);
