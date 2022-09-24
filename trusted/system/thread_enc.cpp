@@ -32,13 +32,12 @@ vll_man.init();
 // thread_local txn_man * m_txn;
 
 void init_txn_in_enc(txn_man *& m_txn, thread_t * h_thd) {
-
+	// TODO: support other workloads
 	m_txn = (ycsb_txn_man *)
 		_mm_malloc( sizeof(ycsb_txn_man), 64 );
 	new(m_txn) ycsb_txn_man();
 	m_txn->init(h_thd, h_thd->_wl, h_thd->get_thd_id());
 
-	// assert (rc == RCOK);
 	glob_manager->set_txn_man(m_txn);
 }
 
@@ -48,12 +47,12 @@ thread_local uint64_t thd_txn_id = 0;
 RC run_txn_in_enc(thread_t * h_thd, ts_t txn_ts) {
 
 	RC rc = RCOK;
-
 	txn_man * m_txn;
 
 	assert (glob_manager);
-	if (glob_manager->get_txn_man(h_thd->get_thd_id())) {
+	if (!glob_manager->get_txn_man(h_thd->get_thd_id())) {
 		init_txn_in_enc(m_txn, h_thd);
+		// assert (rc == RCOK);
 	} else {
 		m_txn = glob_manager->get_txn_man(h_thd->get_thd_id());
 	}
@@ -62,7 +61,6 @@ RC run_txn_in_enc(thread_t * h_thd, ts_t txn_ts) {
 	generate_txn_ocall(h_thd, h_thd->m_query);
 
 	base_query * m_query = h_thd->m_query;
-
 	assert (m_query);
 
 	// generate_txn_for_run(m_query);
