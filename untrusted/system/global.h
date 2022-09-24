@@ -24,7 +24,7 @@
 #include "pthread.h"
 #include "config.h"
 #include "stats.h"
-#include "dl_detect.h"
+// #include "dl_detect.h"
 #ifndef NOGRAPHITE
 #include "carbon_user.h"
 #endif
@@ -33,11 +33,11 @@ using namespace std;
 
 class mem_alloc;
 class Stats;
-class DL_detect;
-class Manager;
+// class DL_detect;
+// class Manager;
 class Query_queue;
 class Plock;
-class OptCC;
+// class OptCC;
 class VLLMan;
 
 typedef uint32_t UInt32;
@@ -52,11 +52,11 @@ typedef uint64_t ts_t; // time stamp type
 /******************************************/
 extern mem_alloc mem_allocator;
 extern Stats stats;
-extern DL_detect dl_detector;
-extern Manager * glob_manager;
+// extern DL_detect dl_detector;
+// extern Manager * glob_manager;
 extern Query_queue * query_queue;
 extern Plock part_lock_man;
-extern OptCC occ_man;
+// extern OptCC occ_man;
 #if CC_ALG == VLL
 extern VLLMan vll_man;
 #endif

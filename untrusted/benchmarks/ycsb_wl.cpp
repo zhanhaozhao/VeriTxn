@@ -22,7 +22,7 @@ int ycsb_wl::next_tid;
 RC ycsb_wl::init() {
 	workload::init();
 	next_tid = 0;
-	string path = "./benchmarks/YCSB_schema.txt";
+	string path = "./untrusted/benchmarks/YCSB_schema.txt";
 	init_schema( path );
 	
 	init_table_parallel();

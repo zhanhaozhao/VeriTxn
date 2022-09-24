@@ -1,6 +1,7 @@
 #pragma once 
 
 #include "global.h"
+#include "global_enc.h"
 #include "helper.h"
 
 class workload;

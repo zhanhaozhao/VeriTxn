@@ -207,7 +207,7 @@ RC txn_man::finish(RC rc) {
 	uint64_t starttime = get_sys_clock();
 #if CC_ALG == OCC
 	if (rc == RCOK)
-		rc = occ_man.validate(this);
+		rc = occ_man->validate(this);
 	else 
 		cleanup(rc);
 #elif CC_ALG == TICTOC

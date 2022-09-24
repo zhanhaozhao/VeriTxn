@@ -10,6 +10,10 @@
 #include "occ.h"
 #include "vll.h"
 
+#include "thread_enc.h"
+#include "api.h"
+// #include "global_enc.h"
+
 void * f(void *);
 
 thread_t ** m_thds;
@@ -17,17 +21,27 @@ thread_t ** m_thds;
 // defined in parser.cpp
 void parser(int argc, char * argv[]);
 
+
+void main_ocall() {
+
+}
+
+
+
 int main(int argc, char* argv[])
 {
 	parser(argc, argv);
 	
 	mem_allocator.init(g_part_cnt, MEM_SIZE / g_part_cnt); 
 	stats.init();
-	glob_manager = (Manager *) _mm_malloc(sizeof(Manager), 64);
-	glob_manager->init();
-	if (g_cc_alg == DL_DETECT) 
-		dl_detector.init();
+
+	global_init(); // call enclave
+	// glob_manager = (Manager *) _mm_malloc(sizeof(Manager), 64);
+	// glob_manager->init();
+	// if (g_cc_alg == DL_DETECT) 
+	// 	dl_detector.init();
 	printf("mem_allocator initialized!\n");
+
 	workload * m_wl;
 	switch (WORKLOAD) {
 		case YCSB :
@@ -56,13 +70,16 @@ int main(int argc, char* argv[])
 		query_queue->init(m_wl);
 	pthread_barrier_init( &warmup_bar, NULL, g_thread_cnt );
 	printf("query_queue initialized!\n");
-#if CC_ALG == HSTORE
-	part_lock_man.init();
-#elif CC_ALG == OCC
-	occ_man.init();
-#elif CC_ALG == VLL
-	vll_man.init();
-#endif
+
+	global_init2(); // call enclave
+
+// #if CC_ALG == HSTORE
+// 	part_lock_man.init();
+// #elif CC_ALG == OCC
+// 	occ_man.init();
+// #elif CC_ALG == VLL
+// 	vll_man.init();
+// #endif
 
 	for (uint32_t i = 0; i < thd_cnt; i++) 
 		m_thds[i]->init(i, m_wl);

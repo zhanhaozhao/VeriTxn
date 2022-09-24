@@ -1,4 +1,5 @@
 #include "global.h"
+#include "global_enc.h"
 #include "helper.h"
 #include "txn.h"
 #include "occ.h"

@@ -1,5 +1,6 @@
 #include "dl_detect.h"
 #include "global.h"
+#include "global_enc.h"
 #include "helper.h"
 #include "txn.h"
 #include "row.h"

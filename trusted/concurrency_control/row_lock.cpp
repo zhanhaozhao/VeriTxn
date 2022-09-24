@@ -3,6 +3,7 @@
 #include "row_lock.h"
 #include "mem_alloc.h"
 #include "manager.h"
+#include "global_enc.h"
 
 void Row_lock::init(row_t * row) {
 	_row = row;

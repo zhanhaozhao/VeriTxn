@@ -4,6 +4,7 @@
 #include "mem_alloc.h"
 #include "manager.h"
 #include "stdint.h"
+#include "global_enc.h"
 
 void Row_ts::init(row_t * row) {
 	_row = row;

@@ -5,16 +5,18 @@
 #include "manager.h"
 #include "query.h"
 #include "plock.h"
-#include "occ.h"
+// #include "occ.h"
 #include "vll.h"
 
 mem_alloc mem_allocator;
 Stats stats;
-DL_detect dl_detector;
-Manager * glob_manager;
+// DL_detect dl_detector;
+
+// Manager * glob_manager;
+
 Query_queue * query_queue;
 Plock part_lock_man;
-OptCC occ_man;
+// OptCC occ_man;
 #if CC_ALG == VLL
 VLLMan vll_man;
 #endif 

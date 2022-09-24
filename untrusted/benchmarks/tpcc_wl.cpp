@@ -15,7 +15,7 @@
 
 RC tpcc_wl::init() {
 	workload::init();
-	string path = "./benchmarks/";
+	string path = "./untrusted/benchmarks/";
 #if TPCC_SMALL
 	path += "TPCC_short_schema.txt";
 #else
@@ -52,7 +52,7 @@ RC tpcc_wl::init_schema(const char * schema_file) {
 
 RC tpcc_wl::init_table() {
 	num_wh = g_num_wh;
-
+printf("TPCC Data Initialization Start!\n");
 /******** fill in data ************/
 // data filling process:
 //- item

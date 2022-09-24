@@ -1,6 +1,7 @@
 #pragma once 
 
 #include "global.h"
+#include "txn.h"
 
 class workload;
 class base_query;

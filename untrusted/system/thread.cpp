@@ -13,6 +13,8 @@
 #include "mem_alloc.h"
 #include "test.h"
 
+#include "global_enc.h"
+
 void thread_t::init(uint64_t thd_id, workload * workload) {
 	_thd_id = thd_id;
 	_wl = workload;
@@ -32,12 +34,15 @@ uint64_t thread_t::get_cur_cid() { return _cur_cid; }
 void thread_t::set_cur_cid(uint64_t cid) {_cur_cid = cid; }
 
 RC thread_t::run() {
+
+// Get a thread number
 #if !NOGRAPHITE
 	_thd_id = CarbonGetTileId();
 #endif
 	if (warmup_finish) {
 		mem_allocator.register_thread(_thd_id);
 	}
+
 	pthread_barrier_wait( &warmup_bar );
 	stats.init(get_thd_id());
 	pthread_barrier_wait( &warmup_bar );
@@ -61,6 +66,7 @@ RC thread_t::run() {
 		ts_t starttime = get_sys_clock();
 		if (WORKLOAD != TEST) {
 			int trial = 0;
+
 			if (_abort_buffer_enable) {
 				m_query = NULL;
 				while (trial < 2) {
@@ -201,6 +207,7 @@ RC thread_t::run() {
 	}
 	assert(false);
 }
+
 
 
 ts_t
