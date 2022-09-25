@@ -8,7 +8,7 @@
 #include "occ.h"
 #include "vll.h"
 
-// mem_alloc mem_allocator;
+mem_alloc mem_allocator_enc;
 // Stats stats;
 DL_detect dl_detector;
 

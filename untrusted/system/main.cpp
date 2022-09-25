@@ -35,7 +35,7 @@ int main(int argc, char* argv[])
 	mem_allocator.init(g_part_cnt, MEM_SIZE / g_part_cnt); 
 	stats.init();
 
-	global_init(); // call enclave
+	global_init_ecall(); // call enclave
 	// glob_manager = (Manager *) _mm_malloc(sizeof(Manager), 64);
 	// glob_manager->init();
 	// if (g_cc_alg == DL_DETECT) 
@@ -71,7 +71,6 @@ int main(int argc, char* argv[])
 	pthread_barrier_init( &warmup_bar, NULL, g_thread_cnt );
 	printf("query_queue initialized!\n");
 
-	global_init2(); // call enclave
 // #if CC_ALG == HSTORE
 // 	part_lock_man.init();
 // #elif CC_ALG == OCC

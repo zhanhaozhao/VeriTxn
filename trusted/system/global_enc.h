@@ -24,6 +24,7 @@
 // #include "pthread.h"
 // #include "config.h"
 // #include "stats.h"
+#include "mem_alloc.h"
 #include "dl_detect.h"
 #include "occ.h"
 // #include "manager.h"
@@ -33,7 +34,7 @@
 
 // using namespace std;
 
-// class mem_alloc;
+class mem_alloc;
 // class Stats;
 class DL_detect;
 class Manager;
@@ -52,7 +53,7 @@ class VLLMan;
 // /******************************************/
 // // Global Data Structure 
 // /******************************************/
-// extern mem_alloc mem_allocator;
+extern mem_alloc mem_allocator_enc;
 // extern Stats stats;
 extern DL_detect dl_detector;
 

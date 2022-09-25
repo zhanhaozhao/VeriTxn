@@ -40,6 +40,8 @@ class Query_queue;
 // class OptCC;
 // class VLLMan;
 
+
+
 typedef uint32_t UInt32;
 typedef int32_t SInt32;
 typedef uint64_t UInt64;

@@ -65,10 +65,7 @@ RC thread_t::run() {
 	while (true) {
 		starttime = get_sys_clock();
 
-		// assert (0);
-
-		// assert (*this);
-		rc = run_txn_in_enc(this, this->get_next_ts());
+		rc = run_txn_ecall(this, this->get_next_ts());
 
 		if (rc == Abort) {
 			uint64_t penalty = 0;

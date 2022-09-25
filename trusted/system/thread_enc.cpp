@@ -7,7 +7,9 @@
 #include "manager.h"
 #include "occ.h"
 
-void global_init() {
+void global_init_ecall() {
+
+	mem_allocator_enc.init(g_part_cnt, MEM_SIZE / g_part_cnt); 
 
     glob_manager = (Manager *) _mm_malloc(sizeof(Manager), 64);
 	glob_manager->init();
@@ -15,18 +17,14 @@ void global_init() {
 	if (g_cc_alg == DL_DETECT) 
 		dl_detector.init();
 
-}
-
-void global_init2() {
-
 #if CC_ALG == HSTORE
-part_lock_man.init();
+	part_lock_man.init();
 #elif CC_ALG == OCC
-occ_man.init();
+	occ_man.init();
 #elif CC_ALG == VLL
-vll_man.init();
+	vll_man.init();
 #endif
-    
+
 }
 
 // thread_local txn_man * m_txn;
@@ -42,19 +40,20 @@ void init_txn_in_enc(txn_man *& m_txn, thread_t * h_thd) {
 }
 
 // thread_local base_query * m_query = NULL;
-thread_local uint64_t thd_txn_id = 0;
+// thread_local uint64_t thd_txn_id = 0;
 
-RC run_txn_in_enc(thread_t * h_thd, ts_t txn_ts) {
+RC run_txn_ecall(thread_t * h_thd, ts_t txn_ts) {
 
 	RC rc = RCOK;
 	txn_man * m_txn;
+	uint64_t thd_id = h_thd->get_thd_id();
 
 	assert (glob_manager);
-	if (!glob_manager->get_txn_man(h_thd->get_thd_id())) {
+	if (!glob_manager->get_txn_man(thd_id)) {
 		init_txn_in_enc(m_txn, h_thd);
 		// assert (rc == RCOK);
 	} else {
-		m_txn = glob_manager->get_txn_man(h_thd->get_thd_id());
+		m_txn = glob_manager->get_txn_man(thd_id);
 	}
 	assert (m_txn);
 
@@ -69,8 +68,8 @@ RC run_txn_in_enc(thread_t * h_thd, ts_t txn_ts) {
 //		_wl->get_txn_man(m_txn, this);
 //#endif
 
-	m_txn->set_txn_id(h_thd->get_thd_id() + thd_txn_id * g_thread_cnt);
-	thd_txn_id ++;
+	m_txn->set_txn_id(thd_id + glob_manager->get_thd_txn_id(thd_id) * g_thread_cnt);
+	glob_manager->set_thd_txn_id(thd_id);
 
 	if ((CC_ALG == HSTORE && !HSTORE_LOCAL_TS)
 			|| CC_ALG == MVCC 

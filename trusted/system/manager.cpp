@@ -21,6 +21,10 @@ void Manager::init() {
 		*all_ts[i] = UINT64_MAX;
 		_all_txns[i] = NULL;
 	}
+	_thd_txn_ids = new uint64_t [g_thread_cnt];
+	for (UInt32 i = 0; i < g_thread_cnt; i++) {
+		_thd_txn_ids[i] = 0;
+	}
 	for (UInt32 i = 0; i < BUCKET_CNT; i++)
 		pthread_mutex_init( &mutexes[i], NULL );
 }
