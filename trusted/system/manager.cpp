@@ -3,6 +3,8 @@
 #include "txn.h"
 #include "pthread.h"
 
+#include "api.h"
+
 void Manager::init() {
 	timestamp = (uint64_t *) _mm_malloc(sizeof(uint64_t), 64);
 	*timestamp = 1;
@@ -34,7 +36,7 @@ Manager::get_ts(uint64_t thread_id) {
 	if (g_ts_batch_alloc)
 		assert(g_ts_alloc == TS_CAS);
 	uint64_t time;
-	uint64_t starttime = get_sys_clock();
+	uint64_t starttime = get_cur_time_ocall();
 	switch(g_ts_alloc) {
 	case TS_MUTEX :
 		pthread_mutex_lock( &ts_mutex );
@@ -55,17 +57,17 @@ Manager::get_ts(uint64_t thread_id) {
 #endif
 		break;
 	case TS_CLOCK :
-		time = get_sys_clock() * g_thread_cnt + thread_id;
+		time = get_cur_time_ocall() * g_thread_cnt + thread_id;
 		break;
 	default :
 		assert(false);
 	}
-	INC_STATS(thread_id, time_ts_alloc, get_sys_clock() - starttime);
+	INC_STATS_ENC(thread_id, time_ts_alloc, get_cur_time_ocall() - starttime);
 	return time;
 }
 
 ts_t Manager::get_min_ts(uint64_t tid) {
-	uint64_t now = get_sys_clock();
+	uint64_t now = get_cur_time_ocall();
 	uint64_t last_time = _last_min_ts_time; 
 	if (tid == 0 && now - last_time > MIN_TS_INTVL)
 	{ 
@@ -109,7 +111,7 @@ void Manager::release_row(row_t * row) {
 void
 Manager::update_epoch()
 {
-	ts_t time = get_sys_clock();
+	ts_t time = get_cur_time_ocall();
 	if (time - *_last_epoch_update_time > LOG_BATCH_TIME * 1000 * 1000) {
 		*_epoch = *_epoch + 1;
 		*_last_epoch_update_time = time;

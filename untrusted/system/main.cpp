@@ -22,12 +22,6 @@ thread_t ** m_thds;
 void parser(int argc, char * argv[]);
 
 
-void generate_txn_ocall(thread_t * h_thd, base_query *& m_query) {
-	h_thd->generate_txn_for_run(m_query);
-}
-
-
-
 int main(int argc, char* argv[])
 {
 	parser(argc, argv);
@@ -35,7 +29,7 @@ int main(int argc, char* argv[])
 	mem_allocator.init(g_part_cnt, MEM_SIZE / g_part_cnt); 
 	stats.init();
 
-	global_init_ecall(); // call enclave
+	global_init_ecall(&stats); // call enclave
 	// glob_manager = (Manager *) _mm_malloc(sizeof(Manager), 64);
 	// glob_manager->init();
 	// if (g_cc_alg == DL_DETECT) 

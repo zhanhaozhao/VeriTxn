@@ -1,6 +1,6 @@
 #pragma once 
 
-// #include "stdint.h"
+#include "stdint.h"
 // #include <unistd.h>
 // #include <cstddef>
 // #include <cstdlib>
@@ -22,8 +22,8 @@
 // #include <math.h>
 
 // #include "pthread.h"
-// #include "config.h"
-// #include "stats.h"
+#include "config.h"
+#include "stats.h"
 #include "mem_alloc.h"
 #include "dl_detect.h"
 #include "occ.h"
@@ -54,7 +54,7 @@ class VLLMan;
 // // Global Data Structure 
 // /******************************************/
 extern mem_alloc mem_allocator_enc;
-// extern Stats stats;
+extern Stats * stats_enc;
 extern DL_detect dl_detector;
 
 extern Manager * glob_manager;

@@ -7,9 +7,11 @@
 #include "manager.h"
 #include "occ.h"
 
-void global_init_ecall() {
+void global_init_ecall(Stats * stats) {
 
-	mem_allocator_enc.init(g_part_cnt, MEM_SIZE / g_part_cnt); 
+	mem_allocator_enc.init(g_part_cnt, MEM_SIZE / g_part_cnt);
+
+	stats_enc = stats;
 
     glob_manager = (Manager *) _mm_malloc(sizeof(Manager), 64);
 	glob_manager->init();
@@ -27,20 +29,28 @@ void global_init_ecall() {
 
 }
 
-// thread_local txn_man * m_txn;
-
 void init_txn_in_enc(txn_man *& m_txn, thread_t * h_thd) {
-	// TODO: support other workloads
-	m_txn = (ycsb_txn_man *)
-		_mm_malloc( sizeof(ycsb_txn_man), 64 );
-	new(m_txn) ycsb_txn_man();
+	switch (WORKLOAD) {
+		case YCSB :
+			m_txn = (ycsb_txn_man *) _mm_malloc( sizeof(ycsb_txn_man), 64 );
+			new(m_txn) ycsb_txn_man();
+			break;
+		case TPCC :
+			m_txn = (tpcc_txn_man *) _mm_malloc( sizeof(tpcc_txn_man), 64 );
+			new(m_txn) tpcc_txn_man();
+			break;
+		case TEST :
+			m_txn = (TestTxnMan *) _mm_malloc( sizeof(TestTxnMan), 64 );
+			new(m_txn) TestTxnMan();
+			break;
+		default:
+			assert(false);
+	}
+
 	m_txn->init(h_thd, h_thd->_wl, h_thd->get_thd_id());
 
 	glob_manager->set_txn_man(m_txn);
 }
-
-// thread_local base_query * m_query = NULL;
-// thread_local uint64_t thd_txn_id = 0;
 
 RC run_txn_ecall(thread_t * h_thd, ts_t txn_ts) {
 
@@ -51,7 +61,6 @@ RC run_txn_ecall(thread_t * h_thd, ts_t txn_ts) {
 	assert (glob_manager);
 	if (!glob_manager->get_txn_man(thd_id)) {
 		init_txn_in_enc(m_txn, h_thd);
-		// assert (rc == RCOK);
 	} else {
 		m_txn = glob_manager->get_txn_man(thd_id);
 	}

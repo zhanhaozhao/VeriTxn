@@ -8,8 +8,8 @@
 RC
 txn_man::validate_hekaton(RC rc)
 {
-	uint64_t starttime = get_sys_clock();
-	INC_STATS(get_thd_id(), debug1, get_sys_clock() - starttime);
+	uint64_t starttime = get_cur_time_ocall();
+	INC_STATS_ENC(get_thd_id(), debug1, get_cur_time_ocall() - starttime);
 	ts_t commit_ts = glob_manager->get_ts(get_thd_id());
 	// validate the read set.
 #if ISOLATION_LEVEL == SERIALIZABLE

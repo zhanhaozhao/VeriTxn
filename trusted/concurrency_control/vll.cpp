@@ -38,10 +38,10 @@ VLLMan::vllMainLoop(txn_man * txn, base_query * query) {
 	bool done = false;
 	while (!done) {
 		txn_man * front_txn = NULL;
-uint64_t t5 = get_sys_clock();
+uint64_t t5 = get_cur_time_ocall();
 		pthread_mutex_lock(&_mutex);
-uint64_t tt5 = get_sys_clock() - t5;
-INC_STATS(txn->get_thd_id(), debug5, tt5);
+uint64_t tt5 = get_cur_time_ocall() - t5;
+INC_STATS_ENC(txn->get_thd_id(), debug5, tt5);
 
 		
 		TxnQEntry * front = _txn_queue;
@@ -97,7 +97,7 @@ VLLMan::beginTxn(txn_man * txn, base_query * query, TxnQEntry *& entry) {
 void 
 VLLMan::execute(txn_man * txn, base_query * query) {
 	RC rc;
-uint64_t t3 = get_sys_clock();
+uint64_t t3 = get_cur_time_ocall();
 	ycsb_query * m_query = (ycsb_query *) query;
 	ycsb_wl * wl = (ycsb_wl *) txn->get_wl();
 	Catalog * schema = wl->the_table->get_schema();
@@ -118,8 +118,8 @@ uint64_t t3 = get_sys_clock();
 			}
 		} 
 	}
-uint64_t tt3 = get_sys_clock() - t3;
-INC_STATS(txn->get_thd_id(), debug3, tt3);
+uint64_t tt3 = get_cur_time_ocall() - t3;
+INC_STATS_ENC(txn->get_thd_id(), debug3, tt3);
 }
 
 void 

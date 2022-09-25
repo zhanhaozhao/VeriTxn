@@ -7,6 +7,8 @@
 #include "manager.h"
 #include "mem_alloc.h"
 
+#include "api.h"
+
 /********************************************************/
 // The current txn aborts itself only if it holds less
 // locks than all the other txns on the loop. 
@@ -102,8 +104,8 @@ int
 DL_detect::detect_cycle(uint64_t txnid) {
 	if (g_no_dl)
 		return 0;
-	uint64_t starttime = get_sys_clock();
-	INC_GLOB_STATS(cycle_detect, 1);
+	uint64_t starttime = get_cur_time_ocall();
+	INC_GLOB_STATS_ENC(cycle_detect, 1);
 	bool deadlock = false;
 
 	int thd = get_thdid_from_txnid(txnid);
@@ -124,7 +126,7 @@ DL_detect::detect_cycle(uint64_t txnid) {
 
 	if ( isCyclic(txnid, detect_data) ){ 
 		deadlock = true;
-		INC_GLOB_STATS(deadlock, 1);
+		INC_GLOB_STATS_ENC(deadlock, 1);
 		int thd_to_abort = get_thdid_from_txnid(detect_data->min_txnid);
 		if (dependency[thd_to_abort].txnid == (SInt64) detect_data->min_txnid) {
 			txn_man * txn = glob_manager->get_txn_man(thd_to_abort);
@@ -135,8 +137,8 @@ DL_detect::detect_cycle(uint64_t txnid) {
 	mem_allocator.free(detect_data->visited, sizeof(bool)*V);
 	mem_allocator.free(detect_data->recStack, sizeof(bool)*V);
 	mem_allocator.free(detect_data, sizeof(DetectData));
-	uint64_t timespan = get_sys_clock() - starttime;
-	INC_GLOB_STATS(dl_detect_time, timespan);
+	uint64_t timespan = get_cur_time_ocall() - starttime;
+	INC_GLOB_STATS_ENC(dl_detect_time, timespan);
 	if (deadlock) return 1;
 	else return 0;
 }

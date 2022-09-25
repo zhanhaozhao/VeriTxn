@@ -94,6 +94,18 @@
 	if (STATS_ENABLE) \
 		stats.name += value;
 
+#define INC_STATS_ENC(tid, name, value) \
+	if (STATS_ENABLE) \
+		stats_enc->_stats[tid]->name += value;
+
+#define INC_TMP_STATS_ENC(tid, name, value) \
+	if (STATS_ENABLE) \
+		stats_enc->tmp_stats[tid]->name += value;
+
+#define INC_GLOB_STATS_ENC(name, value) \
+	if (STATS_ENABLE) \
+		stats_enc->name += value;
+
 /************************************************/
 // malloc helper
 /************************************************/

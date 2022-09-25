@@ -3,13 +3,13 @@
 #include "stats.h"
 #include "dl_detect.h"
 #include "manager.h"
-#include "query.h"
+// #include "query.h"
 #include "plock.h"
 #include "occ.h"
 #include "vll.h"
 
 mem_alloc mem_allocator_enc;
-// Stats stats;
+Stats * stats_enc;
 DL_detect dl_detector;
 
 Manager * glob_manager;
