@@ -1,7 +1,7 @@
 #include "row.h"
 #include "txn.h"
 #include "row_lock.h"
-#include "mem_alloc.h"
+#include "common/mem_alloc.h"
 #include "manager.h"
 #include "global_enc.h"
 
@@ -31,12 +31,12 @@ RC Row_lock::lock_get(lock_t type, txn_man * txn, uint64_t* &txnids, int &txncnt
 	assert (CC_ALG == DL_DETECT || CC_ALG == NO_WAIT || CC_ALG == WAIT_DIE);
 	RC rc;
 	int part_id =_row->get_part_id();
-	if (g_central_man)
+	if (g_central_man_enc)
 		glob_manager->lock_row(_row);
 	else 
 		pthread_mutex_lock( latch );
-	assert(owner_cnt <= g_thread_cnt);
-	assert(waiter_cnt < g_thread_cnt);
+	assert(owner_cnt <= g_thread_cnt_enc);
+	assert(waiter_cnt < g_thread_cnt_enc);
 #if DEBUG_ASSERT
 	if (owners != NULL)
 		assert(lock_type == owners->type); 
@@ -137,7 +137,7 @@ final:
 	if (rc == WAIT && CC_ALG == DL_DETECT) {
 		// Update the waits-for graph
 		ASSERT(waiters_tail->txn == txn);
-		txnids = (uint64_t *) mem_allocator.alloc(sizeof(uint64_t) * (owner_cnt + waiter_cnt), part_id);
+		txnids = (uint64_t *) mem_allocator_enc.alloc(sizeof(uint64_t) * (owner_cnt + waiter_cnt), part_id);
 		txncnt = 0;
 		LockEntry * en = waiters_tail->prev;
 		while (en != NULL) {
@@ -154,7 +154,7 @@ final:
 		ASSERT(txncnt > 0);
 	}
 
-	if (g_central_man)
+	if (g_central_man_enc)
 		glob_manager->release_row(_row);
 	else
 		pthread_mutex_unlock( latch );
@@ -165,7 +165,7 @@ final:
 
 RC Row_lock::lock_release(txn_man * txn) {	
 
-	if (g_central_man)
+	if (g_central_man_enc)
 		glob_manager->lock_row(_row);
 	else 
 		pthread_mutex_lock( latch );
@@ -220,7 +220,7 @@ RC Row_lock::lock_release(txn_man * txn) {
 	} 
 	ASSERT((owners == NULL) == (owner_cnt == 0));
 
-	if (g_central_man)
+	if (g_central_man_enc)
 		glob_manager->release_row(_row);
 	else
 		pthread_mutex_unlock( latch );
@@ -239,10 +239,10 @@ bool Row_lock::conflict_lock(lock_t l1, lock_t l2) {
 
 LockEntry * Row_lock::get_entry() {
 	LockEntry * entry = (LockEntry *) 
-		mem_allocator.alloc(sizeof(LockEntry), _row->get_part_id());
+		mem_allocator_enc.alloc(sizeof(LockEntry), _row->get_part_id());
 	return entry;
 }
 void Row_lock::return_entry(LockEntry * entry) {
-	mem_allocator.free(entry, sizeof(LockEntry));
+	mem_allocator_enc.free(entry, sizeof(LockEntry));
 }
 

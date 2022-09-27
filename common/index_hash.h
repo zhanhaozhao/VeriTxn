@@ -1,8 +1,10 @@
-#pragma once 
+#ifndef _INDEX_HASH_H_
+#define _INDEX_HASH_H_
 
-#include "global.h"
-#include "helper.h"
+// #include "global_common.h"
+// #include "common/helper.h"
 #include "index_base.h"
+// #include "common/helper.h"
 
 //TODO make proper variables private
 // each BucketNode contains items sharing the same key
@@ -57,3 +59,5 @@ private:
 	uint64_t	 		_bucket_cnt;
 	uint64_t 			_bucket_cnt_per_part;
 };
+
+#endif

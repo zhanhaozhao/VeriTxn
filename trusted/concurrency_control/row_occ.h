@@ -1,9 +1,9 @@
 #ifndef ROW_OCC_H
 #define ROW_OCC_H
 
-class table_t;
-class Catalog;
-class txn_man;
+// class table_t;
+// class Catalog;
+// class txn_man;
 struct TsReqEntry;
 
 class Row_occ {

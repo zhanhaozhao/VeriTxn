@@ -3,7 +3,7 @@
 #include "row.h"
 #include "manager.h"
 #include "row_mvcc.h"
-#include "mem_alloc.h"
+#include "common/mem_alloc.h"
 #include <mm_malloc.h>
 
 #if CC_ALG == MVCC
@@ -99,7 +99,7 @@ RC Row_mvcc::access(txn_man * txn, TsType type, row_t * row) {
 	RC rc = RCOK;
 	ts_t ts = txn->get_ts();
 uint64_t t1 = get_cur_time_ocall();
-	if (g_central_man)
+	if (g_central_man_enc)
 		glob_manager->lock_row(_row);
 	else
 		while (!ATOM_CAS(blatch, false, true))
@@ -187,7 +187,7 @@ INC_STATS_ENC(txn->get_thd_id(), debug4, t2 - t1);
 	} else 
 		assert(false);
 INC_STATS_ENC(txn->get_thd_id(), debug3, get_cur_time_ocall() - t2);
-	if (g_central_man)
+	if (g_central_man_enc)
 		glob_manager->release_row(_row);
 	else
 		blatch = false;

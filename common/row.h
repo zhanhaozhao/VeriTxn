@@ -1,7 +1,10 @@
-#pragma once 
+#ifndef _ROW_H_
+#define _ROW_H_
 
-#include <cassert>
-#include "global.h"
+// #include <cassert>
+// #include "global.h"
+// #include "global_common.h"
+#include "table.h"
 
 #define DECL_SET_VALUE(type) \
 	void set_value(int col_id, type value);
@@ -20,17 +23,17 @@
 		value = *(type *)&data[pos];\
 	}
 
-class table_t;
-class Catalog;
+// class table_t;
+// class Catalog;
 class txn_man;
-class Row_lock;
-class Row_mvcc;
-class Row_hekaton;
-class Row_ts;
-class Row_occ;
-class Row_tictoc;
-class Row_silo;
-class Row_vll;
+// class Row_lock;
+// class Row_mvcc;
+// class Row_hekaton;
+// class Row_ts;
+// class Row_occ;
+// class Row_tictoc;
+// class Row_silo;
+// class Row_vll;
 
 class row_t
 {
@@ -84,7 +87,7 @@ public:
 	void return_row(access_t type, txn_man * txn, row_t * row);
 	
   #if CC_ALG == DL_DETECT || CC_ALG == NO_WAIT || CC_ALG == WAIT_DIE
-    Row_lock * manager;
+    // Row_lock * manager;
   #elif CC_ALG == TIMESTAMP
    	Row_ts * manager;
   #elif CC_ALG == MVCC
@@ -97,8 +100,6 @@ public:
   	Row_tictoc * manager;
   #elif CC_ALG == SILO
   	Row_silo * manager;
-  #elif CC_ALG == VLL
-  	Row_vll * manager;
   #endif
 	char * data;
 	table_t * table;
@@ -108,3 +109,5 @@ private:
 	uint64_t		_part_id;
 	uint64_t 		_row_id;
 };
+
+#endif

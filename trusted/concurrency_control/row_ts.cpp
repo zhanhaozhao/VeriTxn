@@ -1,7 +1,7 @@
 #include "txn.h"
 #include "row.h"
 #include "row_ts.h"
-#include "mem_alloc.h"
+#include "common/mem_alloc.h"
 #include "manager.h"
 #include "stdint.h"
 #include "global_enc.h"
@@ -19,22 +19,22 @@ void Row_ts::init(row_t * row) {
     prereq = NULL;
 	preq_len = 0;
 	latch = (pthread_mutex_t *) 
-		mem_allocator.alloc(sizeof(pthread_mutex_t), part_id);
+		mem_allocator_enc.alloc(sizeof(pthread_mutex_t), part_id);
 	pthread_mutex_init( latch, NULL );
 	blatch = false;
 }
 
 TsReqEntry * Row_ts::get_req_entry() {
 	uint64_t part_id = get_part_id(_row);
-	return (TsReqEntry *) mem_allocator.alloc(sizeof(TsReqEntry), part_id);
+	return (TsReqEntry *) mem_allocator_enc.alloc(sizeof(TsReqEntry), part_id);
 }
 
 void Row_ts::return_req_entry(TsReqEntry * entry) {
 	if (entry->row != NULL) {
 		entry->row->free_row();
-		mem_allocator.free(entry->row, sizeof(row_t));
+		mem_allocator_enc.free(entry->row, sizeof(row_t));
 	}
-	mem_allocator.free(entry, sizeof(TsReqEntry));
+	mem_allocator_enc.free(entry, sizeof(TsReqEntry));
 }
 
 void Row_ts::return_req_list(TsReqEntry * list) {	
@@ -152,7 +152,7 @@ ts_t Row_ts::cal_min(TsType type) {
 RC Row_ts::access(txn_man * txn, TsType type, row_t * row) {
 	RC rc = RCOK;
 	ts_t ts = txn->get_ts();
-	if (g_central_man)
+	if (g_central_man_enc)
 		glob_manager->lock_row(_row);
 	else
 		pthread_mutex_lock( latch );
@@ -222,7 +222,7 @@ RC Row_ts::access(txn_man * txn, TsType type, row_t * row) {
 			return_req_entry(req);
 			// the "row" is freed after hard copy to "_row"
 			row->free_row();
-			mem_allocator.free(row, sizeof(row_t));
+			mem_allocator_enc.free(row, sizeof(row_t));
 		}
 	} else if (type == XP_REQ) {
 		TsReqEntry * req = debuffer_req(P_REQ, txn);
@@ -233,7 +233,7 @@ RC Row_ts::access(txn_man * txn, TsType type, row_t * row) {
 		assert(false);
 	
 final:
-	if (g_central_man)
+	if (g_central_man_enc)
 		glob_manager->release_row(_row);
 	else
 		pthread_mutex_unlock( latch );

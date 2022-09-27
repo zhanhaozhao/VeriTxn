@@ -1,6 +1,6 @@
 #include "catalog.h"
 #include "global.h"
-#include "helper.h"
+#include "common/helper.h"
 
 void 
 Catalog::init(const char * table_name, int field_cnt) {

@@ -1,11 +1,12 @@
 #include "dl_detect.h"
-#include "global.h"
+// #include "global.h"
+// #include "common/global_common.h"
 #include "global_enc.h"
-#include "helper.h"
+// #include "common/helper.h"
 #include "txn.h"
 #include "row.h"
-#include "manager.h"
-#include "mem_alloc.h"
+// #include "manager.h"
+#include "common/mem_alloc.h"
 
 #include "api.h"
 
@@ -16,13 +17,13 @@
 // performs the least amount of work
 /********************************************************/
 void DL_detect::init() {
-	dependency = new DepThd[g_thread_cnt];
-	V = g_thread_cnt;
+	dependency = new DepThd[g_thread_cnt_enc];
+	V = g_thread_cnt_enc;
 }
 
 int
 DL_detect::add_dep(uint64_t txnid1, uint64_t * txnids, int cnt, int num_locks) {
-	if (g_no_dl)
+	if (g_no_dl_enc)
 		return 0;
 	int thd1 = get_thdid_from_txnid(txnid1);
 	pthread_mutex_lock( &dependency[thd1].lock );
@@ -102,7 +103,7 @@ bool DL_detect::isCyclic(uint64_t txnid, DetectData * detect_data) {
 
 int
 DL_detect::detect_cycle(uint64_t txnid) {
-	if (g_no_dl)
+	if (g_no_dl_enc)
 		return 0;
 	uint64_t starttime = get_cur_time_ocall();
 	INC_GLOB_STATS_ENC(cycle_detect, 1);
@@ -110,11 +111,11 @@ DL_detect::detect_cycle(uint64_t txnid) {
 
 	int thd = get_thdid_from_txnid(txnid);
 	DetectData * detect_data = (DetectData *)
-		mem_allocator.alloc(sizeof(DetectData), thd);
+		mem_allocator_enc.alloc(sizeof(DetectData), thd);
 	detect_data->visited = (bool * )
-		mem_allocator.alloc(sizeof(bool) * V, thd);
+		mem_allocator_enc.alloc(sizeof(bool) * V, thd);
 	detect_data->recStack = (bool * )
-		mem_allocator.alloc(sizeof(bool) * V, thd);	
+		mem_allocator_enc.alloc(sizeof(bool) * V, thd);	
 	for(int i = 0; i < V; i++) {
         detect_data->visited[i] = false;
 		detect_data->recStack[i] = false;
@@ -134,9 +135,9 @@ DL_detect::detect_cycle(uint64_t txnid) {
 		}
 	} 
 	
-	mem_allocator.free(detect_data->visited, sizeof(bool)*V);
-	mem_allocator.free(detect_data->recStack, sizeof(bool)*V);
-	mem_allocator.free(detect_data, sizeof(DetectData));
+	mem_allocator_enc.free(detect_data->visited, sizeof(bool)*V);
+	mem_allocator_enc.free(detect_data->recStack, sizeof(bool)*V);
+	mem_allocator_enc.free(detect_data, sizeof(DetectData));
 	uint64_t timespan = get_cur_time_ocall() - starttime;
 	INC_GLOB_STATS_ENC(dl_detect_time, timespan);
 	if (deadlock) return 1;
@@ -144,7 +145,7 @@ DL_detect::detect_cycle(uint64_t txnid) {
 }
 
 void DL_detect::clear_dep(uint64_t txnid) {
-	if (g_no_dl)
+	if (g_no_dl_enc)
 		return;
 	int thd = get_thdid_from_txnid(txnid);
 	pthread_mutex_lock( &dependency[thd].lock );

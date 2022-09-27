@@ -1,6 +1,9 @@
 #include "global.h"	
+#include "global_struct.h"
+
 #include "index_hash.h"
-#include "mem_alloc.h"
+
+// #include "common/mem_alloc.h"
 #include "table.h"
 
 RC IndexHash::init(uint64_t bucket_cnt, int part_cnt) {

@@ -2,18 +2,18 @@
 #define _TPCC_H_
 
 #include "wl.h"
-#include "txn.h"
+// #include "txn.h"
 
-class table_t;
-class INDEX;
-class tpcc_query;
+// class table_t;
+// class INDEX;
+// class tpcc_query;
 
 class tpcc_wl : public workload {
 public:
 	RC init();
 	RC init_table();
 	RC init_schema(const char * schema_file);
-	RC get_txn_man(txn_man *& txn_manager, thread_t * h_thd);
+	// RC get_txn_man(txn_man *& txn_manager, thread_t * h_thd);
 	table_t * 		t_warehouse;
 	table_t * 		t_district;
 	table_t * 		t_customer;

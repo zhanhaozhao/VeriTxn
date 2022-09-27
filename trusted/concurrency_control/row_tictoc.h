@@ -24,8 +24,8 @@
 
 #endif
 
-class txn_man;
-class row_t;
+// class txn_man;
+// class row_t;
 
 class Row_tictoc {
 public:

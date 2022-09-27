@@ -1,7 +1,7 @@
-#include "global.h"
-#include "helper.h"
+// #include "global.h"
+#include "mem_helper_enc.h"
 #include "plock.h"
-#include "mem_alloc.h"
+#include "common/mem_alloc.h"
 #include "txn.h"
 
 #include "api.h"
@@ -14,7 +14,7 @@ void PartMan::init() {
 	waiter_cnt = 0;
 	owner = NULL;
 	waiters = (txn_man **)
-		mem_allocator.alloc(sizeof(txn_man *) * g_thread_cnt, part_id);
+		mem_allocator_enc.alloc(sizeof(txn_man *) * g_thread_cnt_enc, part_id);
 	pthread_mutex_init( &latch, NULL );
 }
 
@@ -27,7 +27,7 @@ RC PartMan::lock(txn_man * txn) {
 		rc = RCOK;
 	} else if (owner->get_ts() < txn->get_ts()) {
 		int i;
-		assert(waiter_cnt < g_thread_cnt);
+		assert(waiter_cnt < g_thread_cnt_enc);
 		for (i = waiter_cnt; i > 0; i--) {
 			if (txn->get_ts() > waiters[i - 1]->get_ts()) {
 				waiters[i] = txn;
@@ -80,7 +80,7 @@ void PartMan::unlock(txn_man * txn) {
 /************************************************/
 
 void Plock::init() {
-	ARR_PTR(PartMan, part_mans, g_part_cnt);
+	ARR_PTR_ENC(PartMan, part_mans, g_part_cnt_enc);
 	for (UInt32 i = 0; i < g_part_cnt; i++)
 		part_mans[i]->init();
 }

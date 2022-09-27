@@ -1,9 +1,9 @@
-#include <mm_malloc.h>
-#include "global.h"
+// #include <mm_malloc.h>
+// #include "global.h"
 #include "table.h"
 #include "catalog.h"
 #include "row.h"
-#include "txn.h"
+// #include "txn.h"
 #include "row_lock.h"
 #include "row_ts.h"
 #include "row_mvcc.h"
@@ -11,8 +11,8 @@
 #include "row_occ.h"
 #include "row_tictoc.h"
 #include "row_silo.h"
-#include "row_vll.h"
-#include "mem_alloc.h"
+// #include "row_vll.h"
+// #include "common/mem_alloc.h"
 #include "manager.h"
 
 RC 
@@ -52,8 +52,6 @@ void row_t::init_manager(row_t * row) {
 	manager = (Row_tictoc *) _mm_malloc(sizeof(Row_tictoc), 64);
 #elif CC_ALG == SILO
 	manager = (Row_silo *) _mm_malloc(sizeof(Row_silo), 64);
-#elif CC_ALG == VLL
-    manager = (Row_vll *) mem_allocator.alloc(sizeof(Row_vll), _part_id);
 #endif
 
 #if CC_ALG != HSTORE

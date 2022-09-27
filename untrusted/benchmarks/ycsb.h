@@ -1,19 +1,19 @@
-#ifndef _SYNTH_BM_H_
-#define _SYNTH_BM_H_
+#ifndef _YCSB_H_
+#define _YCSB_H_
 
-#include "wl.h"
-#include "txn.h"
 #include "global.h"
-#include "helper.h"
+#include "wl.h"
+// #include "txn.h"
+// #include "common/helper.h"
 
-class ycsb_query;
+// class ycsb_query;
 
 class ycsb_wl : public workload {
 public :
 	RC init();
 	RC init_table();
-	RC init_schema(string schema_file);
-	RC get_txn_man(txn_man *& txn_manager, thread_t * h_thd);
+	RC init_schema(std::string schema_file);
+	// RC get_txn_man(txn_man *& txn_manager, thread_t * h_thd);
 	int key_to_part(uint64_t key);
 	INDEX * the_index;
 	table_t * the_table;

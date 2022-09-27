@@ -1,5 +1,5 @@
-#include "mem_alloc.h"
-#include "helper.h"
+#include "common/mem_alloc.h"
+#include "common/helper.h"
 #include "global.h"
 
 // Assume the data is strided across the L2 slices, stride granularity 

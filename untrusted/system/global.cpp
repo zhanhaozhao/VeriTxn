@@ -1,26 +1,18 @@
 #include "global.h"
-#include "mem_alloc.h"
-#include "stats.h"
-#include "dl_detect.h"
-#include "manager.h"
-#include "query.h"
-#include "plock.h"
-// #include "occ.h"
-#include "vll.h"
 
-mem_alloc mem_allocator;
-Stats stats;
-// DL_detect dl_detector;
+// #include "plock.h"
+// #include "occ.h"
+
+// mem_alloc mem_allocator;
+// Stats stats;
+// // DL_detect dl_detector;
 
 // Manager * glob_manager;
+// Query_queue * query_queue;
 
-Query_queue * query_queue;
+// // Plock part_lock_man;
+// // OptCC occ_man;
 
-// Plock part_lock_man;
-// OptCC occ_man;
-// #if CC_ALG == VLL
-// VLLMan vll_man;
-// #endif 
 
 bool volatile warmup_finish = false;
 bool volatile enable_thread_mem_pool = false;
@@ -62,7 +54,7 @@ double g_perc_payment = PERC_PAYMENT;
 bool g_wh_update = WH_UPDATE;
 char * output_file = NULL;
 
-map<string, string> g_params;
+std::map<std::string, std::string> g_params;
 
 #if TPCC_SMALL
 UInt32 g_max_items = 10000;

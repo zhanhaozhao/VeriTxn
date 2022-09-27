@@ -1,19 +1,30 @@
-#pragma once 
+#ifndef _QUERY_H_
+#define _QUERY_H_
 
-#include "global.h"
-#include "helper.h"
+// #include "global.h"
+// #include "helper.h"
 
-class workload;
+#include "global_common.h"
+#include "base_query.h"
+#include "wl.h"
+
+// class workload;
 class ycsb_query;
 class tpcc_query;
 
-class base_query {
-public:
-	virtual void init(uint64_t thd_id, workload * h_wl) = 0;
-	uint64_t waiting_time;
-	uint64_t part_num;
-	uint64_t * part_to_access;
-};
+
+// #include "ycsb_query.h"
+// #include "tpcc_query.h"
+
+
+
+// class base_query {
+// public:
+// 	virtual void init(uint64_t thd_id, workload * h_wl) = 0;
+// 	uint64_t waiting_time;
+// 	uint64_t part_num;
+// 	uint64_t * part_to_access;
+// };
 
 // All the querise for a particular thread.
 class Query_thd {
@@ -46,3 +57,5 @@ private:
 	workload * _wl;
 	static int _next_tid;
 };
+
+#endif

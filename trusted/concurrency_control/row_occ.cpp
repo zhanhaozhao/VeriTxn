@@ -1,14 +1,14 @@
 #include "txn.h"
 #include "row.h"
 #include "row_occ.h"
-#include "mem_alloc.h"
+#include "common/mem_alloc.h"
 
 void 
 Row_occ::init(row_t * row) {
 	_row = row;
 	int part_id = row->get_part_id();
 	_latch = (pthread_mutex_t *) 
-		mem_allocator.alloc(sizeof(pthread_mutex_t), part_id);
+		mem_allocator_enc.alloc(sizeof(pthread_mutex_t), part_id);
 	pthread_mutex_init( _latch, NULL );
 	wts = 0;
 	blatch = false;

@@ -1,9 +1,16 @@
-#include "query.h"
+
+#include <math.h>
+#include <set>
+
+#include "global.h"
+#include "global_struct.h"
+
+// #include "common/base_query.h"
 #include "ycsb_query.h"
-#include "mem_alloc.h"
-#include "wl.h"
-#include "ycsb.h"
-#include "table.h"
+// #include "common/mem_alloc.h"
+// #include "wl.h"
+// #include "ycsb.h"
+// #include "table.h"
 
 uint64_t ycsb_query::the_n = 0;
 double ycsb_query::denom = 0;
@@ -61,7 +68,7 @@ void ycsb_query::gen_requests(uint64_t thd_id, workload * h_wl) {
 	assert(g_virtual_part_cnt == g_part_cnt);
 #endif
 	int access_cnt = 0;
-	set<uint64_t> all_keys;
+	std::set<uint64_t> all_keys;
 	part_num = 0;
 	double r = 0;
 	int64_t rint64 = 0;

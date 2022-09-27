@@ -1,10 +1,13 @@
-#pragma once 
+#ifndef _TABLE_H_
+#define _TABLE_H_
 
-#include "global.h"
+// #include "global_common.h"
+#include "catalog.h"
+// #include "row.h"
 
 // TODO sequential scan is not supported yet.
 // only index access is supported for table. 
-class Catalog;
+// class Catalog;
 class row_t;
 
 class table_t
@@ -29,3 +32,5 @@ private:
 	uint64_t  		cur_tab_size;
 	char 			pad[CL_SIZE - sizeof(void *)*3];
 };
+
+#endif

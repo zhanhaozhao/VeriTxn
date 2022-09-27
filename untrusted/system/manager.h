@@ -1,8 +1,9 @@
-#ifndef _MANAGER_
-#define _MANAGER_
+#ifndef _MANAGER_H_
+#define _MANAGER_H_
 
 
-// #include "common/helper.h"
+#include "common/global_common.h"
+#include "common/row.h"
 // #include "global.h"
 // #include "global_enc.h"
 
@@ -23,12 +24,6 @@ public:
 	// lock/timestamp manager. 
  	void 			lock_row(row_t * row);
 	void 			release_row(row_t * row);
-	
-	txn_man * 		get_txn_man(int thd_id) { return _all_txns[thd_id]; };
-	void 			set_txn_man(txn_man * txn);
-
-	uint64_t 		get_thd_txn_id(int thd_id) { return _thd_txn_ids[thd_id]; };
-	void 			set_thd_txn_id(int thd_id) { _thd_txn_ids[thd_id]++; };
 
 	uint64_t 		get_epoch() { return *_epoch; };
 	void 	 		update_epoch();
@@ -42,8 +37,7 @@ private:
 	pthread_mutex_t mutexes[BUCKET_CNT];
 	uint64_t 		hash(row_t * row);
 	ts_t volatile * volatile * volatile all_ts;
-	txn_man ** 		_all_txns;
-	uint64_t *		_thd_txn_ids;
+
 	// for MVCC 
 	volatile ts_t	_last_min_ts_time;
 	ts_t			_min_ts;

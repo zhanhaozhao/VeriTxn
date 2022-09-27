@@ -1,17 +1,18 @@
 #include "global.h"
+#include "global_struct.h"
 #include "ycsb.h"
 #include "tpcc.h"
 #include "test.h"
-#include "thread.h"
-#include "manager.h"
-#include "mem_alloc.h"
-#include "query.h"
-#include "plock.h"
-#include "occ.h"
-#include "vll.h"
+#include "common/thread.h"
+// #include "manager.h"
+// #include "common/mem_alloc.h"
+// #include "common/query.h"
+// #include "plock.h"
+// #include "occ.h"
 
-#include "thread_enc.h"
-#include "api.h"
+// #include "thread_enc.h"
+// #include "api.h"
+
 // #include "global_enc.h"
 
 void * f(void *);
@@ -29,7 +30,8 @@ int main(int argc, char* argv[])
 	mem_allocator.init(g_part_cnt, MEM_SIZE / g_part_cnt); 
 	stats.init();
 
-	global_init_ecall(&stats); // call enclave
+	// global_init_ecall(&stats); // call enclave
+
 	// glob_manager = (Manager *) _mm_malloc(sizeof(Manager), 64);
 	// glob_manager->init();
 	// if (g_cc_alg == DL_DETECT) 
@@ -69,9 +71,6 @@ int main(int argc, char* argv[])
 // 	part_lock_man.init();
 // #elif CC_ALG == OCC
 // 	occ_man.init();
-// #elif CC_ALG == VLL
-// 	vll_man.init();
-// #endif
 
 	for (uint32_t i = 0; i < thd_cnt; i++) 
 		m_thds[i]->init(i, m_wl);

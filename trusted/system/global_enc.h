@@ -1,6 +1,7 @@
-#pragma once 
+#ifndef _GLOBAL_ENC_
+#define _GLOBAL_ENC_
 
-#include "stdint.h"
+// #include "stdint.h"
 // #include <unistd.h>
 // #include <cstddef>
 // #include <cstdlib>
@@ -22,26 +23,29 @@
 // #include <math.h>
 
 // #include "pthread.h"
-#include "config.h"
-#include "stats.h"
-#include "mem_alloc.h"
+// #include "config.h"
+#include "common/global_common.h"
+#include "common/helper.h"
+#include "common/stats.h"
+// #include "common/mem_alloc.h"
 #include "dl_detect.h"
+#include "manager.h"
+#include "plock.h"
 #include "occ.h"
-// #include "manager.h"
 // #ifndef NOGRAPHITE
 // #include "carbon_user.h"
 // #endif
 
 // using namespace std;
 
-class mem_alloc;
+// class mem_alloc;
 // class Stats;
-class DL_detect;
-class Manager;
+// class DL_detect;
+// class Manager;
 // class Query_queue;
-class Plock;
-class OptCC;
-class VLLMan;
+// class Plock;
+// class OptCC;
+// class VLLMan;
 
 // typedef uint32_t UInt32;
 // typedef int32_t SInt32;
@@ -62,9 +66,7 @@ extern Manager * glob_manager;
 // extern Query_queue * query_queue;
 extern Plock part_lock_man;
 extern OptCC occ_man;
-#if CC_ALG == VLL
-extern VLLMan vll_man;
-#endif
+
 
 // extern bool volatile warmup_finish;
 // extern bool volatile enable_thread_mem_pool;
@@ -76,21 +78,21 @@ extern VLLMan vll_man;
 // /******************************************/
 // // Global Parameter
 // /******************************************/
-// extern bool g_part_alloc;
+extern bool g_part_alloc_enc;
 // extern bool g_mem_pad;
 // extern bool g_prt_lat_distr;
-// extern UInt32 g_part_cnt;
+extern UInt32 g_part_cnt_enc;
 // extern UInt32 g_virtual_part_cnt;
-// extern UInt32 g_thread_cnt;
+extern UInt32 g_thread_cnt_enc;
 // extern ts_t g_abort_penalty; 
-// extern bool g_central_man;
-// extern UInt32 g_ts_alloc;
+extern bool g_central_man_enc;
+extern UInt32 g_ts_alloc_enc;
 // extern bool g_key_order;
-// extern bool g_no_dl;
+extern bool g_no_dl_enc;
 // extern ts_t g_timeout;
 // extern ts_t g_dl_loop_detect;
-// extern bool g_ts_batch_alloc;
-// extern UInt32 g_ts_batch_num;
+extern bool g_ts_batch_alloc_enc;
+extern UInt32 g_ts_batch_num_enc;
 
 // extern map<string, string> g_params;
 
@@ -163,3 +165,4 @@ extern VLLMan vll_man;
 // #define UINT64_MAX 		18446744073709551615UL
 // #endif // UINT64_MAX
 
+#endif

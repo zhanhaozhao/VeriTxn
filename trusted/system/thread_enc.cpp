@@ -23,8 +23,6 @@ void global_init_ecall(Stats * stats) {
 	part_lock_man.init();
 #elif CC_ALG == OCC
 	occ_man.init();
-#elif CC_ALG == VLL
-	vll_man.init();
 #endif
 
 }
@@ -73,9 +71,7 @@ RC run_txn_ecall(thread_t * h_thd, ts_t txn_ts) {
 
 	// generate_txn_for_run(m_query);
 	// m_txn->abort_cnt = 0;
-//#if CC_ALG == VLL
-//		_wl->get_txn_man(m_txn, this);
-//#endif
+
 
 	m_txn->set_txn_id(thd_id + glob_manager->get_thd_txn_id(thd_id) * g_thread_cnt);
 	glob_manager->set_thd_txn_id(thd_id);
@@ -93,8 +89,6 @@ RC run_txn_ecall(thread_t * h_thd, ts_t txn_ts) {
 		rc = part_lock_man.lock(m_txn, &part_to_access[0], 1);
 	} else 
 		rc = part_lock_man.lock(m_txn, m_query->part_to_access, m_query->part_num);
-#elif CC_ALG == VLL
-	vll_man.vllMainLoop(m_txn, m_query);
 #elif CC_ALG == MVCC || CC_ALG == HEKATON
 	glob_manager->add_ts(get_thd_id(), m_txn->get_ts());
 #elif CC_ALG == OCC
@@ -122,6 +116,7 @@ RC run_txn_ecall(thread_t * h_thd, ts_t txn_ts) {
 	return rc;
 
 }
+
 
 
 RC runTest(txn_man * txn)

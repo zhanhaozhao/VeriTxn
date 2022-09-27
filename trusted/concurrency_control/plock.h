@@ -1,10 +1,11 @@
 #ifndef _PLOCK_H_
 #define _PLOCK_H_
 
-#include "global.h"
-#include "helper.h"
+// #include "global.h"
+#include "common/global_common.h"
+#include "common/helper.h"
 
-class txn_man;
+// class txn_man;
 
 // Parition manager for HSTORE
 class PartMan {

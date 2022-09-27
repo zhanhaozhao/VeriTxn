@@ -1,10 +1,14 @@
-#include "query.h"
+// #include "common/base_query.h"
 #include "tpcc_query.h"
+
+#include "global.h"
+#include "global_struct.h"
+
 #include "tpcc.h"
 #include "tpcc_helper.h"
-#include "mem_alloc.h"
-#include "wl.h"
-#include "table.h"
+// #include "common/mem_alloc.h"
+// #include "wl.h"
+// #include "common/table.h"
 
 void tpcc_query::init(uint64_t thd_id, workload * h_wl) {
 	double x = (double)(rand() % 100) / 100.0;

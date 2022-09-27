@@ -1,21 +1,23 @@
-#pragma once 
+#ifndef _TXN_H_
+#define _TXN_H_
 
-#include "global.h"
-#include "global_enc.h"
-#include "helper.h"
 
-class workload;
-class thread_t;
+// #include "global.h"
+// #include "global_enc.h"
+// #include "common/helper.h"
+#include "global_common.h"
+#include "wl.h"
+
+// class workload;
+// class thread_t;
 class row_t;
-class table_t;
-class base_query;
-class INDEX;
+// class table_t;
+// class base_query;
+// class INDEX;
 
 // each thread has a txn_man. 
 // a txn_man corresponds to a single transaction.
 
-//For VLL
-enum TxnType {VLL_Blocked, VLL_Free};
 
 class Access {
 public:
@@ -87,8 +89,6 @@ public:
 	Access **		accesses;
 	int 			num_accesses_alloc;
 
-	// For VLL
-	TxnType 		vll_txn_type;
 	itemid_t *		index_read(INDEX * index, idx_key_t key, int part_id);
 	void 			index_read(INDEX * index, idx_key_t key, int part_id, itemid_t *& item);
 	row_t * 		get_row(row_t * row, access_t type);
@@ -118,3 +118,5 @@ private:
 	RC 				validate_hekaton(RC rc);
 #endif
 };
+
+#endif

@@ -1,6 +1,8 @@
 #include <sched.h>
-#include "query.h"
-#include "mem_alloc.h"
+#include "global.h"
+#include "global_struct.h"
+// #include "common/base_query.h"
+// #include "common/mem_alloc.h"
 #include "wl.h"
 #include "table.h"
 #include "ycsb_query.h"

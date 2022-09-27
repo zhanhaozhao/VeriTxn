@@ -1,9 +1,11 @@
-#pragma once 
+#ifndef _CATALOG_H_
+#define _CATALOG_H_
 
-#include <map>
-#include <vector>
-#include "global.h"
-#include "helper.h"
+// #include <map>
+// #include <vector>
+#include "global_common.h"
+// #include "catalog.h"
+// #include "helper.h"
 
 class Column {
 public:
@@ -57,3 +59,4 @@ public:
 	UInt32 			tuple_size;
 };
 
+#endif

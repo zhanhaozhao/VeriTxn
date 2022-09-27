@@ -2,11 +2,12 @@
 #define _YCSB_QUERY_H_
 
 #include "global.h"
-#include "helper.h"
-#include "query.h"
+// #include "common/helper.h"
+// #include "common/query.h"
 
-class workload;
-class Query_thd;
+
+// class workload;
+// class Query_thd;
 // Each ycsb_query contains several ycsb_requests, 
 // each of which is a RD, WR to a single table
 

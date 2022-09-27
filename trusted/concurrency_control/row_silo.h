@@ -1,8 +1,8 @@
 #pragma once 
 
-class table_t;
-class Catalog;
-class txn_man;
+// class table_t;
+// class Catalog;
+// class txn_man;
 struct TsReqEntry;
 
 #if CC_ALG==SILO

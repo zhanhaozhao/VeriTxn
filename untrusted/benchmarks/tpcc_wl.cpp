@@ -1,31 +1,31 @@
 #include "global.h"
-#include "helper.h"
+// #include "common/helper.h"
 #include "tpcc.h"
 #include "wl.h"
-#include "thread.h"
+// #include "common/thread.h"
 #include "table.h"
 #include "index_hash.h"
 #include "index_btree.h"
 #include "tpcc_helper.h"
 #include "row.h"
-#include "query.h"
-#include "txn.h"
-#include "mem_alloc.h"
+#include "common/base_query.h"
+// #include "txn.h"
+// #include "common/mem_alloc.h"
 #include "tpcc_const.h"
 
-#include "tpcc_txn.h"
+// #include "tpcc_txn.h"
 
 RC tpcc_wl::init() {
 	workload::init();
-	string path = "./untrusted/benchmarks/";
+	std::string path = "./untrusted/benchmarks/";
 #if TPCC_SMALL
 	path += "TPCC_short_schema.txt";
 #else
 	path += "TPCC_full_schema.txt";
 #endif
-	cout << "reading schema file: " << path << endl;
+	std::cout << "reading schema file: " << path << std::endl;
 	init_schema( path.c_str() );
-	cout << "TPCC schema initialized" << endl;
+	std::cout << "TPCC schema initialized" << std::endl;
 	init_table();
 	next_tid = 0;
 	return RCOK;
@@ -79,12 +79,12 @@ printf("TPCC Data Initialization Start!\n");
 	return RCOK;
 }
 
-RC tpcc_wl::get_txn_man(txn_man *& txn_manager, thread_t * h_thd) {
-	txn_manager = (tpcc_txn_man *) _mm_malloc( sizeof(tpcc_txn_man), 64);
-	new(txn_manager) tpcc_txn_man();
-	txn_manager->init(h_thd, this, h_thd->get_thd_id());
-	return RCOK;
-}
+// RC tpcc_wl::get_txn_man(txn_man *& txn_manager, thread_t * h_thd) {
+// 	txn_manager = (tpcc_txn_man *) _mm_malloc( sizeof(tpcc_txn_man), 64);
+// 	new(txn_manager) tpcc_txn_man();
+// 	txn_manager->init(h_thd, this, h_thd->get_thd_id());
+// 	return RCOK;
+// }
 
 // TODO ITEM table is assumed to be in partition 0
 void tpcc_wl::init_tab_item() {

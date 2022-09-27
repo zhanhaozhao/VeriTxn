@@ -1,8 +1,9 @@
 #ifndef _THREAD_ENC_
 #define _THREAD_ENC_
+
 #include "txn.h"
-#include "stats.h"
-#include "thread.h"
+// #include "common/stats.h"
+// #include "common/thread.h"
 
 void global_init_ecall(Stats * stats);
 

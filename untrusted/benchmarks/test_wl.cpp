@@ -1,16 +1,21 @@
 #include "test.h"
+
+#include "global.h"
+#include "global_struct.h"
+
 #include "table.h"
 #include "row.h"
-#include "mem_alloc.h"
+// #include "common/mem_alloc.h"
 #include "index_hash.h"
 #include "index_btree.h"
-#include "thread.h"
+// #include "common/thread.h"
 
-#include "test_txn.h"
+
+// #include "test_txn.h"
 
 RC TestWorkload::init() {
 	workload::init();
-	string path;
+	std::string path;
 	path = "./untrusted/benchmarks/TEST_schema.txt";
 	init_schema( path.c_str() );
 
@@ -50,13 +55,13 @@ RC TestWorkload::init_table() {
 	return rc;
 }
 
-RC TestWorkload::get_txn_man(txn_man *& txn_manager, thread_t * h_thd) {
-	txn_manager = (TestTxnMan *)
-		mem_allocator.alloc( sizeof(TestTxnMan), h_thd->get_thd_id() );
-	new(txn_manager) TestTxnMan();
-	txn_manager->init(h_thd, this, h_thd->get_thd_id());
-	return RCOK;
-}
+// RC TestWorkload::get_txn_man(txn_man *& txn_manager, thread_t * h_thd) {
+// 	txn_manager = (TestTxnMan *)
+// 		mem_allocator.alloc( sizeof(TestTxnMan), h_thd->get_thd_id() );
+// 	new(txn_manager) TestTxnMan();
+// 	txn_manager->init(h_thd, this, h_thd->get_thd_id());
+// 	return RCOK;
+// }
 
 void TestWorkload::summarize() {
 	uint64_t curr_time = get_sys_clock();

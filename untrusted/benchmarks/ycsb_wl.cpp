@@ -1,28 +1,29 @@
 #include <sched.h>
 #include "global.h"
-#include "helper.h"
+#include "global_struct.h"
+// #include "common/helper.h"
 #include "ycsb.h"
 #include "wl.h"
-#include "thread.h"
+// #include "common/thread.h"
 #include "table.h"
 #include "row.h"
 #include "index_hash.h"
 #include "index_btree.h"
-#include "catalog.h"
-#include "manager.h"
-#include "row_lock.h"
-#include "row_ts.h"
-#include "row_mvcc.h"
-#include "mem_alloc.h"
-#include "query.h"
-#include "ycsb_txn.h"
+// #include "catalog.h"
+// #include "manager.h"
+// #include "row_lock.h"
+// #include "row_ts.h"
+// #include "row_mvcc.h"
+// #include "common/mem_alloc.h"
+// #include "common/query.h"
+// #include "ycsb_txn.h"
 
 int ycsb_wl::next_tid;
 
 RC ycsb_wl::init() {
 	workload::init();
 	next_tid = 0;
-	string path = "./untrusted/benchmarks/YCSB_schema.txt";
+	std::string path = "./untrusted/benchmarks/YCSB_schema.txt";
 	init_schema( path );
 	
 	init_table_parallel();
@@ -30,7 +31,7 @@ RC ycsb_wl::init() {
 	return RCOK;
 }
 
-RC ycsb_wl::init_schema(string schema_file) {
+RC ycsb_wl::init_schema(std::string schema_file) {
 	workload::init_schema(schema_file);
 	the_table = tables["MAIN_TABLE"]; 	
 	the_index = indexes["MAIN_INDEX"];
@@ -149,12 +150,12 @@ void * ycsb_wl::init_table_slice() {
 	return NULL;
 }
 
-RC ycsb_wl::get_txn_man(txn_man *& txn_manager, thread_t * h_thd){
-	txn_manager = (ycsb_txn_man *)
-		_mm_malloc( sizeof(ycsb_txn_man), 64 );
-	new(txn_manager) ycsb_txn_man();
-	txn_manager->init(h_thd, this, h_thd->get_thd_id());
-	return RCOK;
-}
+// RC ycsb_wl::get_txn_man(txn_man *& txn_manager, thread_t * h_thd){
+// 	txn_manager = (ycsb_txn_man *)
+// 		_mm_malloc( sizeof(ycsb_txn_man), 64 );
+// 	new(txn_manager) ycsb_txn_man();
+// 	txn_manager->init(h_thd, this, h_thd->get_thd_id());
+// 	return RCOK;
+// }
 
 

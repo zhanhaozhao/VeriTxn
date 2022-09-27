@@ -1,9 +1,9 @@
 #ifndef ROW_TS_H
 #define ROW_TS_H
 
-class table_t;
-class Catalog;
-class txn_man;
+// class table_t;
+// class Catalog;
+// class txn_man;
 struct TsReqEntry {
 	txn_man * txn;
 	// for write requests, need to have a copy of the data to write.

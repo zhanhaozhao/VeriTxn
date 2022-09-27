@@ -1,4 +1,8 @@
-#pragma once 
+#ifndef _STATS_H_
+#define _STATS_H_
+
+#include "stdint.h"
+#include "config.h"
 
 class Stats_thd {
 public:
@@ -62,3 +66,5 @@ public:
 	void print();
 	void print_lat_distr();
 };
+
+#endif

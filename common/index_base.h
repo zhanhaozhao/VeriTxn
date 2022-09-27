@@ -1,8 +1,11 @@
-#pragma once 
+#ifndef _INDEX_BASE_H_
+#define _INDEX_BASE_H_
 
-#include "global.h"
+#include "global_common.h"
+#include "common/helper.h"
+// #include "common/table.h"
 
-class table_t;
+// class table_t;
 
 class index_base {
 public:
@@ -29,3 +32,5 @@ public:
 	// the index in on "table". The key is the merged key of "fields"
 	table_t * 			table;
 };
+
+#endif

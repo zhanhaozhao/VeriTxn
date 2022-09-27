@@ -7,7 +7,7 @@
 #include "pthread.h"
 #include "config.h"
 //#include "global.h"
-//#include "helper.h"
+//#include "common/helper.h"
 
 // The denpendency information per thread
 struct DepThd {

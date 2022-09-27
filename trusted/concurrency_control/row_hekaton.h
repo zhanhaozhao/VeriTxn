@@ -1,9 +1,9 @@
 #pragma once
 #include "row_mvcc.h"
 
-class table_t;
-class Catalog;
-class txn_man;
+// class table_t;
+// class Catalog;
+// class txn_man;
 
 // Only a constant number of versions can be maintained.
 // If a request accesses an old version that has been recycled,   

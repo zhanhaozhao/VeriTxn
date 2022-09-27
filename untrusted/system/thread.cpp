@@ -1,20 +1,23 @@
-#include <sched.h>
+// #include <sched.h>
+
+// #include "manager.h"
+// #include "txn.h"
+
+#include <unistd.h>
+
 #include "global.h"
-#include "manager.h"
-#include "thread.h"
-#include "txn.h"
+#include "common/thread.h"
+#include "common/helper.h"
+#include "mem_helper.h"
 #include "wl.h"
-#include "query.h"
-#include "plock.h"
-#include "occ.h"
-#include "vll.h"
+// #include "plock.h"
+// #include "occ.h"
 #include "ycsb_query.h"
 #include "tpcc_query.h"
-#include "mem_alloc.h"
 #include "test.h"
 
-#include "global_enc.h"
-#include "thread_enc.h"
+// #include "global_enc.h"
+// #include "thread_enc.h"
 
 void thread_t::init(uint64_t thd_id, workload * workload) {
 	_thd_id = thd_id;
@@ -65,7 +68,7 @@ RC thread_t::run() {
 	while (true) {
 		starttime = get_sys_clock();
 
-		rc = run_txn_ecall(this, this->get_next_ts());
+		// rc = run_txn_ecall(this, this->get_next_ts());
 
 		if (rc == Abort) {
 			uint64_t penalty = 0;
@@ -155,7 +158,7 @@ thread_t::generate_txn_for_run(base_query *& m_query) {
 				else if (m_query == NULL) {
 					m_query = query_queue->get_next_query( _thd_id );
 				#if CC_ALG == WAIT_DIE
-					m_txn->set_ts(get_next_ts());
+					// m_txn->set_ts(get_next_ts());
 				#endif
 				}
 				if (m_query != NULL)

@@ -1,9 +1,10 @@
-#ifndef _BTREE_H_
-#define _BTREE_H_
+#ifndef _INDEX_BTREE_H_
+#define _INDEX_BTREE_H_
 
-#include "global.h"
-#include "helper.h"
+// #include "global_common.h"
+// #include "common/helper.h"
 #include "index_base.h"
+// #include "common/helper.h"
 
 
 typedef struct bt_node {

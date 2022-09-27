@@ -1,5 +1,5 @@
 #include "api.h"
-#include "helper.h"
+#include "common/helper.h"
 
 void generate_txn_ocall(thread_t * h_thd, base_query *& m_query) {
 	h_thd->generate_txn_for_run(m_query);

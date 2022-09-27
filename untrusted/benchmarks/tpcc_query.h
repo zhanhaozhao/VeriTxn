@@ -2,10 +2,10 @@
 #define _TPCC_QUERY_H_
 
 #include "global.h"
-#include "helper.h"
-#include "query.h"
+// #include "common/helper.h"
+#include "common/base_query.h"
 
-class workload;
+// class workload;
 
 // items of new order transaction
 struct Item_no {

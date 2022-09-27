@@ -2,7 +2,7 @@
 #include "row.h"
 #include "manager.h"
 #include "row_hekaton.h"
-#include "mem_alloc.h"
+#include "common/mem_alloc.h"
 #include <mm_malloc.h>
 
 #if CC_ALG == HEKATON

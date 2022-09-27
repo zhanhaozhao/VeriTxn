@@ -1,6 +1,7 @@
-#pragma once 
+#ifndef _OCC_H_
+#define _OCC_H_
 
-#include "row.h"
+// #include "row.h"
 
 // TODO For simplicity, the txn hisotry for OCC is oganized as follows:
 // 1. history is never deleted.
@@ -9,7 +10,7 @@
 //    The head is always the latest and the tail the youngest. 
 // 	  When history is traversed, always go from head -> tail order.
 
-class txn_man;
+// class txn_man;
 
 class set_ent{
 public:
@@ -45,3 +46,5 @@ private:
 	volatile uint64_t tnc; // transaction number counter
 	pthread_mutex_t latch;
 };
+
+#endif

@@ -1,6 +1,8 @@
-#pragma once
+#ifndef _TPCC_HELPER_H_
+#define _TPCC_HELPER_H_
+
 #include "global.h"
-#include "helper.h"
+#include "common/helper.h"
 
 uint64_t distKey(uint64_t d_id, uint64_t d_w_id);
 uint64_t custKey(uint64_t c_id, uint64_t c_d_id, uint64_t c_w_id);
@@ -24,3 +26,5 @@ uint64_t MakeAlphaString(int min, int max, char * str, uint64_t thd_id);
 uint64_t MakeNumberString(int min, int max, char* str, uint64_t thd_id);
 
 uint64_t wh_to_part(uint64_t wid); 
+
+#endif

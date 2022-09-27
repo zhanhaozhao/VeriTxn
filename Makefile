@@ -3,8 +3,12 @@ CFLAGS=-Wall -g -std=c++0x
 
 .SUFFIXES: .o .cpp .h
 
-SRC_DIRS = ./ ./storage/ ./untrusted/system/ ./untrusted/benchmarks/ ./trusted/system/ ./trusted/concurrency_control/ ./trusted/benchmarks/
-INCLUDE = -I. -I./storage -I./untrusted/system -I./untrusted/benchmarks/ -I./trusted/system/ -I./trusted/concurrency_control/ -I./trusted/benchmarks/
+# SRC_DIRS = ./ ./common ./untrusted/system/ ./untrusted/benchmarks/ ./trusted/system/ ./trusted/concurrency_control/ ./trusted/benchmarks/ ./untrusted/cache/
+# INCLUDE = -I. -I./common -I./untrusted/system -I./untrusted/benchmarks/ -I./trusted/system/ -I./trusted/concurrency_control/ -I./trusted/benchmarks/ -I./untrusted/cache/
+
+
+SRC_DIRS = ./ ./common ./untrusted/system/ ./untrusted/benchmarks/ ./untrusted/cache/
+INCLUDE = -I. -I./common -I./untrusted/system -I./untrusted/benchmarks/ -I./untrusted/cache/
 
 
 # CFLAGS += $(INCLUDE) -D NOGRAPHITE=1 -no-pie -O0

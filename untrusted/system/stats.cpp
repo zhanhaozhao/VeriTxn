@@ -1,7 +1,8 @@
 #include "global.h"
-#include "helper.h"
-#include "stats.h"
-#include "mem_alloc.h"
+#include "global_struct.h"
+// #include "common/helper.h"
+// #include "common/stats.h"
+// #include "common/mem_alloc.h"
 
 #define BILLION 1000000000UL
 
