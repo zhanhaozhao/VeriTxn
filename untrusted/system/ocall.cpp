@@ -13,8 +13,8 @@ ts_t get_cur_time_ocall() {
 }
 
 std::string get_bucket_ocall(void * index, int part_id, int bkt_idx) {
-    ((INDEX *) index)->load_bucket(part_id, bkt_idx);
-	return "";
+    BucketHeader* cur = ((INDEX *) index)->load_bucket(part_id, bkt_idx);
+	return cur->encode();
 }
 
 void put_bucket_ocall(void * index, int part_id, int bkt_idx, const std::string &value) {

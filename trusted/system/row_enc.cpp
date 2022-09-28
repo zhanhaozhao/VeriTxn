@@ -334,7 +334,7 @@ void row_t::decode(const string& e) {
     const string &data_s = data_items[4].second;
     this->init(int(data_s.length()));
     auto nam = data_items[0].second.c_str();
-    this->table = tab_map.get_table(nam);
+    this->table = tab_map->get_table(nam);
     memcpy(data, data_s.c_str(), data_s.length());
     for (size_t i=0;i<data_s.length();i++) data[i] --;
     set_primary_key(int64_t(stoi(data_items[1].second)));

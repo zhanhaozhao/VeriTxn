@@ -1,6 +1,8 @@
 #ifndef _INDEX_HASH_H_
 #define _INDEX_HASH_H_
 
+#define DFlow std::string
+
 // #include "global_common.h"
 // #include "common/helper.h"
 #include "index_base.h"
@@ -16,7 +18,9 @@ public:
 		next = NULL;
 		items = NULL;
 	}
-	idx_key_t 		key;
+    DFlow encode() const;
+    void decode(const DFlow & e);
+    idx_key_t 		key;
 	// The node for the next key	
 	BucketNode * 	next;
 	// NOTE. The items can be a list of items connected by the next pointer. 
@@ -29,6 +33,8 @@ public:
 	void init();
 	void insert_item(idx_key_t key, itemid_t * item, int part_id);
 	void read_item(idx_key_t key, itemid_t * &item, const char * tname);
+    DFlow encode() const;
+    void decode(const DFlow & e);
 	BucketNode * 	first_node;
 	uint64_t 		node_cnt;
 	bool 			locked;
@@ -48,7 +54,7 @@ public:
 	RC	 		index_read(idx_key_t key, itemid_t * &item, int part_id=-1);	
 	RC	 		index_read(idx_key_t key, itemid_t * &item,
 							int part_id=-1, int thd_id=0);
-	std::string	load_bucket(int part_id, int bkt_idx);
+    BucketHeader *	load_bucket(int part_id, int bkt_idx);
 	std::string	index_name;
 private:
 	void get_latch(BucketHeader * bucket);

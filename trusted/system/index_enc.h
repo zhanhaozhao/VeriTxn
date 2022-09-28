@@ -8,8 +8,6 @@
 #define SGX_DISK    //
 //#define TEST_C //
 
-typedef pair<string, string> encoded_record;
-
 class BucketNode_ENC {
 public:
     BucketNode_ENC(idx_key_t key) {	init(key); };
@@ -68,6 +66,6 @@ private:
 
     BucketHeader_ENC *load_bucket(void * index, int part_id, uint64_t bkt_idx);
     void flush_bucket(int part_id, uint64_t bkt_idx, BucketHeader_ENC *cur, bool modified);
-    static DFlow load_disk(int part_id, uint64_t bkt_idx);
-    static void flush_disk(int part_id, uint64_t bkt_idx, const DFlow & e);
+//    static DFlow load_disk(int part_id, uint64_t bkt_idx);
+//    static void flush_disk(int part_id, uint64_t bkt_idx, const DFlow & e);
 };

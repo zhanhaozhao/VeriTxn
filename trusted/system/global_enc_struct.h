@@ -34,6 +34,7 @@
 #include "manager_enc.h"
 #include "plock.h"
 #include "occ.h"
+#include "table_map.h"
 // #ifndef NOGRAPHITE
 // #include "carbon_user.h"
 // #endif
@@ -69,8 +70,7 @@ extern ManagerEnc * glob_manager_enc;
 extern Plock part_lock_man;
 extern OptCC occ_man;
 
-extern table_map tab_map;
-extern disk global_disk;
+extern table_map* tab_map;
 
 // extern bool volatile warmup_finish;
 // extern bool volatile enable_thread_mem_pool;

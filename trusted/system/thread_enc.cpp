@@ -11,7 +11,6 @@
 // pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void global_init_ecall(Stats * stats) {
-
 	mem_allocator_enc.init(g_part_cnt_enc, MEM_SIZE / g_part_cnt_enc);
 
 	stats_enc = stats;
@@ -28,17 +27,13 @@ void global_init_ecall(Stats * stats) {
 	occ_man.init();
 #endif
 
-	// TODO: init indexenc here
-	tab_map = table_map{};
-	global_disk = disk{};
-
 }
 
 void index_init_ecall(int part_cnt, table_t * table, std::string iname, uint64_t bucket_cnt) {
 	IndexEnc * index = (IndexEnc *) _mm_malloc(sizeof(IndexEnc), 64);
 	new(index) IndexEnc();
 	index->init(part_cnt, table, bucket_cnt);
-	tab_map._indexes[iname] = index;
+	tab_map->_indexes[iname] = index;
 }
 
 void init_txn_in_enc(txn_man *& m_txn, thread_t * h_thd) {

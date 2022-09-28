@@ -3,8 +3,8 @@ CFLAGS=-Wall -g -std=c++0x
 
 .SUFFIXES: .o .cpp .h
 
-SRC_DIRS = ./ ./common ./untrusted/system/ ./untrusted/benchmarks/ ./untrusted/cache/ ./trusted/system/ ./trusted/concurrency_control/
-INCLUDE = -I. -I./common -I./untrusted/system/ -I./untrusted/benchmarks/ -I./untrusted/cache/ -I./trusted/system/ -I./trusted/concurrency_control/
+SRC_DIRS = ./ ./common/ ./untrusted/system/ ./untrusted/benchmarks/ ./untrusted/cache/ ./trusted/system/ ./trusted/concurrency_control/
+INCLUDE = -I. -I./common/ -I./untrusted/system/ -I./untrusted/benchmarks/ -I./untrusted/cache/ -I./trusted/system/ -I./trusted/concurrency_control/
 
 # SRC_DIRS = ./ ./common ./untrusted/system/ ./untrusted/benchmarks/ ./untrusted/cache/ 
 # INCLUDE = -I. -I./common -I./untrusted/system -I./untrusted/benchmarks/ -I./untrusted/cache/ 
@@ -36,4 +36,4 @@ rundb : $(OBJS)
 
 .PHONY: clean
 clean:
-	rm -f rundb $(OBJS) $(DEPS)
+	rm -f rundb ./trusted/*.o ./trusted/*.d ./untrusted/*.o ./untrusted/*.d ./common/*.o ./common/*.d $(OBJS) $(DEPS)

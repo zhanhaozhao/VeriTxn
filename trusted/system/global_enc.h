@@ -25,11 +25,7 @@
 // #include "pthread.h"
 // #include "config.h"
 #include "common/global_common.h"
-#include "table_map.h"
-#include "disk.h"
 
-class table_map;
-class disk;
 // #include "common/helper.h"
 // #include "common/stats.h"
 // #include "common/mem_alloc.h"

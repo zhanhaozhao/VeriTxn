@@ -103,6 +103,8 @@ public:
 //   #endif
 	char * data;
 	table_t * table;
+    std::string encode();
+    void decode(const std::string &e);
 private:
 	// primary key should be calculated from the data stored in the row.
 	uint64_t 		_primary_key;

@@ -10,6 +10,7 @@
 #include "query.h"
 // #include "helper.h"
 #include "manager.h"
+#include "common/table_map.h"
 
 // #include "common/stats.h"
 // #include "dl_detect.h"
@@ -27,6 +28,7 @@ extern Stats stats;
 // extern DL_detect dl_detector;
 extern Manager * glob_manager;
 extern Query_queue * query_queue;
+extern table_map * global_table_map;
 // extern Plock part_lock_man;
 // extern OptCC occ_man;
 

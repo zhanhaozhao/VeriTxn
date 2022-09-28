@@ -13,6 +13,7 @@
 // #include "catalog.h"
 // #include "common/mem_alloc.h"
 #include "thread_enc.h"
+#include "table_map.h"
 
 RC workload::init() {
 	sim_done = false;
@@ -20,6 +21,7 @@ RC workload::init() {
 }
 
 RC workload::init_schema(std::string schema_file) {
+//    global_table_map = new table_map;
     assert(sizeof(uint64_t) == 8);
     assert(sizeof(double) == 8);	
 	std::string line;
@@ -68,6 +70,7 @@ RC workload::init_schema(std::string schema_file) {
 			table_t * cur_tab = (table_t *) _mm_malloc(sizeof(table_t), CL_SIZE);
 			cur_tab->init(schema);
 			tables[tname] = cur_tab;
+			global_table_map->_tables[tname] = cur_tab;
         } else if (!line.compare(0, 6, "INDEX=")) {
 			std::string iname;
 			iname = &line[6];

@@ -78,7 +78,7 @@ RC IndexEnc::index_insert(idx_key_t key, itemid_t * item, int part_id) {
     RC rc = RCOK;
     uint64_t bkt_idx = hash(key);
     assert(bkt_idx < _bucket_cnt_per_part);
-    BucketHeader_ENC * cur_bkt = load_bucket(part_id, bkt_idx);
+    BucketHeader_ENC * cur_bkt = load_bucket(nullptr, part_id, bkt_idx);
     // 1. get the ex latch
     get_latch(cur_bkt);
 
@@ -134,7 +134,7 @@ void IndexEnc::flush_bucket(int part_id, uint64_t bkt_idx, BucketHeader_ENC* cur
 #else
     if (modified) {
         _verify_hash[part_id][bkt_idx] = cur->get_hash();
-        flush_disk(part_id, bkt_idx, cur->encode());
+//        flush_disk(part_id, bkt_idx, cur->encode());
 //        test_encoder(cur);
     }
     delete cur;
@@ -146,7 +146,6 @@ RC IndexEnc::index_read(void * ocall_index, idx_key_t key, itemid_t * &item,
     uint64_t bkt_idx = hash(key);
     assert(bkt_idx < _bucket_cnt_per_part);
     BucketHeader_ENC * cur_bkt = load_bucket(ocall_index, part_id, bkt_idx);
-//	cerr << cur_bkt -> encode() << endl;
     RC rc = RCOK;
     // 1. get the sh latch
 //	get_latch(cur_bkt);
@@ -161,13 +160,13 @@ RC IndexEnc::index_read(void * ocall_index, idx_key_t key, itemid_t * &item,
     return rc;
 }
 
-DFlow IndexEnc::load_disk(int part_id, uint64_t bkt_idx) {
-    return get_bucket_disk(part_id, bkt_idx);
-}
+//DFlow IndexEnc::load_disk(int part_id, uint64_t bkt_idx) {
+//    return get_bucket_disk(part_id, bkt_idx);
+//}
 
-void IndexEnc::flush_disk(int part_id, uint64_t bkt_idx, const DFlow &value) {
-    put_bucket_disk(part_id, bkt_idx, value);
-}
+//void IndexEnc::flush_disk(int part_id, uint64_t bkt_idx, const DFlow &value) {
+//    put_bucket_disk(part_id, bkt_idx, value);
+//}
 
 /************** BucketHeader_ENC Operations ******************/
 

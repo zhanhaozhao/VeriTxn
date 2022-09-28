@@ -1,4 +1,5 @@
-#include "global.h"	
+#include <coder.h>
+#include "global.h"
 #include "global_struct.h"
 
 #include "index_hash.h"
@@ -85,11 +86,9 @@ RC IndexHash::index_read(idx_key_t key, itemid_t * &item,
 	return rc;
 }
 
-std::string	IndexHash::load_bucket(int part_id, int bkt_idx) {
-	
+BucketHeader *	IndexHash::load_bucket(int part_id, int bkt_idx) {
 	BucketHeader * cur_bkt = &_buckets[part_id][bkt_idx];
-
-	return cur_bkt->encode();
+	return cur_bkt;
 }
 
 /************** BucketHeader Operations ******************/
@@ -140,4 +139,51 @@ void BucketHeader::read_item(idx_key_t key, itemid_t * &item, const char * tname
 	}
 	M_ASSERT(cur_node->key == key, "Key does not exist!");
 	item = cur_node->items;
+}
+
+DFlow BucketHeader::encode() const {
+    vector <encoded_record> data;
+    BucketNode * cur_node = first_node;
+    while (cur_node != nullptr) {
+        data.emplace_back(make_pair(to_string(cur_node->key), cur_node->encode()));
+        cur_node = cur_node->next;
+    }
+    return encode_vec(data);
+}
+
+void BucketHeader::decode(const DFlow & e) {
+    vector <encoded_record> data = decode_vec(e);
+    this->init();
+    for (const auto& it:data) {
+        auto tmp = new BucketNode(stoi(it.first));
+        tmp->decode(it.second);
+        if (this->first_node == NULL) {
+            this->first_node = tmp;
+        } else {
+            this->first_node->next = tmp;
+            this->first_node = tmp;
+        }
+    }
+}
+
+DFlow BucketNode::encode() const {
+    vector <encoded_record> data;
+    string res_items;
+    itemid_t * it = items;
+    data.emplace_back(make_pair(to_string(this->key), ""));
+    auto tmp = (base_row_t*)(it->location);
+    data.emplace_back(make_pair(to_string(tmp->get_part_id()), tmp->encode()));
+    return encode_vec(data);
+}
+
+void BucketNode::decode(const DFlow & e) {
+    vector <encoded_record> data = decode_vec(e);
+    this->init(stoi(data[0].first));
+    this->items = new itemid_t;
+    assert(data.size() == 2);
+    auto * cur_row = new base_row_t;
+    cur_row->decode(data[1].second);
+    this->items->location = (void*)cur_row;
+    this->items->valid = true;
+    this->items->type = DT_row;
 }

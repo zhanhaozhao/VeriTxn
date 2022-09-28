@@ -196,7 +196,7 @@ txn_man::index_read(INDEX * index, idx_key_t key, int part_id) {
 	uint64_t starttime = get_cur_time_ocall();
 	itemid_t * item;
 	// index --> en_index;
-	IndexEnc * index_enc = (IndexEnc *) tab_map._indexes[index->index_name];
+	IndexEnc * index_enc = (IndexEnc *) tab_map->_indexes[index->index_name];
 	index_enc->index_read(index, key, item, part_id, get_thd_id());
 	// index->index_read(key, item, part_id, get_thd_id());
 	INC_TMP_STATS_ENC(get_thd_id(), time_index, get_cur_time_ocall() - starttime);
@@ -206,7 +206,7 @@ txn_man::index_read(INDEX * index, idx_key_t key, int part_id) {
 void 
 txn_man::index_read(INDEX * index, idx_key_t key, int part_id, itemid_t *& item) {
 	uint64_t starttime = get_cur_time_ocall();
-	IndexEnc * index_enc = (IndexEnc *) tab_map._indexes[index->index_name];
+	IndexEnc * index_enc = (IndexEnc *) tab_map->_indexes[index->index_name];
 	index_enc->index_read(index, key, item, part_id, get_thd_id());
 	// index->index_read(key, item, part_id, get_thd_id());
 	INC_TMP_STATS_ENC(get_thd_id(), time_index, get_cur_time_ocall() - starttime);

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <map>
-#include "global_enc.h"
 #include "table.h"
 
 using namespace std;

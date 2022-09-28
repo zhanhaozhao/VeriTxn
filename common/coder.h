@@ -3,9 +3,10 @@
 //
 #include "string"
 #include "vector"
-#include "global_enc.h"
 
 using namespace std;
+
+typedef pair<string, string> encoded_record;
 
 string encode_vec(const vector<pair<string,string> > &data);
 vector<pair<string, string> > decode_vec(const string &e);

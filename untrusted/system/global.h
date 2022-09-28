@@ -26,6 +26,7 @@
 
 // class Stats;
 // class Manager;
+class table_map;
 
 // /******************************************/
 // // Global Data Structure 

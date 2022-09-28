@@ -4,6 +4,7 @@
 #include "catalog.h"
 #include "base_row.h"
 #include "cstring"
+#include "global_struct.h"
 // #include "txn.h"
 // #include "row_lock.h"
 // #include "row_ts.h"
@@ -131,181 +132,35 @@ void base_row_t::free_row() {
 	free(data);
 }
 
-// RC base_row_t::get_row(access_t type, txn_man * txn, base_row_t *& row) {
-// 	return RCOK;
-// 	RC rc = RCOK;
-// #if CC_ALG == WAIT_DIE || CC_ALG == NO_WAIT || CC_ALG == DL_DETECT
-// 	// uint64_t thd_id = txn->get_thd_id();
-// 	lock_t lt = (type == RD || type == SCAN)? LOCK_SH : LOCK_EX;
-// #if CC_ALG == DL_DETECT
-// 	uint64_t * txnids;
-// 	int txncnt; 
-// 	// rc = this->manager->lock_get(lt, txn, txnids, txncnt);	
-// #else
-// 	// rc = this->manager->lock_get(lt, txn);
-// #endif
+#include "string"
+#include "vector"
+#include "coder.h"
 
-// 	if (rc == RCOK) {
-// 		row = this;
-// 	} else if (rc == Abort) {} 
-// 	else if (rc == WAIT) {
-// 		ASSERT(CC_ALG == WAIT_DIE || CC_ALG == DL_DETECT);
-// 		uint64_t starttime = get_sys_clock();
-// #if CC_ALG == DL_DETECT	
-// 		bool dep_added = false;
-// #endif
-// 		uint64_t endtime;
-// 		// txn->lock_abort = false;
-// 		// INC_STATS(txn->get_thd_id(), wait_cnt, 1);
-// 		while (!txn->lock_ready && !txn->lock_abort) 
-// 		{
-// #if CC_ALG == WAIT_DIE 
-// 			continue;
-// #elif CC_ALG == DL_DETECT	
-// 			uint64_t last_detect = starttime;
-// 			uint64_t last_try = starttime;
+string base_row_t::encode() {
+    vector<pair<string, string> > data_items;
+//    puts(table->get_table_name());
+    data_items.emplace_back(make_pair("table_name:", string(table->get_table_name())));
+    data_items.emplace_back(make_pair("primary_key:", to_string(_primary_key)));
+    data_items.emplace_back(make_pair("part_id:", to_string(_part_id)));
+    data_items.emplace_back(make_pair("row_id:", to_string(_row_id)));
+    auto siz = get_tuple_size();
+    string data_str;
+    for (unsigned i=0;i<siz;i++) data_str.push_back(data[i]+1);
+    data_items.emplace_back(make_pair("data:", data_str));
+    return encode_vec(data_items);
+}
 
-// 			uint64_t now = get_sys_clock();
-// 			if (now - starttime > g_timeout ) {
-// 				txn->lock_abort = true;
-// 				break;
-// 			}
-// 			if (g_no_dl) {
-// 				PAUSE
-// 				continue;
-// 			}
-// 			int ok = 0;
-// 			if ((now - last_detect > g_dl_loop_detect) && (now - last_try > DL_LOOP_TRIAL)) {
-// 				if (!dep_added) {
-// 					ok = dl_detector.add_dep(txn->get_txn_id(), txnids, txncnt, txn->row_cnt);
-// 					if (ok == 0)
-// 						dep_added = true;
-// 					else if (ok == 16)
-// 						last_try = now;
-// 				}
-// 				if (dep_added) {
-// 					ok = dl_detector.detect_cycle(txn->get_txn_id());
-// 					if (ok == 16)  // failed to lock the deadlock detector
-// 						last_try = now;
-// 					else if (ok == 0) 
-// 						last_detect = now;
-// 					else if (ok == 1) {
-// 						last_detect = now;
-// 					}
-// 				}
-// 			} else 
-// 				PAUSE
-// #endif
-// 		}
-// 		if (txn->lock_ready) 
-// 			rc = RCOK;
-// 		else if (txn->lock_abort) { 
-// 			rc = Abort;
-// 			return_row(type, txn, NULL);
-// 		}
-// 		endtime = get_sys_clock();
-// 		// INC_TMP_STATS(thd_id, time_wait, endtime - starttime);
-// 		row = this;
-// 	}
-// 	return rc;
-// #elif CC_ALG == TIMESTAMP || CC_ALG == MVCC || CC_ALG == HEKATON 
-// 	uint64_t thd_id = txn->get_thd_id();
-// 	// For TIMESTAMP RD, a new copy of the row will be returned.
-// 	// for MVCC RD, the version will be returned instead of a copy
-// 	// So for MVCC RD-WR, the version should be explicitly copied.
-// 	//base_row_t * newr = NULL;
-//   #if CC_ALG == TIMESTAMP
-// 	// TODO. should not call malloc for each row read. Only need to call malloc once 
-// 	// before simulation starts, like TicToc and Silo.
-// 	txn->cur_row = (base_row_t *) mem_allocator.alloc(sizeof(base_row_t), this->get_part_id());
-// 	txn->cur_row->init(get_table(), this->get_part_id());
-//   #endif
-
-// 	// TODO need to initialize the table/catalog information.
-// 	TsType ts_type = (type == RD)? R_REQ : P_REQ; 
-// 	rc = this->manager->access(txn, ts_type, row);
-// 	if (rc == RCOK ) {
-// 		row = txn->cur_row;
-// 	} else if (rc == WAIT) {
-// 		uint64_t t1 = get_sys_clock();
-// 		while (!txn->ts_ready)
-// 			PAUSE
-// 		uint64_t t2 = get_sys_clock();
-// 		INC_TMP_STATS(thd_id, time_wait, t2 - t1);
-// 		row = txn->cur_row;
-// 	}
-// 	if (rc != Abort) {
-// 		row->table = get_table();
-// 		assert(row->get_schema() == this->get_schema());
-// 	}
-// 	return rc;
-// #elif CC_ALG == OCC
-// 	// OCC always make a local copy regardless of read or write
-// 	txn->cur_row = (base_row_t *) mem_allocator.alloc(sizeof(base_row_t), get_part_id());
-// 	txn->cur_row->init(get_table(), get_part_id());
-// 	rc = this->manager->access(txn, R_REQ);
-// 	row = txn->cur_row;
-// 	return rc;
-// #elif CC_ALG == TICTOC || CC_ALG == SILO
-// 	// like OCC, tictoc also makes a local copy for each read/write
-// 	row->table = get_table();
-// 	TsType ts_type = (type == RD)? R_REQ : P_REQ; 
-// 	rc = this->manager->access(txn, ts_type, row);
-// 	return rc;
-// #elif CC_ALG == HSTORE || CC_ALG == VLL
-// 	row = this;
-// 	return rc;
-// #else
-// 	assert(false);
-// #endif
-// }
-
-// the "row" is the row read out in get_row(). 
-// For locking based CC_ALG, the "row" is the same as "this". 
-// For timestamp based CC_ALG, the "row" != "this", and the "row" must be freed.
-// For MVCC, the row will simply serve as a version. The version will be 
-// delete during history cleanup.
-// For TIMESTAMP, the row will be explicity deleted at the end of access().
-// (cf. row_ts.cpp)
-// void base_row_t::return_row(access_t type, txn_man * txn, base_row_t * row) {	
-// #if CC_ALG == WAIT_DIE || CC_ALG == NO_WAIT || CC_ALG == DL_DETECT
-// 	assert (row == NULL || row == this || type == XP);
-// 	if (ROLL_BACK && type == XP) {// recover from previous writes.
-// 		this->copy(row);
-// 	}
-// 	// this->manager->lock_release(txn);
-// #elif CC_ALG == TIMESTAMP || CC_ALG == MVCC 
-// 	// for RD or SCAN or XP, the row should be deleted.
-// 	// because all WR should be companied by a RD
-// 	// for MVCC RD, the row is not copied, so no need to free. 
-//   #if CC_ALG == TIMESTAMP
-// 	if (type == RD || type == SCAN) {
-// 		row->free_row();
-// 		mem_allocator.free(row, sizeof(base_row_t));
-// 	}
-//   #endif
-// 	if (type == XP) {
-// 		this->manager->access(txn, XP_REQ, row);
-// 	} else if (type == WR) {
-// 		assert (type == WR && row != NULL);
-// 		assert (row->get_schema() == this->get_schema());
-// 		RC rc = this->manager->access(txn, W_REQ, row);
-// 		assert(rc == RCOK);
-// 	}
-// #elif CC_ALG == OCC
-// 	assert (row != NULL);
-// 	if (type == WR)
-// 		manager->write( row, txn->end_ts );
-// 	row->free_row();
-// 	mem_allocator.free(row, sizeof(base_row_t));
-// 	return;
-// #elif CC_ALG == TICTOC || CC_ALG == SILO
-// 	assert (row != NULL);
-// 	return;
-// #elif CC_ALG == HSTORE || CC_ALG == VLL
-// 	return;
-// #else 
-// 	assert(false);
-// #endif
-// }
-
+void base_row_t::decode(const string& e) {
+    vector<pair<string, string> > data_items = decode_vec(e);
+    assert(data_items.size() == 5);
+    const string &data_s = data_items[4].second;
+    this->init(int(data_s.length()));
+    auto nam = data_items[0].second.c_str();
+    this->table = global_table_map->get_table(nam);
+    memcpy(data, data_s.c_str(), data_s.length());
+    for (size_t i=0;i<data_s.length();i++) data[i] --;
+    set_primary_key(int64_t(stoi(data_items[1].second)));
+    _part_id = (int64_t(stoi(data_items[2].second)));
+    _row_id = (int64_t(stoi(data_items[3].second)));
+    init_manager(this);
+}

@@ -2,6 +2,9 @@
 // Created by pan on 2022/9/28.
 //
 
+#define DFlow std::string
+
+#include <cassert>
 #include "coder.h"
 
 using namespace std;
