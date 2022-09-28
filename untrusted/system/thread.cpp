@@ -4,6 +4,7 @@
 // #include "txn.h"
 
 #include <unistd.h>
+#include <thread_enc.h>
 
 #include "global.h"
 #include "common/thread.h"
@@ -18,6 +19,7 @@
 
 // #include "global_enc.h"
 // #include "thread_enc.h"
+#include "api.h"
 
 void thread_t::init(uint64_t thd_id, workload * workload) {
 	_thd_id = thd_id;
@@ -68,7 +70,7 @@ RC thread_t::run() {
 	while (true) {
 		starttime = get_sys_clock();
 
-		// rc = run_txn_ecall(this, this->get_next_ts());
+		 rc = run_txn_ecall(this, this->get_next_ts());
 
 		if (rc == Abort) {
 			uint64_t penalty = 0;

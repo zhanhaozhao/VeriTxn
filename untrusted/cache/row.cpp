@@ -3,6 +3,7 @@
 #include "table.h"
 #include "catalog.h"
 #include "base_row.h"
+#include "cstring"
 // #include "txn.h"
 // #include "row_lock.h"
 // #include "row_ts.h"

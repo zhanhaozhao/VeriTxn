@@ -308,3 +308,38 @@ void row_t::return_row(access_t type, txn_man * txn, row_t * row) {
 #endif
 }
 
+#include "string"
+#include "vector"
+#include "coder.h"
+
+using namespace std;
+
+string row_t::encode() {
+    vector<pair<string, string> > data_items;
+//    puts(table->get_table_name());
+    data_items.emplace_back(make_pair("table_name:", string(table->get_table_name())));
+    data_items.emplace_back(make_pair("primary_key:", to_string(_primary_key)));
+    data_items.emplace_back(make_pair("part_id:", to_string(_part_id)));
+    data_items.emplace_back(make_pair("row_id:", to_string(_row_id)));
+    auto siz = get_tuple_size();
+    string data_str;
+    for (unsigned i=0;i<siz;i++) data_str.push_back(data[i]+1);
+    data_items.emplace_back(make_pair("data:", data_str));
+    return encode_vec(data_items);
+}
+
+void row_t::decode(const string& e) {
+    vector<pair<string, string> > data_items = decode_vec(e);
+    assert(data_items.size() == 5);
+    const string &data_s = data_items[4].second;
+    this->init(int(data_s.length()));
+    auto nam = data_items[0].second.c_str();
+    this->table = tab_map.get_table(nam);
+    memcpy(data, data_s.c_str(), data_s.length());
+    for (size_t i=0;i<data_s.length();i++) data[i] --;
+    set_primary_key(int64_t(stoi(data_items[1].second)));
+    _part_id = (int64_t(stoi(data_items[2].second)));
+    _row_id = (int64_t(stoi(data_items[3].second)));
+    init_manager(this);
+//    this->manager->init(this);
+}

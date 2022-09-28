@@ -106,7 +106,7 @@ void BucketHeader::insert_item(idx_key_t key,
 		cur_node = cur_node->next;
 	}
 	if (cur_node == NULL) {		
-		BucketNode * new_node = (BucketNode *) 
+		BucketNode * new_node = (BucketNode *)
 			mem_allocator.alloc(sizeof(BucketNode), part_id );
 		new_node->init(key);
 		new_node->items = item;

@@ -1,3 +1,4 @@
+#include <cstring>
 #include "tpcc_helper.h"
 #include "global.h"
 

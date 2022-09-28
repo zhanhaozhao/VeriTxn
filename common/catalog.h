@@ -3,6 +3,7 @@
 
 // #include <map>
 // #include <vector>
+#include <cstring>
 #include "global_common.h"
 // #include "catalog.h"
 // #include "helper.h"

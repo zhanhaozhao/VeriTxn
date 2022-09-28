@@ -25,6 +25,11 @@
 // #include "pthread.h"
 // #include "config.h"
 #include "common/global_common.h"
+#include "table_map.h"
+#include "disk.h"
+
+class table_map;
+class disk;
 // #include "common/helper.h"
 // #include "common/stats.h"
 // #include "common/mem_alloc.h"
@@ -76,6 +81,10 @@
 // extern carbon_barrier_t enable_barrier;
 // #endif
 
+//typedef std::pair<void*, size_t> DFlow;
+#define DFlow std::string
+//typedef std::string DFlow;
+
 // /******************************************/
 // // Global Parameter
 // /******************************************/
@@ -94,6 +103,9 @@ extern bool g_no_dl_enc;
 // extern ts_t g_dl_loop_detect;
 extern bool g_ts_batch_alloc_enc;
 extern UInt32 g_ts_batch_num_enc;
+
+extern table_map tab_map;
+extern disk global_disk;
 
 // extern map<string, string> g_params;
 

@@ -194,6 +194,7 @@ itemid_t *
 txn_man::index_read(INDEX * index, idx_key_t key, int part_id) {
 	uint64_t starttime = get_cur_time_ocall();
 	itemid_t * item;
+	// index --> en_index;
 	index->index_read(key, item, part_id, get_thd_id());
 	INC_TMP_STATS_ENC(get_thd_id(), time_index, get_cur_time_ocall() - starttime);
 	return item;

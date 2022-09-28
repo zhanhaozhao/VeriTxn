@@ -9,7 +9,7 @@
 #include <cassert>
 // #include <stdio.h>
 // #include <fstream>
-#include <string.h>
+#include <string>
 #include <mm_malloc.h>
 // #include <typeinfo>
 // #include <list>
@@ -48,6 +48,7 @@ typedef uint32_t UInt32;
 typedef int32_t SInt32;
 typedef uint64_t UInt64;
 typedef int64_t SInt64;
+//typedef std::pair<void*, size_t> DFlow;
 
 typedef uint64_t ts_t; // time stamp type
 

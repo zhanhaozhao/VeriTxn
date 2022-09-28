@@ -18,7 +18,7 @@ public:
 	}
 	idx_key_t 		key;
 	// The node for the next key	
-	BucketNode * 	next;	
+	BucketNode * 	next;
 	// NOTE. The items can be a list of items connected by the next pointer. 
 	itemid_t * 		items;
 };

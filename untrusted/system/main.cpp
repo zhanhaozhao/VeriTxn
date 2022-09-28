@@ -1,3 +1,4 @@
+#include <thread_enc.h>
 #include "global.h"
 #include "global_struct.h"
 #include "ycsb.h"
@@ -30,10 +31,10 @@ int main(int argc, char* argv[])
 	mem_allocator.init(g_part_cnt, MEM_SIZE / g_part_cnt); 
 	stats.init();
 
-	// global_init_ecall(&stats); // call enclave
+	 global_init_ecall(&stats); // call enclave
 
-	// glob_manager = (Manager *) _mm_malloc(sizeof(Manager), 64);
-	// glob_manager->init();
+	 glob_manager = (Manager *) _mm_malloc(sizeof(Manager), 64);
+	 glob_manager->init();
 	// if (g_cc_alg == DL_DETECT) 
 	// 	dl_detector.init();
 	printf("mem_allocator initialized!\n");
