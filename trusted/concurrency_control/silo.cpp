@@ -1,5 +1,5 @@
 #include "txn.h"
-#include "row.h"
+#include "row_enc.h"
 #include "row_silo.h"
 
 #if CC_ALG == SILO

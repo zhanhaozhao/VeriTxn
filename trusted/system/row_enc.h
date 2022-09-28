@@ -1,9 +1,10 @@
-#ifndef _ROW_H_
-#define _ROW_H_
+#ifndef _ROW_ENC_H_
+#define _ROW_ENC_H_
 
 #include <cassert>
 // #include "global.h"
 #include "global_common.h"
+#include "txn.h"
 
 
 #define DECL_SET_VALUE(type) \
@@ -26,14 +27,14 @@
 // class table_t;
 // class Catalog;
 // class txn_man;
-// class Row_lock;
-// class Row_mvcc;
-// class Row_hekaton;
-// class Row_ts;
-// class Row_occ;
-// class Row_tictoc;
-// class Row_silo;
-// class Row_vll;
+class Row_lock;
+class Row_mvcc;
+class Row_hekaton;
+class Row_ts;
+class Row_occ;
+class Row_tictoc;
+class Row_silo;
+class Row_vll;
 
 class row_t
 {

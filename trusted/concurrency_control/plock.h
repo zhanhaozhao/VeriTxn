@@ -4,6 +4,7 @@
 // #include "global.h"
 #include "common/global_common.h"
 #include "common/helper.h"
+#include "txn.h"
 
 // class txn_man;
 

@@ -84,17 +84,17 @@ void Manager::add_ts(uint64_t thd_id, ts_t ts) {
 }
 
 
-uint64_t Manager::hash(row_t * row) {
+uint64_t Manager::hash(base_row_t * row) {
 	uint64_t addr = (uint64_t)row / MEM_ALLIGN;
     return (addr * 1103515247 + 12345) % BUCKET_CNT;
 }
  
-void Manager::lock_row(row_t * row) {
+void Manager::lock_row(base_row_t * row) {
 	int bid = hash(row);
 	pthread_mutex_lock( &mutexes[bid] );	
 }
 
-void Manager::release_row(row_t * row) {
+void Manager::release_row(base_row_t * row) {
 	int bid = hash(row);
 	pthread_mutex_unlock( &mutexes[bid] );
 }

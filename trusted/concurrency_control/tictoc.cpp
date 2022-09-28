@@ -1,7 +1,7 @@
 #include "txn.h"
-#include "row.h"
+#include "row_enc.h"
 #include "row_tictoc.h"
-#include "manager.h"
+#include "manager_enc.h"
 
 #if CC_ALG==TICTOC
 
@@ -254,7 +254,7 @@ final:
 			stats.add_debug(get_thd_id(), commit_wts, 2);
 		cleanup(rc);
 		if (_atomic_timestamp && rc == RCOK) {
-			ts_t ts = glob_manager->get_ts(get_thd_id());
+			ts_t ts = glob_manager_enc->get_ts(get_thd_id());
 			if (g_prt_lat_distr)
 				stats.add_debug(get_thd_id(), ts, 1);
 		}

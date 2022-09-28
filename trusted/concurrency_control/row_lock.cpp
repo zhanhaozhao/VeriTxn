@@ -1,9 +1,9 @@
-#include "row.h"
+#include "row_enc.h"
 #include "txn.h"
 #include "row_lock.h"
 #include "common/mem_alloc.h"
-#include "manager.h"
-#include "global_enc.h"
+// #include "manager.h"
+#include "global_enc_struct.h"
 
 void Row_lock::init(row_t * row) {
 	_row = row;
@@ -32,7 +32,7 @@ RC Row_lock::lock_get(lock_t type, txn_man * txn, uint64_t* &txnids, int &txncnt
 	RC rc;
 	int part_id =_row->get_part_id();
 	if (g_central_man_enc)
-		glob_manager->lock_row(_row);
+		glob_manager_enc->lock_row(_row);
 	else 
 		pthread_mutex_lock( latch );
 	assert(owner_cnt <= g_thread_cnt_enc);
@@ -155,7 +155,7 @@ final:
 	}
 
 	if (g_central_man_enc)
-		glob_manager->release_row(_row);
+		glob_manager_enc->release_row(_row);
 	else
 		pthread_mutex_unlock( latch );
 
@@ -166,7 +166,7 @@ final:
 RC Row_lock::lock_release(txn_man * txn) {	
 
 	if (g_central_man_enc)
-		glob_manager->lock_row(_row);
+		glob_manager_enc->lock_row(_row);
 	else 
 		pthread_mutex_lock( latch );
 
@@ -221,7 +221,7 @@ RC Row_lock::lock_release(txn_man * txn) {
 	ASSERT((owners == NULL) == (owner_cnt == 0));
 
 	if (g_central_man_enc)
-		glob_manager->release_row(_row);
+		glob_manager_enc->release_row(_row);
 	else
 		pthread_mutex_unlock( latch );
 

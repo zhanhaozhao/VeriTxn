@@ -1,7 +1,7 @@
-// #include "global.h"
+#include "global_enc.h"
 #include "mem_helper_enc.h"
 #include "plock.h"
-#include "common/mem_alloc.h"
+// #include "common/mem_alloc.h"
 #include "txn.h"
 
 #include "api.h"
@@ -81,7 +81,7 @@ void PartMan::unlock(txn_man * txn) {
 
 void Plock::init() {
 	ARR_PTR_ENC(PartMan, part_mans, g_part_cnt_enc);
-	for (UInt32 i = 0; i < g_part_cnt; i++)
+	for (UInt32 i = 0; i < g_part_cnt_enc; i++)
 		part_mans[i]->init();
 }
 

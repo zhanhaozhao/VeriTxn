@@ -1,5 +1,5 @@
-#ifndef ROW_TS_H
-#define ROW_TS_H
+#ifndef _ROW_TS_H_
+#define _ROW_TS_H_
 
 // class table_t;
 // class Catalog;

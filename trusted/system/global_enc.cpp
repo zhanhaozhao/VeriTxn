@@ -1,22 +1,23 @@
 #include "global_enc.h"
-#include "common/mem_alloc.h"
-#include "common/stats.h"
-#include "dl_detect.h"
-#include "manager.h"
+
+// #include "common/mem_alloc.h"
+// #include "common/stats.h"
+// #include "dl_detect.h"
+// #include "manager_enc.h"
 // #include "common/query.h"
-#include "plock.h"
-#include "occ.h"
+// #include "plock.h"
+// #include "occ.h"
 
-mem_alloc mem_allocator_enc;
-Stats * stats_enc;
-DL_detect dl_detector;
+// mem_alloc mem_allocator_enc;
+// Stats * stats_enc;
+// DL_detect dl_detector;
 
-Manager * glob_manager;
+// ManagerEnc * glob_manager_enc;
 
 // Query_queue * query_queue;
 
-Plock part_lock_man;
-OptCC occ_man;
+// Plock part_lock_man;
+// OptCC occ_man;
 
 
 // bool volatile warmup_finish = false;
@@ -36,9 +37,9 @@ bool g_no_dl_enc = NO_DL;
 bool g_ts_batch_alloc_enc = TS_BATCH_ALLOC;
 UInt32 g_ts_batch_num_enc = TS_BATCH_NUM;
 
-// bool g_part_alloc = PART_ALLOC;
-// bool g_mem_pad = MEM_PAD;
-// UInt32 g_cc_alg = CC_ALG;
+bool g_part_alloc_enc = PART_ALLOC;
+bool g_mem_pad_enc = MEM_PAD;
+UInt32 g_cc_alg_enc = CC_ALG;
 // ts_t g_query_intvl = QUERY_INTVL;
 // UInt32 g_part_per_txn = PART_PER_TXN;
 // double g_perc_multi_part = PERC_MULTI_PART;
@@ -56,7 +57,7 @@ UInt32 g_thread_cnt_enc = THREAD_CNT;
 
 // UInt32 g_num_wh = NUM_WH;
 // double g_perc_payment = PERC_PAYMENT;
-// bool g_wh_update = WH_UPDATE;
+bool g_wh_update_enc = WH_UPDATE;
 // char * output_file = NULL;
 
 // map<string, string> g_params;

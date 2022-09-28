@@ -1,7 +1,7 @@
 //#include "mvcc.h"
 #include "txn.h"
-#include "row.h"
-#include "manager.h"
+#include "row_enc.h"
+#include "manager_enc.h"
 #include "row_mvcc.h"
 #include "common/mem_alloc.h"
 #include <mm_malloc.h>
@@ -100,7 +100,7 @@ RC Row_mvcc::access(txn_man * txn, TsType type, row_t * row) {
 	ts_t ts = txn->get_ts();
 uint64_t t1 = get_cur_time_ocall();
 	if (g_central_man_enc)
-		glob_manager->lock_row(_row);
+		glob_manager_enc->lock_row(_row);
 	else
 		while (!ATOM_CAS(blatch, false, true))
 			PAUSE
@@ -188,7 +188,7 @@ INC_STATS_ENC(txn->get_thd_id(), debug4, t2 - t1);
 		assert(false);
 INC_STATS_ENC(txn->get_thd_id(), debug3, get_cur_time_ocall() - t2);
 	if (g_central_man_enc)
-		glob_manager->release_row(_row);
+		glob_manager_enc->release_row(_row);
 	else
 		blatch = false;
 		//pthread_mutex_unlock( latch );	
@@ -202,7 +202,7 @@ Row_mvcc::reserveRow(ts_t ts, txn_man * txn)
 	assert(!_exists_prewrite);
 	
 	// Garbage Collection
-	ts_t min_ts = glob_manager->get_min_ts(txn->get_thd_id());
+	ts_t min_ts = glob_manager_enc->get_min_ts(txn->get_thd_id());
 	if (_oldest_wts < min_ts && 
 		_num_versions == _his_len)
 	{

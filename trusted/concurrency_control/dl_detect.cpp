@@ -2,11 +2,11 @@
 // #include "global.h"
 // #include "common/global_common.h"
 #include "global_enc.h"
-// #include "common/helper.h"
+#include "mem_helper_enc.h"
 #include "txn.h"
-#include "row.h"
+#include "row_enc.h"
 // #include "manager.h"
-#include "common/mem_alloc.h"
+// #include "common/mem_alloc.h"
 
 #include "api.h"
 
@@ -57,7 +57,7 @@ DL_detect::nextNode(uint64_t txnid, DetectData * detect_data) {
 		return false;
 	}
 	
-	for(list<uint64_t>::iterator i = dependency[thd].adj.begin(); i != dependency[thd].adj.end(); ++i) {
+	for(std::list<uint64_t>::iterator i = dependency[thd].adj.begin(); i != dependency[thd].adj.end(); ++i) {
 		txnids[n++] = *i;
 	}
 	
@@ -130,7 +130,7 @@ DL_detect::detect_cycle(uint64_t txnid) {
 		INC_GLOB_STATS_ENC(deadlock, 1);
 		int thd_to_abort = get_thdid_from_txnid(detect_data->min_txnid);
 		if (dependency[thd_to_abort].txnid == (SInt64) detect_data->min_txnid) {
-			txn_man * txn = glob_manager->get_txn_man(thd_to_abort);
+			txn_man * txn = glob_manager_enc->get_txn_man(thd_to_abort);
 			txn->lock_abort = true;
 		}
 	} 

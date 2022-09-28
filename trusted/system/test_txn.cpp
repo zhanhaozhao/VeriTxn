@@ -1,6 +1,8 @@
 // #include "test.h"
-#include "row.h"
 
+#include "common/global_common.h"
+
+#include "row_enc.h"
 #include "test_txn.h"
 
 void TestTxnMan::init(thread_t * h_thd, workload * h_wl, uint64_t thd_id) {

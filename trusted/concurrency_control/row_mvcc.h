@@ -1,4 +1,6 @@
-#pragma once
+#ifndef _ROW_MVCC_H_
+#define _ROW_MVCC_H_
+
 
 // class table_t;
 // class Catalog;
@@ -65,5 +67,7 @@ private:
 	void double_list(uint32_t list);
 	row_t * reserveRow(ts_t ts, txn_man * txn);
 };
+
+#endif
 
 #endif

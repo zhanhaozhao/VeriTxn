@@ -1,9 +1,9 @@
 #ifndef _HELPER_H_
 #define _HELPER_H_
 
-// #include <cstdlib>
+#include <stdlib.h>
 // #include <iostream>
-// #include <stdint.h>
+#include <stdint.h>
 // #include "global.h"
 #include "config.h"
 

@@ -2,7 +2,7 @@
 #include "global.h"
 #include "table.h"
 #include "catalog.h"
-#include "row.h"
+#include "base_row.h"
 // #include "txn.h"
 // #include "row_lock.h"
 // #include "row_ts.h"
@@ -16,7 +16,7 @@
 // #include "manager.h"
 
 RC 
-row_t::init(table_t * host_table, uint64_t part_id, uint64_t row_id) {
+base_row_t::init(table_t * host_table, uint64_t part_id, uint64_t row_id) {
 	_row_id = row_id;
 	_part_id = part_id;
 	this->table = host_table;
@@ -26,18 +26,18 @@ row_t::init(table_t * host_table, uint64_t part_id, uint64_t row_id) {
 	return RCOK;
 }
 void 
-row_t::init(int size) 
+base_row_t::init(int size) 
 {
 	data = (char *) _mm_malloc(size, 64);
 }
 
 RC 
-row_t::switch_schema(table_t * host_table) {
+base_row_t::switch_schema(table_t * host_table) {
 	this->table = host_table;
 	return RCOK;
 }
 
-void row_t::init_manager(row_t * row) {
+void base_row_t::init_manager(base_row_t * row) {
 #if CC_ALG == DL_DETECT || CC_ALG == NO_WAIT || CC_ALG == WAIT_DIE
     // manager = (Row_lock *) mem_allocator.alloc(sizeof(Row_lock), _part_id);
 #elif CC_ALG == TIMESTAMP
@@ -47,7 +47,7 @@ void row_t::init_manager(row_t * row) {
 #elif CC_ALG == HEKATON
     manager = (Row_hekaton *) _mm_malloc(sizeof(Row_hekaton), 64);
 #elif CC_ALG == OCC
-    manager = (Row_occ *) mem_allocator.alloc(sizeof(Row_occ), _part_id);
+    // manager = (Row_occ *) mem_allocator.alloc(sizeof(Row_occ), _part_id);
 #elif CC_ALG == TICTOC
 	manager = (Row_tictoc *) _mm_malloc(sizeof(Row_tictoc), 64);
 #elif CC_ALG == SILO
@@ -59,79 +59,79 @@ void row_t::init_manager(row_t * row) {
 #endif
 }
 
-table_t * row_t::get_table() { 
+table_t * base_row_t::get_table() { 
 	return table; 
 }
 
-Catalog * row_t::get_schema() { 
+Catalog * base_row_t::get_schema() { 
 	return get_table()->get_schema(); 
 }
 
-const char * row_t::get_table_name() { 
+const char * base_row_t::get_table_name() { 
 	return get_table()->get_table_name(); 
 };
-uint64_t row_t::get_tuple_size() {
+uint64_t base_row_t::get_tuple_size() {
 	return get_schema()->get_tuple_size();
 }
 
-uint64_t row_t::get_field_cnt() { 
+uint64_t base_row_t::get_field_cnt() { 
 	return get_schema()->field_cnt;
 }
 
-void row_t::set_value(int id, void * ptr) {
+void base_row_t::set_value(int id, void * ptr) {
 	int datasize = get_schema()->get_field_size(id);
 	int pos = get_schema()->get_field_index(id);
 	memcpy( &data[pos], ptr, datasize);
 }
 
-void row_t::set_value(int id, void * ptr, int size) {
+void base_row_t::set_value(int id, void * ptr, int size) {
 	int pos = get_schema()->get_field_index(id);
 	memcpy( &data[pos], ptr, size);
 }
 
-void row_t::set_value(const char * col_name, void * ptr) {
+void base_row_t::set_value(const char * col_name, void * ptr) {
 	uint64_t id = get_schema()->get_field_id(col_name);
 	set_value(id, ptr);
 }
 
-SET_VALUE(uint64_t);
-SET_VALUE(int64_t);
-SET_VALUE(double);
-SET_VALUE(UInt32);
-SET_VALUE(SInt32);
+SET_VALUE_BASE(uint64_t);
+SET_VALUE_BASE(int64_t);
+SET_VALUE_BASE(double);
+SET_VALUE_BASE(UInt32);
+SET_VALUE_BASE(SInt32);
 
-GET_VALUE(uint64_t);
-GET_VALUE(int64_t);
-GET_VALUE(double);
-GET_VALUE(UInt32);
-GET_VALUE(SInt32);
+GET_VALUE_BASE(uint64_t);
+GET_VALUE_BASE(int64_t);
+GET_VALUE_BASE(double);
+GET_VALUE_BASE(UInt32);
+GET_VALUE_BASE(SInt32);
 
-char * row_t::get_value(int id) {
+char * base_row_t::get_value(int id) {
 	int pos = get_schema()->get_field_index(id);
 	return &data[pos];
 }
 
-char * row_t::get_value(char * col_name) {
+char * base_row_t::get_value(char * col_name) {
 	uint64_t pos = get_schema()->get_field_index(col_name);
 	return &data[pos];
 }
 
-char * row_t::get_data() { return data; }
+char * base_row_t::get_data() { return data; }
 
-void row_t::set_data(char * data, uint64_t size) { 
+void base_row_t::set_data(char * data, uint64_t size) { 
 	memcpy(this->data, data, size);
 }
 // copy from the src to this
-void row_t::copy(row_t * src) {
+void base_row_t::copy(base_row_t * src) {
 	set_data(src->get_data(), src->get_tuple_size());
 }
 
-void row_t::free_row() {
+void base_row_t::free_row() {
 	free(data);
 }
 
-RC row_t::get_row(access_t type, txn_man * txn, row_t *& row) {
-	return RCOK;
+// RC base_row_t::get_row(access_t type, txn_man * txn, base_row_t *& row) {
+// 	return RCOK;
 // 	RC rc = RCOK;
 // #if CC_ALG == WAIT_DIE || CC_ALG == NO_WAIT || CC_ALG == DL_DETECT
 // 	// uint64_t thd_id = txn->get_thd_id();
@@ -212,11 +212,11 @@ RC row_t::get_row(access_t type, txn_man * txn, row_t *& row) {
 // 	// For TIMESTAMP RD, a new copy of the row will be returned.
 // 	// for MVCC RD, the version will be returned instead of a copy
 // 	// So for MVCC RD-WR, the version should be explicitly copied.
-// 	//row_t * newr = NULL;
+// 	//base_row_t * newr = NULL;
 //   #if CC_ALG == TIMESTAMP
 // 	// TODO. should not call malloc for each row read. Only need to call malloc once 
 // 	// before simulation starts, like TicToc and Silo.
-// 	txn->cur_row = (row_t *) mem_allocator.alloc(sizeof(row_t), this->get_part_id());
+// 	txn->cur_row = (base_row_t *) mem_allocator.alloc(sizeof(base_row_t), this->get_part_id());
 // 	txn->cur_row->init(get_table(), this->get_part_id());
 //   #endif
 
@@ -240,7 +240,7 @@ RC row_t::get_row(access_t type, txn_man * txn, row_t *& row) {
 // 	return rc;
 // #elif CC_ALG == OCC
 // 	// OCC always make a local copy regardless of read or write
-// 	txn->cur_row = (row_t *) mem_allocator.alloc(sizeof(row_t), get_part_id());
+// 	txn->cur_row = (base_row_t *) mem_allocator.alloc(sizeof(base_row_t), get_part_id());
 // 	txn->cur_row->init(get_table(), get_part_id());
 // 	rc = this->manager->access(txn, R_REQ);
 // 	row = txn->cur_row;
@@ -257,7 +257,7 @@ RC row_t::get_row(access_t type, txn_man * txn, row_t *& row) {
 // #else
 // 	assert(false);
 // #endif
-}
+// }
 
 // the "row" is the row read out in get_row(). 
 // For locking based CC_ALG, the "row" is the same as "this". 
@@ -266,45 +266,45 @@ RC row_t::get_row(access_t type, txn_man * txn, row_t *& row) {
 // delete during history cleanup.
 // For TIMESTAMP, the row will be explicity deleted at the end of access().
 // (cf. row_ts.cpp)
-void row_t::return_row(access_t type, txn_man * txn, row_t * row) {	
-#if CC_ALG == WAIT_DIE || CC_ALG == NO_WAIT || CC_ALG == DL_DETECT
-	assert (row == NULL || row == this || type == XP);
-	if (ROLL_BACK && type == XP) {// recover from previous writes.
-		this->copy(row);
-	}
-	// this->manager->lock_release(txn);
-#elif CC_ALG == TIMESTAMP || CC_ALG == MVCC 
-	// for RD or SCAN or XP, the row should be deleted.
-	// because all WR should be companied by a RD
-	// for MVCC RD, the row is not copied, so no need to free. 
-  #if CC_ALG == TIMESTAMP
-	if (type == RD || type == SCAN) {
-		row->free_row();
-		mem_allocator.free(row, sizeof(row_t));
-	}
-  #endif
-	if (type == XP) {
-		this->manager->access(txn, XP_REQ, row);
-	} else if (type == WR) {
-		assert (type == WR && row != NULL);
-		assert (row->get_schema() == this->get_schema());
-		RC rc = this->manager->access(txn, W_REQ, row);
-		assert(rc == RCOK);
-	}
-#elif CC_ALG == OCC
-	assert (row != NULL);
-	if (type == WR)
-		manager->write( row, txn->end_ts );
-	row->free_row();
-	mem_allocator.free(row, sizeof(row_t));
-	return;
-#elif CC_ALG == TICTOC || CC_ALG == SILO
-	assert (row != NULL);
-	return;
-#elif CC_ALG == HSTORE || CC_ALG == VLL
-	return;
-#else 
-	assert(false);
-#endif
-}
+// void base_row_t::return_row(access_t type, txn_man * txn, base_row_t * row) {	
+// #if CC_ALG == WAIT_DIE || CC_ALG == NO_WAIT || CC_ALG == DL_DETECT
+// 	assert (row == NULL || row == this || type == XP);
+// 	if (ROLL_BACK && type == XP) {// recover from previous writes.
+// 		this->copy(row);
+// 	}
+// 	// this->manager->lock_release(txn);
+// #elif CC_ALG == TIMESTAMP || CC_ALG == MVCC 
+// 	// for RD or SCAN or XP, the row should be deleted.
+// 	// because all WR should be companied by a RD
+// 	// for MVCC RD, the row is not copied, so no need to free. 
+//   #if CC_ALG == TIMESTAMP
+// 	if (type == RD || type == SCAN) {
+// 		row->free_row();
+// 		mem_allocator.free(row, sizeof(base_row_t));
+// 	}
+//   #endif
+// 	if (type == XP) {
+// 		this->manager->access(txn, XP_REQ, row);
+// 	} else if (type == WR) {
+// 		assert (type == WR && row != NULL);
+// 		assert (row->get_schema() == this->get_schema());
+// 		RC rc = this->manager->access(txn, W_REQ, row);
+// 		assert(rc == RCOK);
+// 	}
+// #elif CC_ALG == OCC
+// 	assert (row != NULL);
+// 	if (type == WR)
+// 		manager->write( row, txn->end_ts );
+// 	row->free_row();
+// 	mem_allocator.free(row, sizeof(base_row_t));
+// 	return;
+// #elif CC_ALG == TICTOC || CC_ALG == SILO
+// 	assert (row != NULL);
+// 	return;
+// #elif CC_ALG == HSTORE || CC_ALG == VLL
+// 	return;
+// #else 
+// 	assert(false);
+// #endif
+// }
 

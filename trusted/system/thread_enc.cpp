@@ -2,21 +2,21 @@
 #include "ycsb_txn.h"
 #include "tpcc_txn.h"
 #include "test_txn.h"
-#include "global_enc.h"
+#include "global_enc_struct.h"
 #include "api.h"
-#include "manager.h"
+// #include "manager.h"
 #include "occ.h"
 
 void global_init_ecall(Stats * stats) {
 
-	mem_allocator_enc.init(g_part_cnt, MEM_SIZE / g_part_cnt);
+	mem_allocator_enc.init(g_part_cnt_enc, MEM_SIZE / g_part_cnt_enc);
 
 	stats_enc = stats;
 
-    glob_manager = (Manager *) _mm_malloc(sizeof(Manager), 64);
-	glob_manager->init();
+    glob_manager_enc = (ManagerEnc *) _mm_malloc(sizeof(ManagerEnc), 64);
+	glob_manager_enc->init();
 
-	if (g_cc_alg == DL_DETECT) 
+	if (g_cc_alg_enc == DL_DETECT) 
 		dl_detector.init();
 
 #if CC_ALG == HSTORE
@@ -47,7 +47,7 @@ void init_txn_in_enc(txn_man *& m_txn, thread_t * h_thd) {
 
 	m_txn->init(h_thd, h_thd->_wl, h_thd->get_thd_id());
 
-	glob_manager->set_txn_man(m_txn);
+	glob_manager_enc->set_txn_man(m_txn);
 }
 
 RC run_txn_ecall(thread_t * h_thd, ts_t txn_ts) {
@@ -56,11 +56,11 @@ RC run_txn_ecall(thread_t * h_thd, ts_t txn_ts) {
 	txn_man * m_txn;
 	uint64_t thd_id = h_thd->get_thd_id();
 
-	assert (glob_manager);
-	if (!glob_manager->get_txn_man(thd_id)) {
+	assert (glob_manager_enc);
+	if (!glob_manager_enc->get_txn_man(thd_id)) {
 		init_txn_in_enc(m_txn, h_thd);
 	} else {
-		m_txn = glob_manager->get_txn_man(thd_id);
+		m_txn = glob_manager_enc->get_txn_man(thd_id);
 	}
 	assert (m_txn);
 
@@ -73,8 +73,8 @@ RC run_txn_ecall(thread_t * h_thd, ts_t txn_ts) {
 	// m_txn->abort_cnt = 0;
 
 
-	m_txn->set_txn_id(thd_id + glob_manager->get_thd_txn_id(thd_id) * g_thread_cnt);
-	glob_manager->set_thd_txn_id(thd_id);
+	m_txn->set_txn_id(thd_id + glob_manager_enc->get_thd_txn_id(thd_id) * g_thread_cnt_enc);
+	glob_manager_enc->set_thd_txn_id(thd_id);
 
 	if ((CC_ALG == HSTORE && !HSTORE_LOCAL_TS)
 			|| CC_ALG == MVCC 
@@ -90,7 +90,7 @@ RC run_txn_ecall(thread_t * h_thd, ts_t txn_ts) {
 	} else 
 		rc = part_lock_man.lock(m_txn, m_query->part_to_access, m_query->part_num);
 #elif CC_ALG == MVCC || CC_ALG == HEKATON
-	glob_manager->add_ts(get_thd_id(), m_txn->get_ts());
+	glob_manager_enc->add_ts(get_thd_id(), m_txn->get_ts());
 #elif CC_ALG == OCC
 	// In the original OCC paper, start_ts only reads the current ts without advancing it.
 	// But we advance the global ts here to simplify the implementation. However, the final

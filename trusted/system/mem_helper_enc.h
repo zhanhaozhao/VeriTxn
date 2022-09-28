@@ -1,4 +1,7 @@
-#include "common/helper.h"
+#ifndef _MEM_HELPER_ENC_H_
+#define _MEM_HELPER_ENC_H_
+
+#include "global_enc_struct.h"
 
 
 /************************************************/
@@ -25,10 +28,10 @@
 
 #define ARR_PTR_MULTI_ENC(type, name, size, scale) \
 	name = new type * [size]; \
-	if (g_part_alloc || THREAD_ALLOC) { \
+	if (g_part_alloc_enc || THREAD_ALLOC) { \
 		for (UInt32 i = 0; i < size; i ++) {\
 			UInt32 padsize = sizeof(type) * (scale); \
-			if (g_mem_pad && padsize % CL_SIZE != 0) \
+			if (g_mem_pad_enc && padsize % CL_SIZE != 0) \
 				padsize += CL_SIZE - padsize % CL_SIZE; \
 			name[i] = (type *) mem_allocator_enc.alloc(padsize, i); \
 			for (UInt32 j = 0; j < scale; j++) \
@@ -58,3 +61,4 @@
 	for (UInt32 i = 0; i < size; i++) \
 		*name[i] = value; \
 
+#endif

@@ -1,7 +1,7 @@
 #include "txn.h"
-#include "row.h"
+#include "row_enc.h"
 #include "row_hekaton.h"
-#include "manager.h"
+#include "manager_enc.h"
 
 #if CC_ALG==HEKATON
 
@@ -10,7 +10,7 @@ txn_man::validate_hekaton(RC rc)
 {
 	uint64_t starttime = get_cur_time_ocall();
 	INC_STATS_ENC(get_thd_id(), debug1, get_cur_time_ocall() - starttime);
-	ts_t commit_ts = glob_manager->get_ts(get_thd_id());
+	ts_t commit_ts = glob_manager_enc->get_ts(get_thd_id());
 	// validate the read set.
 #if ISOLATION_LEVEL == SERIALIZABLE
 	if (rc == RCOK) {

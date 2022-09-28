@@ -1,4 +1,6 @@
-#pragma once 
+#ifndef _TPCC_TXN_H
+#define _TPCC_TXN_H
+
 
 #include "txn.h"
 #include "tpcc.h"
@@ -17,3 +19,4 @@ private:
 	RC run_stock_level(tpcc_query * query);
 };
 
+#endif

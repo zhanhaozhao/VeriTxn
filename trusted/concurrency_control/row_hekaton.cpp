@@ -1,6 +1,6 @@
 #include "txn.h"
-#include "row.h"
-#include "manager.h"
+#include "row_enc.h"
+#include "manager_enc.h"
 #include "row_hekaton.h"
 #include "common/mem_alloc.h"
 #include <mm_malloc.h>
@@ -111,7 +111,7 @@ Row_hekaton::reserveRow(txn_man * txn)
 {
 	// Garbage Collection
 	uint32_t idx;
-	ts_t min_ts = glob_manager->get_min_ts(txn->get_thd_id());
+	ts_t min_ts = glob_manager_enc->get_min_ts(txn->get_thd_id());
 	if ((_his_latest + 1) % _his_len == _his_oldest // history is full
 		&& min_ts > _write_history[_his_oldest].end) 
 	{

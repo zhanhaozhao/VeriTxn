@@ -2,7 +2,7 @@
 // #include "common/mem_alloc.h"
 #include "mem_helper.h"
 #include "index_btree.h"
-#include "row.h"
+#include "base_row.h"
 
 RC index_btree::init(uint64_t part_cnt) {
 	this->part_cnt = part_cnt;
@@ -661,7 +661,7 @@ void index_btree::print_btree(bt_node * start) {
 
 		while (c != NULL) {
 			for (int i = 0; i < c->num_keys; i++) {
-				row_t * r = (row_t *)((itemid_t*)c->pointers[i])->location;
+				base_row_t * r = (base_row_t *)((itemid_t*)c->pointers[i])->location;
 				if (c->is_leaf)
 					printf("%lld(%lld,%d),", 
 						c->keys[i], 

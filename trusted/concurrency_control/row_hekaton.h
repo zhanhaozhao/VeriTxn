@@ -1,4 +1,7 @@
-#pragma once
+#ifndef _ROW_HEKATON_H_
+#define _ROW_HEKATON_H_
+
+
 #include "row_mvcc.h"
 
 // class table_t;
@@ -40,5 +43,7 @@ private:
 	
 	uint32_t 		_his_len;
 };
+
+#endif
 
 #endif

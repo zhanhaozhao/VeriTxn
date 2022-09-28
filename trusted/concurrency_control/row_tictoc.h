@@ -1,6 +1,8 @@
-#pragma once 
+#ifndef _ROW_TICTOC_H_
+#define _ROW_TICTOC_H_
 
-#include "global.h"
+// #include "global.h"
+#include "row_enc.h"
 
 #if CC_ALG == TICTOC
 
@@ -59,5 +61,7 @@ private:
 	volatile ts_t 		_hist_wts;
 #endif
 };
+
+#endif
 
 #endif

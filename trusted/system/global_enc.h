@@ -1,5 +1,5 @@
-#ifndef _GLOBAL_ENC_
-#define _GLOBAL_ENC_
+#ifndef _GLOBAL_ENC_H_
+#define _GLOBAL_ENC_H_
 
 // #include "stdint.h"
 // #include <unistd.h>
@@ -25,13 +25,14 @@
 // #include "pthread.h"
 // #include "config.h"
 #include "common/global_common.h"
-#include "common/helper.h"
-#include "common/stats.h"
+// #include "common/helper.h"
+// #include "common/stats.h"
 // #include "common/mem_alloc.h"
-#include "dl_detect.h"
-#include "manager.h"
-#include "plock.h"
-#include "occ.h"
+
+// #include "dl_detect.h"
+// #include "manager_enc.h"
+// #include "plock.h"
+// #include "occ.h"
 // #ifndef NOGRAPHITE
 // #include "carbon_user.h"
 // #endif
@@ -57,15 +58,15 @@
 // /******************************************/
 // // Global Data Structure 
 // /******************************************/
-extern mem_alloc mem_allocator_enc;
-extern Stats * stats_enc;
-extern DL_detect dl_detector;
+// extern mem_alloc mem_allocator_enc;
+// extern Stats * stats_enc;
+// extern DL_detect dl_detector;
 
-extern Manager * glob_manager;
+// extern ManagerEnc * glob_manager_enc;
 
 // extern Query_queue * query_queue;
-extern Plock part_lock_man;
-extern OptCC occ_man;
+// extern Plock part_lock_man;
+// extern OptCC occ_man;
 
 
 // extern bool volatile warmup_finish;
@@ -79,7 +80,7 @@ extern OptCC occ_man;
 // // Global Parameter
 // /******************************************/
 extern bool g_part_alloc_enc;
-// extern bool g_mem_pad;
+extern bool g_mem_pad_enc;
 // extern bool g_prt_lat_distr;
 extern UInt32 g_part_cnt_enc;
 // extern UInt32 g_virtual_part_cnt;
@@ -97,7 +98,7 @@ extern UInt32 g_ts_batch_num_enc;
 // extern map<string, string> g_params;
 
 // // YCSB
-// extern UInt32 g_cc_alg;
+extern UInt32 g_cc_alg_enc;
 // extern ts_t g_query_intvl;
 // extern UInt32 g_part_per_txn;
 // extern double g_perc_multi_part;
@@ -112,7 +113,7 @@ extern UInt32 g_ts_batch_num_enc;
 // // TPCC
 // extern UInt32 g_num_wh;
 // extern double g_perc_payment;
-// extern bool g_wh_update;
+extern bool g_wh_update_enc;
 // extern char * output_file;
 // extern UInt32 g_max_items;
 // extern UInt32 g_cust_per_dist;

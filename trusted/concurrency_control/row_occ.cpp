@@ -1,7 +1,8 @@
+#include "global_enc_struct.h"
 #include "txn.h"
-#include "row.h"
+#include "row_enc.h"
 #include "row_occ.h"
-#include "common/mem_alloc.h"
+// #include "common/mem_alloc.h"
 
 void 
 Row_occ::init(row_t * row) {

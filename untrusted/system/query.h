@@ -9,8 +9,8 @@
 #include "wl.h"
 
 // class workload;
-class ycsb_query;
-class tpcc_query;
+// class ycsb_query;
+// class tpcc_query;
 
 
 // #include "ycsb_query.h"
@@ -27,19 +27,6 @@ class tpcc_query;
 // };
 
 // All the querise for a particular thread.
-class Query_thd {
-public:
-	void init(workload * h_wl, int thread_id);
-	base_query * get_next_query(); 
-	int q_idx;
-#if WORKLOAD == YCSB
-	ycsb_query * queries;
-#else 
-	tpcc_query * queries;
-#endif
-	char pad[CL_SIZE - sizeof(void *) - sizeof(int)];
-	drand48_data buffer;
-};
 
 // TODO we assume a separate task queue for each thread in order to avoid 
 // contention in a centralized query queue. In reality, more sofisticated 

@@ -3,7 +3,7 @@
 
 // #include "stdint.h"
 #include <iostream>
-// #include <unistd.h>
+#include <unistd.h>
 // #include <cstddef>
 // #include <cstdlib>
 #include <cassert>
@@ -41,6 +41,7 @@
 // class OptCC;
 // class VLLMan;
 
+class index_btree;
 class IndexHash;
 
 typedef uint32_t UInt32;

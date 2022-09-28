@@ -1,11 +1,13 @@
+#include "global_enc_struct.h"
+
 #include "tpcc.h"
 #include "tpcc_query.h"
 #include "tpcc_helper.h"
-#include "common/query.h"
+#include "common/base_query.h"
 // #include "wl.h"
 #include "common/thread.h"
 #include "table.h"
-#include "row.h"
+#include "row_enc.h"
 #include "index_hash.h"
 #include "index_btree.h"
 #include "tpcc_const.h"
@@ -61,7 +63,7 @@ RC tpcc_txn_man::run_payment(tpcc_query * query) {
 	assert(item != NULL);
 	row_t * r_wh = ((row_t *)item->location);
 	row_t * r_wh_local;
-	if (g_wh_update)
+	if (g_wh_update_enc)
 		r_wh_local = get_row(r_wh, WR);
 	else 
 		r_wh_local = get_row(r_wh, RD);
@@ -72,7 +74,7 @@ RC tpcc_txn_man::run_payment(tpcc_query * query) {
 	double w_ytd;
 	
 	r_wh_local->get_value(W_YTD, w_ytd);
-	if (g_wh_update) {
+	if (g_wh_update_enc) {
 		r_wh_local->set_value(W_YTD, w_ytd + query->h_amount);
 	}
 	char w_name[11];

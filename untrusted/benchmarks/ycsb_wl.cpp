@@ -6,7 +6,7 @@
 #include "wl.h"
 // #include "common/thread.h"
 #include "table.h"
-#include "row.h"
+#include "base_row.h"
 #include "index_hash.h"
 #include "index_btree.h"
 // #include "catalog.h"
@@ -51,7 +51,7 @@ RC ycsb_wl::init_table() {
     	for (UInt32 part_id = 0; part_id < g_part_cnt; part_id ++) {
             if (total_row > g_synth_table_size)
                 goto ins_done;
-            row_t * new_row = NULL;
+            base_row_t * new_row = NULL;
 			uint64_t row_id;
             rc = the_table->get_new_row(new_row, part_id, row_id); 
             // TODO insertion of last row may fail after the table_size
@@ -121,7 +121,7 @@ void * ycsb_wl::init_table_slice() {
 			key < slice_size * (tid + 1); 
 			key ++
 	) {
-		row_t * new_row = NULL;
+		base_row_t * new_row = NULL;
 		uint64_t row_id;
 		int part_id = key_to_part(key);
 		rc = the_table->get_new_row(new_row, part_id, row_id); 

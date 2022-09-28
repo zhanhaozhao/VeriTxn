@@ -3,20 +3,18 @@ CFLAGS=-Wall -g -std=c++0x
 
 .SUFFIXES: .o .cpp .h
 
-# SRC_DIRS = ./ ./common ./untrusted/system/ ./untrusted/benchmarks/ ./trusted/system/ ./trusted/concurrency_control/ ./trusted/benchmarks/ ./untrusted/cache/
-# INCLUDE = -I. -I./common -I./untrusted/system -I./untrusted/benchmarks/ -I./trusted/system/ -I./trusted/concurrency_control/ -I./trusted/benchmarks/ -I./untrusted/cache/
+SRC_DIRS = ./ ./common ./untrusted/system/ ./untrusted/benchmarks/ ./untrusted/cache/ ./trusted/system/ ./trusted/concurrency_control/
+INCLUDE = -I. -I./common -I./untrusted/system/ -I./untrusted/benchmarks/ -I./untrusted/cache/ -I./trusted/system/ -I./trusted/concurrency_control/
 
-
-SRC_DIRS = ./ ./common ./untrusted/system/ ./untrusted/benchmarks/ ./untrusted/cache/
-INCLUDE = -I. -I./common -I./untrusted/system -I./untrusted/benchmarks/ -I./untrusted/cache/
-
+# SRC_DIRS = ./ ./common ./untrusted/system/ ./untrusted/benchmarks/ ./untrusted/cache/ 
+# INCLUDE = -I. -I./common -I./untrusted/system -I./untrusted/benchmarks/ -I./untrusted/cache/ 
 
 # CFLAGS += $(INCLUDE) -D NOGRAPHITE=1 -no-pie -O0
 # LDFLAGS = -Wall -L. -L./libs -pthread -g -lrt -std=c++0x -O0 -ljemalloc
 
 CFLAGS += $(INCLUDE) -D NOGRAPHITE=1 -Werror -Wno-comment -O0
 LDFLAGS = -Wall -L. -pthread -g -lrt -std=c++0x -O0 -ljemalloc
-# -fsanitize=address -fno-omit-frame-pointer -static-libasan
+# LDFLAGS = -Wall -L. -pthread -g -lrt -std=c++0x -O0 -ljemalloc -fsanitize=address -fno-omit-frame-pointer -static-libasan
 LDFLAGS += $(CFLAGS)
 
 CPPS = $(foreach dir, $(SRC_DIRS), $(wildcard $(dir)*.cpp))

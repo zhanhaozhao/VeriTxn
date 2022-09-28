@@ -1,8 +1,8 @@
 // #include <mm_malloc.h>
-// #include "global.h"
+#include "global_enc_struct.h"
 #include "table.h"
 #include "catalog.h"
-#include "row.h"
+#include "row_enc.h"
 // #include "txn.h"
 #include "row_lock.h"
 #include "row_ts.h"
@@ -11,9 +11,10 @@
 #include "row_occ.h"
 #include "row_tictoc.h"
 #include "row_silo.h"
+#include "mem_helper_enc.h"
 // #include "row_vll.h"
 // #include "common/mem_alloc.h"
-#include "manager.h"
+// #include "manager_enc.h"
 
 RC 
 row_t::init(table_t * host_table, uint64_t part_id, uint64_t row_id) {
@@ -39,15 +40,15 @@ row_t::switch_schema(table_t * host_table) {
 
 void row_t::init_manager(row_t * row) {
 #if CC_ALG == DL_DETECT || CC_ALG == NO_WAIT || CC_ALG == WAIT_DIE
-    manager = (Row_lock *) mem_allocator.alloc(sizeof(Row_lock), _part_id);
+    manager = (Row_lock *) mem_allocator_enc.alloc(sizeof(Row_lock), _part_id);
 #elif CC_ALG == TIMESTAMP
-    manager = (Row_ts *) mem_allocator.alloc(sizeof(Row_ts), _part_id);
+    manager = (Row_ts *) mem_allocator_enc.alloc(sizeof(Row_ts), _part_id);
 #elif CC_ALG == MVCC
     manager = (Row_mvcc *) _mm_malloc(sizeof(Row_mvcc), 64);
 #elif CC_ALG == HEKATON
     manager = (Row_hekaton *) _mm_malloc(sizeof(Row_hekaton), 64);
 #elif CC_ALG == OCC
-    manager = (Row_occ *) mem_allocator.alloc(sizeof(Row_occ), _part_id);
+    manager = (Row_occ *) mem_allocator_enc.alloc(sizeof(Row_occ), _part_id);
 #elif CC_ALG == TICTOC
 	manager = (Row_tictoc *) _mm_malloc(sizeof(Row_tictoc), 64);
 #elif CC_ALG == SILO
@@ -154,7 +155,7 @@ RC row_t::get_row(access_t type, txn_man * txn, row_t *& row) {
 #endif
 		uint64_t endtime;
 		txn->lock_abort = false;
-		INC_STATS(txn->get_thd_id(), wait_cnt, 1);
+		INC_STATS_ENC(txn->get_thd_id(), wait_cnt, 1);
 		while (!txn->lock_ready && !txn->lock_abort) 
 		{
 #if CC_ALG == WAIT_DIE 
@@ -202,7 +203,7 @@ RC row_t::get_row(access_t type, txn_man * txn, row_t *& row) {
 			return_row(type, txn, NULL);
 		}
 		endtime = get_sys_clock();
-		INC_TMP_STATS(thd_id, time_wait, endtime - starttime);
+		INC_TMP_STATS_ENC(thd_id, time_wait, endtime - starttime);
 		row = this;
 	}
 	return rc;
@@ -215,7 +216,7 @@ RC row_t::get_row(access_t type, txn_man * txn, row_t *& row) {
   #if CC_ALG == TIMESTAMP
 	// TODO. should not call malloc for each row read. Only need to call malloc once 
 	// before simulation starts, like TicToc and Silo.
-	txn->cur_row = (row_t *) mem_allocator.alloc(sizeof(row_t), this->get_part_id());
+	txn->cur_row = (row_t *) mem_allocator_enc.alloc(sizeof(row_t), this->get_part_id());
 	txn->cur_row->init(get_table(), this->get_part_id());
   #endif
 
@@ -229,7 +230,7 @@ RC row_t::get_row(access_t type, txn_man * txn, row_t *& row) {
 		while (!txn->ts_ready)
 			PAUSE
 		uint64_t t2 = get_sys_clock();
-		INC_TMP_STATS(thd_id, time_wait, t2 - t1);
+		INC_TMP_STATS_ENC(thd_id, time_wait, t2 - t1);
 		row = txn->cur_row;
 	}
 	if (rc != Abort) {
@@ -239,7 +240,7 @@ RC row_t::get_row(access_t type, txn_man * txn, row_t *& row) {
 	return rc;
 #elif CC_ALG == OCC
 	// OCC always make a local copy regardless of read or write
-	txn->cur_row = (row_t *) mem_allocator.alloc(sizeof(row_t), get_part_id());
+	txn->cur_row = (row_t *) mem_allocator_enc.alloc(sizeof(row_t), get_part_id());
 	txn->cur_row->init(get_table(), get_part_id());
 	rc = this->manager->access(txn, R_REQ);
 	row = txn->cur_row;
@@ -279,7 +280,7 @@ void row_t::return_row(access_t type, txn_man * txn, row_t * row) {
   #if CC_ALG == TIMESTAMP
 	if (type == RD || type == SCAN) {
 		row->free_row();
-		mem_allocator.free(row, sizeof(row_t));
+		mem_allocator_enc.free(row, sizeof(row_t));
 	}
   #endif
 	if (type == XP) {
@@ -295,7 +296,7 @@ void row_t::return_row(access_t type, txn_man * txn, row_t * row) {
 	if (type == WR)
 		manager->write( row, txn->end_ts );
 	row->free_row();
-	mem_allocator.free(row, sizeof(row_t));
+	mem_allocator_enc.free(row, sizeof(row_t));
 	return;
 #elif CC_ALG == TICTOC || CC_ALG == SILO
 	assert (row != NULL);

@@ -1,10 +1,10 @@
 #include "txn.h"
-#include "row.h"
+#include "row_enc.h"
 #include "row_ts.h"
 #include "common/mem_alloc.h"
-#include "manager.h"
+#include "manager_enc.h"
 #include "stdint.h"
-#include "global_enc.h"
+#include "global_enc_struct.h"
 
 void Row_ts::init(row_t * row) {
 	_row = row;
@@ -153,7 +153,7 @@ RC Row_ts::access(txn_man * txn, TsType type, row_t * row) {
 	RC rc = RCOK;
 	ts_t ts = txn->get_ts();
 	if (g_central_man_enc)
-		glob_manager->lock_row(_row);
+		glob_manager_enc->lock_row(_row);
 	else
 		pthread_mutex_lock( latch );
 	if (type == R_REQ) {
@@ -234,7 +234,7 @@ RC Row_ts::access(txn_man * txn, TsType type, row_t * row) {
 	
 final:
 	if (g_central_man_enc)
-		glob_manager->release_row(_row);
+		glob_manager_enc->release_row(_row);
 	else
 		pthread_mutex_unlock( latch );
 	return rc;

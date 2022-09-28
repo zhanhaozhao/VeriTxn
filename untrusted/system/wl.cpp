@@ -1,14 +1,13 @@
 #include <vector>
 #include <fstream>
 
-#include "common/wl.h"
-
 #include "global.h"
 #include "global_struct.h"
 // #include "common/helper.h"
 
-#include "common/row.h"
-#include "common/table.h"
+#include "wl.h"
+#include "base_row.h"
+#include "table.h"
 #include "index_hash.h"
 #include "index_btree.h"
 // #include "catalog.h"
@@ -110,13 +109,13 @@ RC workload::init_schema(std::string schema_file) {
 
 
 
-void workload::index_insert(std::string index_name, uint64_t key, row_t * row) {
+void workload::index_insert(std::string index_name, uint64_t key, base_row_t * row) {
 	assert(false);
 	INDEX * index = (INDEX *) indexes[index_name];
 	index_insert(index, key, row);
 }
 
-void workload::index_insert(INDEX * index, uint64_t key, row_t * row, int64_t part_id) {
+void workload::index_insert(INDEX * index, uint64_t key, base_row_t * row, int64_t part_id) {
 	uint64_t pid = part_id;
 	if (part_id == -1)
 		pid = get_part_id(row);

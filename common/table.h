@@ -8,7 +8,7 @@
 // TODO sequential scan is not supported yet.
 // only index access is supported for table. 
 // class Catalog;
-class row_t;
+class base_row_t;
 
 class table_t
 {
@@ -17,8 +17,8 @@ public:
 	// row lookup should be done with index. But index does not have
 	// records for new rows. get_new_row returns the pointer to a 
 	// new row.	
-	RC get_new_row(row_t *& row); // this is equivalent to insert()
-	RC get_new_row(row_t *& row, uint64_t part_id, uint64_t &row_id);
+	RC get_new_row(base_row_t *& row); // this is equivalent to insert()
+	RC get_new_row(base_row_t *& row, uint64_t part_id, uint64_t &row_id);
 
 	void delete_row(); // TODO delete_row is not supportet yet
 

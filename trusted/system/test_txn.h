@@ -1,4 +1,5 @@
-#pragma once 
+#ifndef _TEST_TXN_H
+#define _TEST_TXN_H
 
 #include "txn.h"
 #include "test.h"
@@ -16,3 +17,4 @@ private:
 	TestWorkload * _wl;
 };
 
+#endif

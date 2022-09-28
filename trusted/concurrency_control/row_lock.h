@@ -1,5 +1,7 @@
-#ifndef ROW_LOCK_H
-#define ROW_LOCK_H
+#ifndef ROW_LOCK_H_
+#define ROW_LOCK_H_
+
+#include "txn.h"
 
 struct LockEntry {
     lock_t type;

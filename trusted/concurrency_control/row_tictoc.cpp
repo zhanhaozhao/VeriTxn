@@ -1,5 +1,5 @@
 #include "row_tictoc.h"
-#include "row.h"
+#include "row_enc.h"
 #include "txn.h"
 #include "common/mem_alloc.h"
 #include <mm_malloc.h>

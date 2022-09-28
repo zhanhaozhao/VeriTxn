@@ -1,4 +1,6 @@
-#pragma once 
+#ifndef _YCSB_TXN_H
+#define _YCSB_TXN_H
+
 
 #include "txn.h"
 #include "ycsb.h"
@@ -13,3 +15,4 @@ private:
 	ycsb_wl * _wl;
 };
 
+#endif

@@ -1,10 +1,10 @@
 // #include "global.h"
-#include "global_enc.h"
-#include "common/helper.h"
+#include "global_enc_struct.h"
+// #include "common/helper.h"
 #include "txn.h"
 #include "occ.h"
-#include "manager.h"
-#include "common/mem_alloc.h"
+// #include "manager_enc.h"
+// #include "common/mem_alloc.h"
 #include "row_occ.h"
 
 
@@ -70,7 +70,7 @@ OptCC::per_row_validate(txn_man * txn) {
 	if (ok) {
 		// Validation passed.
 		// advance the global timestamp and get the end_ts
-		txn->end_ts = glob_manager->get_ts( txn->get_thd_id() );
+		txn->end_ts = glob_manager_enc->get_ts( txn->get_thd_id() );
 		// write to each row and update wts
 		txn->cleanup(RCOK);
 		rc = RCOK;

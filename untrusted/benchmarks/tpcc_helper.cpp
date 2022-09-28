@@ -1,4 +1,5 @@
 #include "tpcc_helper.h"
+#include "global.h"
 
 drand48_data ** tpcc_buffer;
 

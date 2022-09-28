@@ -1,4 +1,6 @@
-#pragma once 
+#ifndef _ROW_SILO_H_
+#define _ROW_SILO_H_
+
 
 // class table_t;
 // class Catalog;
@@ -31,5 +33,7 @@ private:
 #endif
 	row_t * 			_row;
 };
+
+#endif
 
 #endif

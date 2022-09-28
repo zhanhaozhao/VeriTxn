@@ -4,7 +4,7 @@
 #include "global_struct.h"
 
 #include "table.h"
-#include "row.h"
+#include "base_row.h"
 // #include "common/mem_alloc.h"
 #include "index_hash.h"
 #include "index_btree.h"
@@ -33,7 +33,7 @@ RC TestWorkload::init_schema(const char * schema_file) {
 RC TestWorkload::init_table() {
 	RC rc = RCOK;
 	for (int rid = 0; rid < 10; rid ++) {
-		row_t * new_row = NULL;
+		base_row_t * new_row = NULL;
 		uint64_t row_id;
 		int part_id = 0;
         rc = the_table->get_new_row(new_row, part_id, row_id); 

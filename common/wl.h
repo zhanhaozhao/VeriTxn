@@ -4,7 +4,7 @@
 #include "global_common.h"
 #include "table.h"
 
-// class row_t;
+// class base_row_t;
 // class table_t;
 // class IndexHash;
 // class index_btree;
@@ -33,8 +33,8 @@ public:
 	
 	bool sim_done;
 protected:
-	void index_insert(std::string index_name, uint64_t key, row_t * row);
-	void index_insert(INDEX * index, uint64_t key, row_t * row, int64_t part_id = -1);
+	void index_insert(std::string index_name, uint64_t key, base_row_t * row);
+	void index_insert(INDEX * index, uint64_t key, base_row_t * row, int64_t part_id = -1);
 };
 
 #endif

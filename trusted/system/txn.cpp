@@ -1,12 +1,16 @@
+// #include "global_enc.h"
+#include "global_enc_struct.h"
+
 #include "txn.h"
-#include "row.h"
+#include "row_enc.h"
 // #include "wl.h"
 // #include "ycsb.h"
-#include "common/thread.h"
-#include "common/mem_alloc.h"
+// #include "common/thread.h"
+// #include "common/mem_alloc.h"
 #include "occ.h"
 #include "table.h"
 #include "catalog.h"
+#include "mem_helper_enc.h"
 #include "index_btree.h"
 #include "index_hash.h"
 
@@ -105,12 +109,12 @@ void txn_man::cleanup(RC rc) {
 	if (rc == Abort) {
 		for (UInt32 i = 0; i < insert_cnt; i ++) {
 			row_t * row = insert_rows[i];
-			assert(g_part_alloc == false);
+			assert(g_part_alloc_enc == false);
 #if CC_ALG != HSTORE && CC_ALG != OCC
-			mem_allocator.free(row->manager, 0);
+			mem_allocator_enc.free(row->manager, 0);
 #endif
 			row->free_row();
-			mem_allocator.free(row, sizeof(row));
+			mem_allocator_enc.free(row, sizeof(row));
 		}
 	}
 	row_cnt = 0;
@@ -237,6 +241,6 @@ RC txn_man::finish(RC rc) {
 void
 txn_man::release() {
 	for (int i = 0; i < num_accesses_alloc; i++)
-		mem_allocator.free(accesses[i], 0);
-	mem_allocator.free(accesses, 0);
+		mem_allocator_enc.free(accesses[i], 0);
+	mem_allocator_enc.free(accesses, 0);
 }
