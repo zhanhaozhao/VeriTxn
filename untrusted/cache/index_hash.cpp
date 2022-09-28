@@ -85,6 +85,13 @@ RC IndexHash::index_read(idx_key_t key, itemid_t * &item,
 	return rc;
 }
 
+std::string	IndexHash::load_bucket(int part_id, int bkt_idx) {
+	
+	BucketHeader * cur_bkt = &_buckets[part_id][bkt_idx];
+
+	return cur_bkt->encode();
+}
+
 /************** BucketHeader Operations ******************/
 
 void BucketHeader::init() {

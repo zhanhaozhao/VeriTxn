@@ -6,6 +6,9 @@
 #include "api.h"
 // #include "manager.h"
 #include "occ.h"
+#include "index_enc.h"
+
+// pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void global_init_ecall(Stats * stats) {
 
@@ -25,6 +28,17 @@ void global_init_ecall(Stats * stats) {
 	occ_man.init();
 #endif
 
+	// TODO: init indexenc here
+	tab_map = table_map{};
+	global_disk = disk{};
+
+}
+
+void index_init_ecall(int part_cnt, table_t * table, std::string iname, uint64_t bucket_cnt) {
+	IndexEnc * index = (IndexEnc *) _mm_malloc(sizeof(IndexEnc), 64);
+	new(index) IndexEnc();
+	index->init(part_cnt, table, bucket_cnt);
+	tab_map._indexes[iname] = index;
 }
 
 void init_txn_in_enc(txn_man *& m_txn, thread_t * h_thd) {
@@ -51,7 +65,7 @@ void init_txn_in_enc(txn_man *& m_txn, thread_t * h_thd) {
 }
 
 RC run_txn_ecall(thread_t * h_thd, ts_t txn_ts) {
-
+	// pthread_mutex_lock(&mutex);
 	RC rc = RCOK;
 	txn_man * m_txn;
 	uint64_t thd_id = h_thd->get_thd_id();
@@ -113,6 +127,7 @@ RC run_txn_ecall(thread_t * h_thd, ts_t txn_ts) {
 			part_lock_man.unlock(m_txn, m_query->part_to_access, m_query->part_num);
 #endif
 	}
+	// pthread_mutex_unlock(&mutex);
 	return rc;
 
 }

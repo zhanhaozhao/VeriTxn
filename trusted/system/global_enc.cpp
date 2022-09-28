@@ -69,6 +69,3 @@ bool g_wh_update_enc = WH_UPDATE;
 // UInt32 g_max_items = 100000;
 // UInt32 g_cust_per_dist = 3000;
 // #endif
-
-table_map tab_map = table_map{};
-disk global_disk = disk{};

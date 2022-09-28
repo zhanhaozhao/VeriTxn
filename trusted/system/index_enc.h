@@ -49,8 +49,8 @@ public:
     bool 		index_exist(idx_key_t key); // check if the key exist.
     RC 			index_insert(idx_key_t key, itemid_t * item, int part_id=-1);
     // the following call returns a single item
-    RC	 		index_read(idx_key_t key, itemid_t * &item, int part_id=-1);
-    RC	 		index_read(idx_key_t key, itemid_t * &item,
+    RC	 		index_read(void * ocall_index, idx_key_t key, itemid_t * &item, int part_id=-1);
+    RC	 		index_read(void * ocall_index, idx_key_t key, itemid_t * &item,
                              int part_id=-1, int thd_id=0);
 private:
     void get_latch(BucketHeader_ENC * bucket);
@@ -66,7 +66,7 @@ private:
     BucketHeader_ENC**      _buckets;
 #endif
 
-    BucketHeader_ENC *load_bucket(int part_id, uint64_t bkt_idx);
+    BucketHeader_ENC *load_bucket(void * index, int part_id, uint64_t bkt_idx);
     void flush_bucket(int part_id, uint64_t bkt_idx, BucketHeader_ENC *cur, bool modified);
     static DFlow load_disk(int part_id, uint64_t bkt_idx);
     static void flush_disk(int part_id, uint64_t bkt_idx, const DFlow & e);

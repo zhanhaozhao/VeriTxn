@@ -62,7 +62,10 @@ public:
 	void clear(uint64_t tid);
 	void add_debug(uint64_t thd_id, uint64_t value, uint32_t select);
 	void commit(uint64_t thd_id);
-	void abort(uint64_t thd_id);
+	inline void abort(uint64_t thd_id) {
+		if (STATS_ENABLE) 
+			tmp_stats[thd_id]->init();
+	}
 	void print();
 	void print_lat_distr();
 };

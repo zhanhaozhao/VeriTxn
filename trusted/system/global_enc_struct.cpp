@@ -18,7 +18,8 @@ ManagerEnc * glob_manager_enc;
 
 Plock part_lock_man;
 OptCC occ_man;
-
+table_map tab_map;
+disk global_disk;
 
 // bool volatile warmup_finish = false;
 // bool volatile enable_thread_mem_pool = false;

@@ -35,6 +35,7 @@
         "streambuf": "cpp",
         "string": "cpp",
         "tuple": "cpp",
-        "utility": "cpp"
+        "utility": "cpp",
+        "cstring": "cpp"
     }
 }

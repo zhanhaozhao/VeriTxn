@@ -99,10 +99,10 @@ void Stats::commit(uint64_t thd_id) {
 	}
 }
 
-void Stats::abort(uint64_t thd_id) {	
-	if (STATS_ENABLE) 
-		tmp_stats[thd_id]->init();
-}
+// void Stats::abort(uint64_t thd_id) {	
+// 	if (STATS_ENABLE) 
+// 		tmp_stats[thd_id]->init();
+// }
 
 void Stats::print() {
 	

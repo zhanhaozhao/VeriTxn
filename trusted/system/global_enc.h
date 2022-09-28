@@ -104,9 +104,6 @@ extern bool g_no_dl_enc;
 extern bool g_ts_batch_alloc_enc;
 extern UInt32 g_ts_batch_num_enc;
 
-extern table_map tab_map;
-extern disk global_disk;
-
 // extern map<string, string> g_params;
 
 // // YCSB

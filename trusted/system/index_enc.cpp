@@ -8,7 +8,7 @@
 #include "vector"
 #include "row_enc.h"
 #include "coder.h"
-#include "enc_api.h"
+#include "api.h"
 
 uint64_t compute_hash(string const& s) {
     const int p = 31;
@@ -94,10 +94,10 @@ RC IndexEnc::index_insert(idx_key_t key, itemid_t * item, int part_id) {
     return rc;
 }
 
-RC IndexEnc::index_read(idx_key_t key, itemid_t * &item, int part_id) {
+RC IndexEnc::index_read(void* ocall_index, idx_key_t key, itemid_t * &item, int part_id) {
     uint64_t bkt_idx = hash(key);
     assert(bkt_idx < _bucket_cnt_per_part);
-    BucketHeader_ENC * cur_bkt = load_bucket(part_id, bkt_idx);
+    BucketHeader_ENC * cur_bkt = load_bucket(ocall_index, part_id, bkt_idx);
     RC rc = RCOK;
     cur_bkt->read_item(key, item);
     flush_bucket(part_id, bkt_idx, cur_bkt, false);
@@ -105,7 +105,7 @@ RC IndexEnc::index_read(idx_key_t key, itemid_t * &item, int part_id) {
 }
 
 // todo: cache
-BucketHeader_ENC* IndexEnc::load_bucket(int part_id, uint64_t bkt_idx) {
+BucketHeader_ENC* IndexEnc::load_bucket(void * index, int part_id, uint64_t bkt_idx) {
 #ifndef SGX_DISK
 //    auto hs = _buckets[part_id][bkt_idx].get_hash();
 //    if (_verify_hash[part_id][bkt_idx] == _default_verify_hash) {
@@ -115,10 +115,11 @@ BucketHeader_ENC* IndexEnc::load_bucket(int part_id, uint64_t bkt_idx) {
     return &_buckets[part_id][bkt_idx];
 #else
     auto * res_bucket = new BucketHeader_ENC;
-    res_bucket->decode(load_disk(part_id, bkt_idx));
-    if (res_bucket->get_hash() != _verify_hash[part_id][bkt_idx]) {
-        return nullptr;
-    }
+    // res_bucket->decode(load_disk(part_id, bkt_idx));
+    res_bucket->decode(get_bucket_ocall(index, part_id, bkt_idx));
+    // if (res_bucket->get_hash() != _verify_hash[part_id][bkt_idx]) {
+        // return nullptr;
+    // }
     return res_bucket;
 #endif
 }
@@ -140,11 +141,11 @@ void IndexEnc::flush_bucket(int part_id, uint64_t bkt_idx, BucketHeader_ENC* cur
 #endif
 }
 
-RC IndexEnc::index_read(idx_key_t key, itemid_t * &item,
+RC IndexEnc::index_read(void * ocall_index, idx_key_t key, itemid_t * &item,
                          int part_id, int thd_id) {
     uint64_t bkt_idx = hash(key);
     assert(bkt_idx < _bucket_cnt_per_part);
-    BucketHeader_ENC * cur_bkt = load_bucket(part_id, bkt_idx);
+    BucketHeader_ENC * cur_bkt = load_bucket(ocall_index, part_id, bkt_idx);
 //	cerr << cur_bkt -> encode() << endl;
     RC rc = RCOK;
     // 1. get the sh latch

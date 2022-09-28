@@ -8,6 +8,7 @@
 void table_t::init(Catalog * schema) {
 	this->table_name = schema->table_name;
 	this->schema = schema;
+	assert(this->schema->field_cnt);
 }
 
 RC table_t::get_new_row(base_row_t *& row) {

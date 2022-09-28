@@ -31,10 +31,10 @@ int main(int argc, char* argv[])
 	mem_allocator.init(g_part_cnt, MEM_SIZE / g_part_cnt); 
 	stats.init();
 
-	 global_init_ecall(&stats); // call enclave
+	glob_manager = (Manager *) _mm_malloc(sizeof(Manager), 64);
+	glob_manager->init();
 
-	 glob_manager = (Manager *) _mm_malloc(sizeof(Manager), 64);
-	 glob_manager->init();
+	global_init_ecall(&stats); // call enclave
 	// if (g_cc_alg == DL_DETECT) 
 	// 	dl_detector.init();
 	printf("mem_allocator initialized!\n");
@@ -54,7 +54,7 @@ int main(int argc, char* argv[])
 	}
 	m_wl->init();
 	printf("workload initialized!\n");
-	
+
 	uint64_t thd_cnt = g_thread_cnt;
 	pthread_t p_thds[thd_cnt - 1];
 	m_thds = new thread_t * [thd_cnt];
