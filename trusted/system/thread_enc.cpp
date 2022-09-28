@@ -33,6 +33,7 @@ void index_init_ecall(int part_cnt, table_t * table, std::string iname, uint64_t
 	IndexEnc * index = (IndexEnc *) _mm_malloc(sizeof(IndexEnc), 64);
 	new(index) IndexEnc();
 	index->init(part_cnt, table, bucket_cnt);
+	tab_map->_tables[table->get_table_name()] = table;
 	tab_map->_indexes[iname] = index;
 }
 
