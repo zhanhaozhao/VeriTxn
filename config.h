@@ -141,7 +141,7 @@ enum TPCCTxnType {TPCC_ALL,
 				TPCC_ORDER_STATUS, 
 				TPCC_DELIVERY, 
 				TPCC_STOCK_LEVEL};
-extern TPCCTxnType 					g_tpcc_txn_type;
+extern enum TPCCTxnType 					g_tpcc_txn_type;
 
 //#define TXN_TYPE					TPCC_ALL
 #define PERC_PAYMENT 				0.5
@@ -169,7 +169,7 @@ enum TestCases {
 	READ_WRITE,
 	CONFLICT
 };
-extern TestCases					g_test_case;
+extern enum TestCases					g_test_case;
 /***********************************************/
 // DEBUG info
 /***********************************************/
