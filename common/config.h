@@ -215,4 +215,7 @@ extern enum TestCases					g_test_case;
 #define TS_HW						3
 #define TS_CLOCK					4
 
+// turn on SGX
+#define USE_SGX 1
+
 #endif

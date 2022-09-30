@@ -128,13 +128,17 @@ trusted/Enclave.o: trusted/Enclave.cpp
 	$(CXX) $(Enclave_Cpp_Flags) -c $< -o $@
 	@echo "CXX  <=  $<"
 
+trusted/Enclave_ocall.o: trusted/Enclave_ocall.cpp
+	$(CXX) $(Enclave_Cpp_Flags) -c $< -o $@
+	@echo "CXX  <=  $<"
+
 ### Enclave Image ###
 SRC_DIRS = ./ ./common/ ./trusted/system/ ./trusted/concurrency_control/
 CPPS = $(foreach dir, $(SRC_DIRS), $(wildcard $(dir)*.cpp))
 OBJS = $(CPPS:.cpp=_t.o)
 
 
-Enclave_Cpp_Objects := $(OBJS) trusted/Enclave.o
+Enclave_Cpp_Objects := $(OBJS) trusted/Enclave.o trusted/Enclave_ocall.o
 Enclave.so: trusted/Enclave_t.o $(Enclave_Cpp_Objects)
 	$(CXX) $^ -o $@ $(Enclave_Link_Flags)
 	@echo "LINK =>  $@"

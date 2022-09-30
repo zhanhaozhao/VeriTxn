@@ -1,6 +1,6 @@
 enclave {
   include "stdint.h"
-  include "sgx_tstdc.edl"
+  from "sgx_tstdc.edl" import *; // needed for pthread_mutex
 
   trusted {
     public void ec_global_init([user_check] void * stats);
@@ -14,5 +14,6 @@ enclave {
     void* oc_gen_txn([user_check] void* h_thd);
     uint64_t oc_get_current_time();
     char* oc_get_bucket_ocall([user_check] void* index, int part_id, int bkt_idx);
+    void oc_debug_print([in, string] const char* str);
   };
 };

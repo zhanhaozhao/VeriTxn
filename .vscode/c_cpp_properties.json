@@ -4,8 +4,8 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
-                "${workspaceFolder}/untrusted/**",
-                "${workspaceFolder}/common"
+                "/usr/local/sgxsdk/include/libcxx/**",
+                "/usr/local/sgxsdk/include/**"
             ],
             "defines": [],
             "compilerPath": "/users/yc/local/ccache/bin/gcc",
