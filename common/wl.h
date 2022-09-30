@@ -3,6 +3,7 @@
 
 #include "global_common.h"
 #include "table.h"
+#include "index_base.h"
 
 // class base_row_t;
 // class table_t;

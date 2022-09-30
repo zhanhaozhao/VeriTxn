@@ -118,7 +118,7 @@ trusted/Enclave_t.o: ./trusted/Enclave_t.c
 ### Edger8r related sourcs ###
 
 ## build files needed from other directory
-trusted/%_t.o: trusted/%.cc
+%_t.o: %.cpp
 	$(CXX) $(Enclave_Cpp_Flags) -c $< -o $@
 	@echo "CXX   <=  $<"
 

@@ -1,12 +1,11 @@
 enclave {
   include "stdint.h"
-  include "common/stats.h"
 
   trusted {
-    public void ec_global_init([user_check] Stats * stats);
+    public void ec_global_init([user_check] void * stats);
     public void ec_index_init(int part_cnt, [user_check] void* table,
       [in, size=len] const char* iname, size_t len, uint64_t bucket_cnt);
-    public RC ec_run_txn([user_check] void* h_thd, uint64_t start_time);
+    public int ec_run_txn([user_check] void* h_thd, uint64_t start_time);
   };
 
   untrusted {

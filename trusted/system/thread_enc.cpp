@@ -10,10 +10,10 @@
 
 // pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
-void global_init_ecall(Stats * stats) {
+void global_init_ecall(void * stats) {
 	mem_allocator_enc.init(g_part_cnt_enc, MEM_SIZE / g_part_cnt_enc);
 
-	stats_enc = stats;
+	stats_enc = (Stats *) stats;
 
     glob_manager_enc = (ManagerEnc *) _mm_malloc(sizeof(ManagerEnc), 64);
 	glob_manager_enc->init();
@@ -29,11 +29,14 @@ void global_init_ecall(Stats * stats) {
 
 }
 
-void index_init_ecall(int part_cnt, table_t * table, std::string iname, uint64_t bucket_cnt) {
+void index_init_ecall(int part_cnt, void * table, std::string iname, uint64_t bucket_cnt) {
 	IndexEnc * index = (IndexEnc *) _mm_malloc(sizeof(IndexEnc), 64);
 	new(index) IndexEnc();
-	index->init(part_cnt, table, bucket_cnt);
-	tab_map->_tables[table->get_table_name()] = table;
+	
+	table_t * tbl = (table_t *) table;
+
+	index->init(part_cnt, tbl, bucket_cnt);
+	tab_map->_tables[tbl->get_table_name()] = table;
 	tab_map->_indexes[iname] = index;
 }
 
@@ -60,8 +63,11 @@ void init_txn_in_enc(txn_man *& m_txn, thread_t * h_thd) {
 	glob_manager_enc->set_txn_man(m_txn);
 }
 
-RC run_txn_ecall(thread_t * h_thd, ts_t txn_ts) {
+int run_txn_ecall(void * thd, ts_t txn_ts) {
 	// pthread_mutex_lock(&mutex);
+
+	thread_t * h_thd = (thread_t *) thd;
+
 	RC rc = RCOK;
 	txn_man * m_txn;
 	uint64_t thd_id = h_thd->get_thd_id();
@@ -111,7 +117,7 @@ RC run_txn_ecall(thread_t * h_thd, ts_t txn_ts) {
 	{
 #if CC_ALG != VLL
 		if (WORKLOAD == TEST)
-			rc = runTest(m_txn);
+			rc = (RC) runTest(m_txn);
 		else 
 			rc = m_txn->run_txn(m_query);
 #endif
@@ -130,8 +136,9 @@ RC run_txn_ecall(thread_t * h_thd, ts_t txn_ts) {
 
 
 
-RC runTest(txn_man * txn)
+int runTest(void * txn)
 {
+	txn_man * txn_t = (txn_man *) txn;
 	RC rc = RCOK;
 	if (g_test_case == READ_WRITE) {
 // 		rc = ((TestTxnMan *)txn)->run_txn(g_test_case, 0);
@@ -143,7 +150,7 @@ RC runTest(txn_man * txn)
 		return FINISH;
 	}
 	else if (g_test_case == CONFLICT) {
-		rc = ((TestTxnMan *)txn)->run_txn(g_test_case, 0);
+		rc = ((TestTxnMan *)txn_t)->run_txn(g_test_case, 0);
 		if (rc == RCOK)
 			return FINISH;
 		else 

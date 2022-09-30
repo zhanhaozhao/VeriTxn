@@ -41,9 +41,6 @@
 // class OptCC;
 // class VLLMan;
 
-class index_btree;
-class IndexHash;
-
 typedef uint32_t UInt32;
 typedef int32_t SInt32;
 typedef uint64_t UInt64;
@@ -86,14 +83,6 @@ enum TsType {R_REQ, W_REQ, P_REQ, XP_REQ};
 #define MSG(str, args...) { \
 	printf("[%s : %d] " str, __FILE__, __LINE__, args); } \
 //	printf(args); }
-
-// principal index structure. The workload may decide to use a different 
-// index structure for specific purposes. (e.g. non-primary key access should use hash)
-#if (INDEX_STRUCT == IDX_BTREE)
-#define INDEX		index_btree
-#else  // IDX_HASH
-#define INDEX		IndexHash
-#endif
 
 /************************************************/
 // constants

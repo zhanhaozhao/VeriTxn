@@ -98,7 +98,7 @@ RC workload::init_schema(std::string schema_file) {
 	#if WORKLOAD == YCSB
 			index->init(part_cnt, tables[tname], g_synth_table_size * 2);
 			index->index_name = iname;
-			index_init_ecall(part_cnt, tables[tname], iname, g_synth_table_size * 2);
+			index_init_ecall(part_cnt, (void *) tables[tname], iname, g_synth_table_size * 2);
 	#elif WORKLOAD == TPCC
 			assert(tables[tname] != NULL);
 			index->init(part_cnt, tables[tname], stoi( items[1] ) * part_cnt);

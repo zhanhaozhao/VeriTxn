@@ -6,6 +6,16 @@
 // #include "common/table.h"
 
 // class table_t;
+class index_btree;
+class IndexHash;
+
+// principal index structure. The workload may decide to use a different 
+// index structure for specific purposes. (e.g. non-primary key access should use hash)
+#if (INDEX_STRUCT == IDX_BTREE)
+#define INDEX		index_btree
+#else  // IDX_HASH
+#define INDEX		IndexHash
+#endif
 
 class index_base {
 public:
