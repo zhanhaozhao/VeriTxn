@@ -105,7 +105,8 @@ RC OptCC::central_validate(txn_man * txn) {
 	finish_tn = tnc;
 	ent = active;
 	f_active_len = active_len;
-	finish_active = (set_ent**) mem_allocator_enc.alloc(sizeof(set_ent *) * f_active_len, 0);
+	// finish_active = (set_ent**) mem_allocator_enc.alloc(sizeof(set_ent *) * f_active_len, 0);
+	finish_active = (set_ent**) malloc(sizeof(set_ent *) * f_active_len);
 	while (ent != NULL) {
 		finish_active[n++] = ent;
 		ent = ent->next;
@@ -138,7 +139,7 @@ RC OptCC::central_validate(txn_man * txn) {
 final:
 	if (valid) 
 		txn->cleanup(RCOK);
-	mem_allocator_enc.free(rset, sizeof(set_ent));
+	free(rset);
 
 	if (!readonly) {
 		// only update active & tnc for non-readonly transactions
@@ -175,12 +176,16 @@ final:
 }
 
 RC OptCC::get_rw_set(txn_man * txn, set_ent * &rset, set_ent *& wset) {
-	wset = (set_ent*) mem_allocator_enc.alloc(sizeof(set_ent), 0);
-	rset = (set_ent*) mem_allocator_enc.alloc(sizeof(set_ent), 0);
+	// wset = (set_ent*) mem_allocator_enc.alloc(sizeof(set_ent), 0);
+	// rset = (set_ent*) mem_allocator_enc.alloc(sizeof(set_ent), 0);
+	wset = (set_ent *) malloc(sizeof(set_ent));
+	rset = (set_ent *) malloc(sizeof(set_ent));
 	wset->set_size = txn->wr_cnt;
 	rset->set_size = txn->row_cnt - txn->wr_cnt;
-	wset->rows = (row_t **) mem_allocator_enc.alloc(sizeof(row_t *) * wset->set_size, 0);
-	rset->rows = (row_t **) mem_allocator_enc.alloc(sizeof(row_t *) * rset->set_size, 0);
+	// wset->rows = (row_t **) mem_allocator_enc.alloc(sizeof(row_t *) * wset->set_size, 0);
+	// rset->rows = (row_t **) mem_allocator_enc.alloc(sizeof(row_t *) * rset->set_size, 0);
+	wset->rows = (row_t **) malloc(sizeof(row_t *) * wset->set_size);
+	rset->rows = (row_t **) malloc(sizeof(row_t *) * rset->set_size);
 	wset->txn = txn;
 	rset->txn = txn;
 

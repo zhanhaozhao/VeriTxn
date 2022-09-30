@@ -14,11 +14,13 @@
 // #include <list>
 #include <map>
 // #include <set>
-// #include <string>
+#include <string>
 // #include <vector>
 // #include <sstream>
 
+// #include "tlibc/pthread.h"
 #include "pthread.h"
+
 #include "config.h"
 
 // #include "stats.h"

@@ -2,17 +2,44 @@
 #define TPCC_HELPER_H_
 
 // #include "global.h"
-#include "common/helper.h"
+// #include <cassert>
 #include <vector>
 #include <random>
 
-uint64_t distKey(uint64_t d_id, uint64_t d_w_id);
-uint64_t custKey(uint64_t c_id, uint64_t c_d_id, uint64_t c_w_id);
+#include "common/helper.h"
+
+UInt32 max_items = 100000;
+UInt32 cust_per_dist = 3000;
+
+// uint64_t distKey(uint64_t d_id, uint64_t d_w_id);
+
+uint64_t distKey(uint64_t d_id, uint64_t d_w_id)  {
+	return d_w_id * DIST_PER_WARE + d_id; 
+}
+
+// uint64_t custKey(uint64_t c_id, uint64_t c_d_id, uint64_t c_w_id);
+uint64_t custKey(uint64_t c_id, uint64_t c_d_id, uint64_t c_w_id) {
+	return (distKey(c_d_id, c_w_id) * cust_per_dist + c_id);
+}
+
 uint64_t orderlineKey(uint64_t w_id, uint64_t d_id, uint64_t o_id);
 uint64_t orderPrimaryKey(uint64_t w_id, uint64_t d_id, uint64_t o_id);
+
 // non-primary key
-uint64_t custNPKey(char * c_last, uint64_t c_d_id, uint64_t c_w_id);
-uint64_t stockKey(uint64_t s_i_id, uint64_t s_w_id);
+// uint64_t custNPKey(char * c_last, uint64_t c_d_id, uint64_t c_w_id);
+uint64_t custNPKey(char * c_last, uint64_t c_d_id, uint64_t c_w_id) {
+	uint64_t key = 0;
+	char offset = 'A';
+	for (uint32_t i = 0; i < strlen(c_last); i++) 
+		key = (key << 2) + (c_last[i] - offset);
+	key = key << 3;
+	key += c_w_id * DIST_PER_WARE + c_d_id;
+	return key;
+}
+
+uint64_t stockKey(uint64_t s_i_id, uint64_t s_w_id) {
+	return s_w_id * max_items + s_i_id;
+}
 
 uint64_t Lastname(uint64_t num, char* name);
 
@@ -32,6 +59,9 @@ uint64_t NURand(uint64_t A, uint64_t x, uint64_t y, uint64_t thd_id);
 uint64_t MakeAlphaString(int min, int max, char * str, uint64_t thd_id);
 uint64_t MakeNumberString(int min, int max, char* str, uint64_t thd_id);
 
-uint64_t wh_to_part(uint64_t wid); 
+uint64_t wh_to_part(uint64_t wid) {
+    assert(PART_CNT <= NUM_WH);
+	return wid % PART_CNT;
+}
 
 #endif

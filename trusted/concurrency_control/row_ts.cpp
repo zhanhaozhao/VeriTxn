@@ -1,7 +1,7 @@
 #include "txn.h"
 #include "row_enc.h"
 #include "row_ts.h"
-#include "common/mem_alloc.h"
+// #include "common/mem_alloc.h"
 #include "manager_enc.h"
 #include "stdint.h"
 #include "global_enc_struct.h"
@@ -19,22 +19,22 @@ void Row_ts::init(row_t * row) {
     prereq = NULL;
 	preq_len = 0;
 	latch = (pthread_mutex_t *) 
-		mem_allocator_enc.alloc(sizeof(pthread_mutex_t), part_id);
+		malloc(sizeof(pthread_mutex_t));
 	pthread_mutex_init( latch, NULL );
 	blatch = false;
 }
 
 TsReqEntry * Row_ts::get_req_entry() {
 	uint64_t part_id = get_part_id(_row);
-	return (TsReqEntry *) mem_allocator_enc.alloc(sizeof(TsReqEntry), part_id);
+	return (TsReqEntry *) malloc(sizeof(TsReqEntry));
 }
 
 void Row_ts::return_req_entry(TsReqEntry * entry) {
 	if (entry->row != NULL) {
 		entry->row->free_row();
-		mem_allocator_enc.free(entry->row, sizeof(row_t));
+		free(entry->row);
 	}
-	mem_allocator_enc.free(entry, sizeof(TsReqEntry));
+	free(entry);
 }
 
 void Row_ts::return_req_list(TsReqEntry * list) {	
@@ -198,7 +198,7 @@ RC Row_ts::access(txn_man * txn, TsType type, row_t * row) {
 			update_buffer();
 			return_req_entry(req);
 			row->free_row();
-			mem_allocator.free(row, sizeof(row_t));
+			free(row);
 			goto final;
 		}
 #else
@@ -222,7 +222,7 @@ RC Row_ts::access(txn_man * txn, TsType type, row_t * row) {
 			return_req_entry(req);
 			// the "row" is freed after hard copy to "_row"
 			row->free_row();
-			mem_allocator_enc.free(row, sizeof(row_t));
+			free(row);
 		}
 	} else if (type == XP_REQ) {
 		TsReqEntry * req = debuffer_req(P_REQ, txn);

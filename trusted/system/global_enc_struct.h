@@ -1,33 +1,9 @@
 #ifndef GLOBAL_ENC_STRUCT_H_
 #define GLOBAL_ENC_STRUCT_H_
 
-// #include "stdint.h"
-// #include <unistd.h>
-// #include <cstddef>
-// #include <cstdlib>
-// #include <cassert>
-// #include <stdio.h>
-// #include <iostream>
-// #include <fstream>
-// #include <string.h>
-// #include <typeinfo>
-// #include <list>
-// #include <mm_malloc.h>
-// #include <map>
-// #include <set>
-// #include <string>
-// #include <vector>
-// #include <sstream>
-// #include <time.h> 
-// #include <sys/time.h>
-// #include <math.h>
-
-// #include "pthread.h"
-// #include "config.h"
-// #include "common/global_common.h"
-// #include "common/helper.h"
 #include "global_enc.h"
-#include "common/mem_alloc.h"
+// #include "common/mem_alloc.h"
+// #include "mem_alloc_enc.h"
 #include "common/stats.h"
 
 #include "dl_detect.h"
@@ -35,32 +11,11 @@
 #include "plock.h"
 #include "occ.h"
 #include "table_map.h"
-// #ifndef NOGRAPHITE
-// #include "carbon_user.h"
-// #endif
-
-// using namespace std;
-
-// class mem_alloc;
-// class Stats;
-// class DL_detect;
-// class Manager;
-// class Query_queue;
-// class Plock;
-// class OptCC;
-// class VLLMan;
-
-// typedef uint32_t UInt32;
-// typedef int32_t SInt32;
-// typedef uint64_t UInt64;
-// typedef int64_t SInt64;
-
-// typedef uint64_t ts_t; // time stamp type
 
 // /******************************************/
 // // Global Data Structure 
 // /******************************************/
-extern mem_alloc mem_allocator_enc;
+// extern mem_alloc_enc mem_allocator_enc;
 extern Stats * stats_enc;
 extern DL_detect dl_detector;
 
@@ -148,11 +103,6 @@ extern table_map* tab_map;
 // enum lock_t {LOCK_EX, LOCK_SH, LOCK_NONE };
 // /* TIMESTAMP */
 // enum TsType {R_REQ, W_REQ, P_REQ, XP_REQ}; 
-
-
-// #define MSG(str, args...) { \
-// 	printf("[%s : %d] " str, __FILE__, __LINE__, args); } \
-// //	printf(args); }
 
 // // principal index structure. The workload may decide to use a different 
 // // index structure for specific purposes. (e.g. non-primary key access should use hash)

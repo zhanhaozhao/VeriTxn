@@ -8,13 +8,13 @@ std::vector<std::default_random_engine> tpccdre;
 // extern std::vector<std::uniform_real_distribution<double> > tpccurd;
 std::vector<std::uniform_int_distribution<uint64_t> > tpccuid;
 
-uint64_t distKey(uint64_t d_id, uint64_t d_w_id)  {
-	return d_w_id * DIST_PER_WARE + d_id; 
-}
+// uint64_t distKey(uint64_t d_id, uint64_t d_w_id)  {
+// 	return d_w_id * DIST_PER_WARE + d_id; 
+// }
 
-uint64_t custKey(uint64_t c_id, uint64_t c_d_id, uint64_t c_w_id) {
-	return (distKey(c_d_id, c_w_id) * g_cust_per_dist + c_id);
-}
+// uint64_t custKey(uint64_t c_id, uint64_t c_d_id, uint64_t c_w_id) {
+// 	return (distKey(c_d_id, c_w_id) * g_cust_per_dist + c_id);
+// }
 
 uint64_t orderlineKey(uint64_t w_id, uint64_t d_id, uint64_t o_id) {
 	return distKey(d_id, w_id) * g_cust_per_dist + o_id; 
@@ -24,19 +24,19 @@ uint64_t orderPrimaryKey(uint64_t w_id, uint64_t d_id, uint64_t o_id) {
 	return orderlineKey(w_id, d_id, o_id); 
 }
 
-uint64_t custNPKey(char * c_last, uint64_t c_d_id, uint64_t c_w_id) {
-	uint64_t key = 0;
-	char offset = 'A';
-	for (uint32_t i = 0; i < strlen(c_last); i++) 
-		key = (key << 2) + (c_last[i] - offset);
-	key = key << 3;
-	key += c_w_id * DIST_PER_WARE + c_d_id;
-	return key;
-}
+// uint64_t custNPKey(char * c_last, uint64_t c_d_id, uint64_t c_w_id) {
+// 	uint64_t key = 0;
+// 	char offset = 'A';
+// 	for (uint32_t i = 0; i < strlen(c_last); i++) 
+// 		key = (key << 2) + (c_last[i] - offset);
+// 	key = key << 3;
+// 	key += c_w_id * DIST_PER_WARE + c_d_id;
+// 	return key;
+// }
 
-uint64_t stockKey(uint64_t s_i_id, uint64_t s_w_id) {
-	return s_w_id * g_max_items + s_i_id;
-}
+// uint64_t stockKey(uint64_t s_i_id, uint64_t s_w_id) {
+// 	return s_w_id * g_max_items + s_i_id;
+// }
 
 uint64_t Lastname(uint64_t num, char* name) {
   	static const char *n[] =
@@ -119,7 +119,7 @@ uint64_t MakeNumberString(int min, int max, char* str, uint64_t thd_id) {
   return cnt;
 }
 
-uint64_t wh_to_part(uint64_t wid) {
-	assert(g_part_cnt <= g_num_wh);
-	return wid % g_part_cnt;
-}
+// uint64_t wh_to_part(uint64_t wid) {
+// 	assert(g_part_cnt <= g_num_wh);
+// 	return wid % g_part_cnt;
+// }

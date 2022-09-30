@@ -3,7 +3,7 @@
 #include "ycsb.h"
 #include "ycsb_query.h"
 #include "wl.h"
-#include "common/thread.h"
+#include "db_thread.h"
 #include "table.h"
 #include "row_enc.h"
 #include "index_hash.h"
@@ -13,7 +13,7 @@
 #include "row_lock.h"
 #include "row_ts.h"
 #include "row_mvcc.h"
-#include "common/mem_alloc.h"
+// #include "common/mem_alloc.h"
 #include "common/base_query.h"
 #include "ycsb_txn.h"
 

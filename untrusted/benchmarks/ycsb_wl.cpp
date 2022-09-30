@@ -38,11 +38,11 @@ RC ycsb_wl::init_schema(std::string schema_file) {
 	return RCOK;
 }
 	
-int 
-ycsb_wl::key_to_part(uint64_t key) {
-	uint64_t rows_per_part = g_synth_table_size / g_part_cnt;
-	return key / rows_per_part;
-}
+// int 
+// ycsb_wl::key_to_part(uint64_t key) {
+// 	uint64_t rows_per_part = g_synth_table_size / g_part_cnt;
+// 	return key / rows_per_part;
+// }
 
 RC ycsb_wl::init_table() {
 	RC rc;

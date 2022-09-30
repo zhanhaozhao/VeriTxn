@@ -7,8 +7,8 @@
 #include <thread_enc.h>
 
 #include "global.h"
-#include "common/thread.h"
-#include "common/helper.h"
+#include "db_thread.h"
+#include "helper.h"
 #include "mem_helper.h"
 #include "wl.h"
 // #include "plock.h"
@@ -36,7 +36,6 @@ void thread_t::init(uint64_t thd_id, workload * workload) {
 	_abort_buffer_enable = (g_params["abort_buffer_enable"] == "true");
 }
 
-uint64_t thread_t::get_thd_id() { return _thd_id; }
 uint64_t thread_t::get_host_cid() {	return _host_cid; }
 void thread_t::set_host_cid(uint64_t cid) { _host_cid = cid; }
 uint64_t thread_t::get_cur_cid() { return _cur_cid; }

@@ -1,8 +1,7 @@
 #include "Enclave_t.h"
-
-#include "common/thread_enc.h"
 // #include <string>
 #include "common/global_common.h"
+#include "common/thread_enc.h"
 // #include "common/stats.h"
 // #include "common/table.h"
 

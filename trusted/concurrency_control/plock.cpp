@@ -14,7 +14,7 @@ void PartMan::init() {
 	waiter_cnt = 0;
 	owner = NULL;
 	waiters = (txn_man **)
-		mem_allocator_enc.alloc(sizeof(txn_man *) * g_thread_cnt_enc, part_id);
+		malloc(sizeof(txn_man *) * g_thread_cnt_enc);
 	pthread_mutex_init( &latch, NULL );
 }
 

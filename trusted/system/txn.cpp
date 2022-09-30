@@ -26,7 +26,8 @@ void txn_man::init(thread_t * h_thd, workload * h_wl, uint64_t thd_id) {
 	row_cnt = 0;
 	wr_cnt = 0;
 	insert_cnt = 0;
-	accesses = (Access **) aligned_alloc(64, sizeof(Access *) * MAX_ROW_PER_TXN);
+	// accesses = (Access **) aligned_alloc(64, sizeof(Access *) * MAX_ROW_PER_TXN);
+	accesses = (Access **) malloc(sizeof(Access *) * MAX_ROW_PER_TXN);
 	for (int i = 0; i < MAX_ROW_PER_TXN; i++)
 		accesses[i] = NULL;
 	num_accesses_alloc = 0;
@@ -112,10 +113,10 @@ void txn_man::cleanup(RC rc) {
 			row_t * row = insert_rows[i];
 			assert(g_part_alloc_enc == false);
 #if CC_ALG != HSTORE && CC_ALG != OCC
-			mem_allocator_enc.free(row->manager, 0);
+			free(row->manager);
 #endif
 			row->free_row();
-			mem_allocator_enc.free(row, sizeof(row));
+			free(row);
 		}
 	}
 	row_cnt = 0;
@@ -132,15 +133,19 @@ row_t * txn_man::get_row(row_t * row, access_t type) {
 	uint64_t starttime = get_cur_time_ocall();
 	RC rc = RCOK;
 	if (accesses[row_cnt] == NULL) {
-		Access * access = (Access *) aligned_alloc(64, sizeof(Access));
+		// Access * access = (Access *) aligned_alloc(64, sizeof(Access));
+		Access * access = (Access *) malloc(sizeof(Access));
 		accesses[row_cnt] = access;
 #if (CC_ALG == SILO || CC_ALG == TICTOC)
-		access->data = (row_t *) aligned_alloc(64, sizeof(row_t));
+		// access->data = (row_t *) aligned_alloc(64, sizeof(row_t));
+		access->data = (row_t *) malloc(sizeof(row_t));
 		access->data->init(MAX_TUPLE_SIZE);
-		access->orig_data = (row_t *) aligned_alloc(64, sizeof(row_t));
+		// access->orig_data = (row_t *) aligned_alloc(64, sizeof(row_t));
+		access->orig_data = (row_t *) malloc(sizeof(row_t));
 		access->orig_data->init(MAX_TUPLE_SIZE);
 #elif (CC_ALG == DL_DETECT || CC_ALG == NO_WAIT || CC_ALG == WAIT_DIE)
-		access->orig_data = (row_t *) aligned_alloc(64, sizeof(row_t));
+		// access->orig_data = (row_t *) aligned_alloc(64, sizeof(row_t));
+		access->orig_data = (row_t *) malloc(sizeof(row_t));
 		access->orig_data->init(MAX_TUPLE_SIZE);
 #endif
 		num_accesses_alloc ++;
@@ -247,6 +252,6 @@ RC txn_man::finish(RC rc) {
 void
 txn_man::release() {
 	for (int i = 0; i < num_accesses_alloc; i++)
-		mem_allocator_enc.free(accesses[i], 0);
-	mem_allocator_enc.free(accesses, 0);
+		free(accesses[i]);
+	free(accesses);
 }

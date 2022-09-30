@@ -13,17 +13,23 @@
 #include "api.h"
 
 void ManagerEnc::init() {
-	timestamp = (uint64_t *) aligned_alloc(64, sizeof(uint64_t));
+	// timestamp = (uint64_t *) aligned_alloc(64, sizeof(uint64_t));
+	timestamp = (uint64_t *) malloc(sizeof(uint64_t));
 	*timestamp = 1;
 	_last_min_ts_time = 0;
 	_min_ts = 0;
-	_epoch = (uint64_t *) aligned_alloc(64, sizeof(uint64_t));
-	_last_epoch_update_time = (ts_t *) aligned_alloc(64, sizeof(uint64_t));
+	// _epoch = (uint64_t *) aligned_alloc(64, sizeof(uint64_t));
+	_epoch = (uint64_t *) malloc(sizeof(uint64_t));
+	// _last_epoch_update_time = (ts_t *) aligned_alloc(64, sizeof(uint64_t));
+	_last_epoch_update_time = (ts_t *) malloc(sizeof(uint64_t));
 	_epoch = 0;
 	_last_epoch_update_time = 0;
-	all_ts = (ts_t volatile **) aligned_alloc(64, sizeof(ts_t *) * g_thread_cnt_enc);
-	for (uint32_t i = 0; i < g_thread_cnt_enc; i++) 
-		all_ts[i] = (ts_t *) aligned_alloc(64, sizeof(ts_t));
+	// all_ts = (ts_t volatile **) aligned_alloc(64, sizeof(ts_t *) * g_thread_cnt_enc);
+	all_ts = (ts_t volatile **) malloc(sizeof(ts_t *) * g_thread_cnt_enc);
+	for (uint32_t i = 0; i < g_thread_cnt_enc; i++) {
+		// all_ts[i] = (ts_t *) aligned_alloc(64, sizeof(ts_t));
+		all_ts[i] = (ts_t *) malloc(sizeof(ts_t));
+	}
 
 	_all_txns = new txn_man * [g_thread_cnt_enc];
 	for (UInt32 i = 0; i < g_thread_cnt_enc; i++) {

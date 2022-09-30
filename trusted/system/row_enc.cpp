@@ -24,13 +24,15 @@ row_t::init(table_t * host_table, uint64_t part_id, uint64_t row_id) {
 	this->table = host_table;
 	Catalog * schema = host_table->get_schema();
 	int tuple_size = schema->get_tuple_size();
-	data = (char *) aligned_alloc(64, sizeof(char) * tuple_size);
+	// data = (char *) aligned_alloc(64, sizeof(char) * tuple_size);
+	data = (char *) malloc(sizeof(char) * tuple_size);
 	return RCOK;
 }
 void 
 row_t::init(int size) 
 {
-	data = (char *) aligned_alloc(64, size);
+	// data = (char *) aligned_alloc(64, size);
+	data = (char *) malloc(size);
 }
 
 RC 
@@ -41,19 +43,19 @@ row_t::switch_schema(table_t * host_table) {
 
 void row_t::init_manager(row_t * row) {
 #if CC_ALG == DL_DETECT || CC_ALG == NO_WAIT || CC_ALG == WAIT_DIE
-    manager = (Row_lock *) mem_allocator_enc.alloc(sizeof(Row_lock), _part_id);
+    manager = (Row_lock *) malloc(sizeof(Row_lock));
 #elif CC_ALG == TIMESTAMP
-    manager = (Row_ts *) mem_allocator_enc.alloc(sizeof(Row_ts), _part_id);
+    manager = (Row_ts *) malloc(sizeof(Row_ts));
 #elif CC_ALG == MVCC
-    manager = (Row_mvcc *) _mm_malloc(sizeof(Row_mvcc), 64);
+    manager = (Row_mvcc *) malloc(sizeof(Row_mvcc));
 #elif CC_ALG == HEKATON
-    manager = (Row_hekaton *) _mm_malloc(sizeof(Row_hekaton), 64);
+    manager = (Row_hekaton *) malloc(sizeof(Row_hekaton));
 #elif CC_ALG == OCC
-    manager = (Row_occ *) mem_allocator_enc.alloc(sizeof(Row_occ), _part_id);
+    manager = (Row_occ *) malloc(sizeof(Row_occ));
 #elif CC_ALG == TICTOC
-	manager = (Row_tictoc *) _mm_malloc(sizeof(Row_tictoc), 64);
+	manager = (Row_tictoc *) malloc(sizeof(Row_tictoc));
 #elif CC_ALG == SILO
-	manager = (Row_silo *) _mm_malloc(sizeof(Row_silo), 64);
+	manager = (Row_silo *) malloc(sizeof(Row_silo));
 #endif
 
 #if CC_ALG != HSTORE
@@ -81,8 +83,8 @@ uint64_t row_t::get_field_cnt() {
 }
 
 void row_t::set_value(int id, void * ptr) {
-	int datasize = get_schema()->get_field_size(id);
-	int pos = get_schema()->get_field_index(id);
+	uint64_t datasize = get_schema()->get_field_size(id);
+	uint64_t pos = get_schema()->get_field_index(id);
 	memcpy( &data[pos], ptr, datasize);
 }
 
@@ -109,7 +111,7 @@ GET_VALUE(UInt32);
 GET_VALUE(SInt32);
 
 char * row_t::get_value(int id) {
-	int pos = get_schema()->get_field_index(id);
+	uint64_t pos = get_schema()->get_field_index(id);
 	return &data[pos];
 }
 
@@ -217,7 +219,7 @@ RC row_t::get_row(access_t type, txn_man * txn, row_t *& row) {
   #if CC_ALG == TIMESTAMP
 	// TODO. should not call malloc for each row read. Only need to call malloc once 
 	// before simulation starts, like TicToc and Silo.
-	txn->cur_row = (row_t *) mem_allocator_enc.alloc(sizeof(row_t), this->get_part_id());
+	txn->cur_row = (row_t *) malloc(sizeof(row_t));
 	txn->cur_row->init(get_table(), this->get_part_id());
   #endif
 
@@ -241,7 +243,7 @@ RC row_t::get_row(access_t type, txn_man * txn, row_t *& row) {
 	return rc;
 #elif CC_ALG == OCC
 	// OCC always make a local copy regardless of read or write
-	txn->cur_row = (row_t *) mem_allocator_enc.alloc(sizeof(row_t), get_part_id());
+	txn->cur_row = (row_t *) malloc(sizeof(row_t));
 	txn->cur_row->init(get_table(), get_part_id());
 	rc = this->manager->access(txn, R_REQ);
 	row = txn->cur_row;
@@ -281,7 +283,7 @@ void row_t::return_row(access_t type, txn_man * txn, row_t * row) {
   #if CC_ALG == TIMESTAMP
 	if (type == RD || type == SCAN) {
 		row->free_row();
-		mem_allocator_enc.free(row, sizeof(row_t));
+		free(row);
 	}
   #endif
 	if (type == XP) {
@@ -297,7 +299,7 @@ void row_t::return_row(access_t type, txn_man * txn, row_t * row) {
 	if (type == WR)
 		manager->write( row, txn->end_ts );
 	row->free_row();
-	mem_allocator_enc.free(row, sizeof(row_t));
+	free(row);
 	return;
 #elif CC_ALG == TICTOC || CC_ALG == SILO
 	assert (row != NULL);

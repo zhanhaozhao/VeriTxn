@@ -20,7 +20,7 @@
 
 #define GET_VALUE(type)\
 	void row_t::get_value(int col_id, type & value) {\
-		int pos = get_schema()->get_field_index(col_id);\
+		uint64_t pos = get_schema()->get_field_index(col_id);\
 		value = *(type *)&data[pos];\
 	}
 

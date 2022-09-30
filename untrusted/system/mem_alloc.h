@@ -4,8 +4,9 @@
 // #include "global.h"
 // #include "common/global_common.h"
 // #include <map>
-// #include "stdint.h"
-#include <iostream>
+#include "stdint.h"
+// #include <iostream>
+// #include "Arena.h"
 
 const int SizeNum = 4;
 const uint32_t BlockSizes[] = {32, 64, 256, 1024};

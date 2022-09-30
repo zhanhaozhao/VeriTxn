@@ -29,9 +29,9 @@ int get_thdid_from_txnid(uint64_t txnid) {
 	return txnid % g_thread_cnt;
 }
 
-uint64_t get_part_id(void * addr) {
-	return ((uint64_t)addr / PAGE_SIZE) % g_part_cnt; 
-}
+// uint64_t get_part_id(void * addr) {
+// 	return ((uint64_t)addr / PAGE_SIZE) % g_part_cnt; 
+// }
 
 uint64_t key_to_part(uint64_t key) {
 	if (g_part_alloc)

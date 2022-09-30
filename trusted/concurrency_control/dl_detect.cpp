@@ -111,11 +111,14 @@ DL_detect::detect_cycle(uint64_t txnid) {
 
 	int thd = get_thdid_from_txnid(txnid);
 	DetectData * detect_data = (DetectData *)
-		mem_allocator_enc.alloc(sizeof(DetectData), thd);
+		// mem_allocator_enc.alloc(sizeof(DetectData), thd);
+		malloc(sizeof(DetectData));
 	detect_data->visited = (bool * )
-		mem_allocator_enc.alloc(sizeof(bool) * V, thd);
+		// mem_allocator_enc.alloc(sizeof(bool) * V, thd);
+		malloc(sizeof(bool));
 	detect_data->recStack = (bool * )
-		mem_allocator_enc.alloc(sizeof(bool) * V, thd);	
+		// mem_allocator_enc.alloc(sizeof(bool) * V, thd);	
+		malloc(sizeof(bool));
 	for(int i = 0; i < V; i++) {
         detect_data->visited[i] = false;
 		detect_data->recStack[i] = false;
@@ -135,9 +138,9 @@ DL_detect::detect_cycle(uint64_t txnid) {
 		}
 	} 
 	
-	mem_allocator_enc.free(detect_data->visited, sizeof(bool)*V);
-	mem_allocator_enc.free(detect_data->recStack, sizeof(bool)*V);
-	mem_allocator_enc.free(detect_data, sizeof(DetectData));
+	free(detect_data->visited);
+	free(detect_data->recStack);
+	free(detect_data);
 	uint64_t timespan = get_cur_time_ocall() - starttime;
 	INC_GLOB_STATS_ENC(dl_detect_time, timespan);
 	if (deadlock) return 1;

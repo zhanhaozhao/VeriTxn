@@ -93,11 +93,11 @@ public:
 	void operator=(const itemid_t &other);
 };
 
-int get_thdid_from_txnid(uint64_t txnid);
+inline int get_thdid_from_txnid(uint64_t txnid) {return txnid % THREAD_CNT;};
 
 // key_to_part() is only for ycsb
 uint64_t key_to_part(uint64_t key);
-uint64_t get_part_id(void * addr);
+inline uint64_t get_part_id(void * addr) {return ((uint64_t)addr / PAGE_SIZE) % PART_CNT; }
 // TODO can the following two functions be merged?
 uint64_t merge_idx_key(uint64_t key_cnt, uint64_t * keys);
 uint64_t merge_idx_key(uint64_t key1, uint64_t key2);

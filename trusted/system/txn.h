@@ -6,7 +6,7 @@
 // #include "global_enc.h"
 
 #include "global_common.h"
-#include "thread.h"
+#include "db_thread.h"
 #include "helper.h"
 #include "wl.h"
 
@@ -44,6 +44,7 @@ class txn_man
 {
 public:
 	virtual void init(thread_t * h_thd, workload * h_wl, uint64_t part_id);
+	virtual ~txn_man() = default;
 	void release();
 	thread_t * h_thd;
 	workload * h_wl;

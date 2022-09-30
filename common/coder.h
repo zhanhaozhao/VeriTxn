@@ -3,7 +3,6 @@
 //
 // #include "string"
 #include <vector>
-
 #include "global_common.h"
 
 // using namespace std;

@@ -1,5 +1,6 @@
 enclave {
   include "stdint.h"
+  include "sgx_tstdc.edl"
 
   trusted {
     public void ec_global_init([user_check] void * stats);

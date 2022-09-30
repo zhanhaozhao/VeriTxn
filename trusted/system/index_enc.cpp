@@ -43,12 +43,11 @@ RC IndexEnc::init(uint64_t bucket_cnt, int part_cnt) {
 #endif
     _default_verify_hash = 0;
     for (int i = 0; i < part_cnt; i++) {
-        _verify_hash[i] = (u_int64_t *) aligned_alloc(64, sizeof(u_int64_t) * _bucket_cnt_per_part);
-        // MEMISSUE
-        // _verify_hash[i] = (u_int64_t *) malloc(sizeof(u_int64_t) * _bucket_cnt_per_part);
+        // _verify_hash[i] = (u_int64_t *) aligned_alloc(64, sizeof(u_int64_t) * _bucket_cnt_per_part);
+        _verify_hash[i] = (u_int64_t *) malloc(sizeof(u_int64_t) * _bucket_cnt_per_part);
 #ifndef SGX_DISK
-        _buckets[i] = (BucketHeader_ENC *) aligned_alloc(64, sizeof(BucketHeader_ENC) * _bucket_cnt_per_part);
-        // _buckets[i] = (BucketHeader_ENC *) malloc(sizeof(BucketHeader_ENC) * _bucket_cnt_per_part);
+        // _buckets[i] = (BucketHeader_ENC *) aligned_alloc(64, sizeof(BucketHeader_ENC) * _bucket_cnt_per_part);
+        _buckets[i] = (BucketHeader_ENC *) malloc(sizeof(BucketHeader_ENC) * _bucket_cnt_per_part);
 #endif
         for (uint32_t n = 0; n < _bucket_cnt_per_part; n ++) {
 #ifndef SGX_DISK
@@ -197,7 +196,7 @@ void BucketHeader_ENC::insert_item(idx_key_t key,
     }
     if (cur_node == nullptr) {
         auto * new_node = (BucketNode_ENC *)
-                mem_allocator_enc.alloc(sizeof(BucketNode_ENC), part_id );
+                malloc(sizeof(BucketNode_ENC));
         new_node->init(key);
         new_node->items = item;
         if (prev_node != NULL) {

@@ -7,6 +7,7 @@
 #include "sgx_edger8r.h" /* for sgx_ocall etc. */
 
 #include "stdint.h"
+#include "sgx_tstdc.edl"
 
 #include <stdlib.h> /* for size_t */
 

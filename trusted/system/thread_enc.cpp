@@ -12,11 +12,12 @@
 // pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void global_init_ecall(void * stats) {
-	mem_allocator_enc.init(g_part_cnt_enc, MEM_SIZE / g_part_cnt_enc);
+	// mem_allocator_enc.init(g_part_cnt_enc, MEM_SIZE / g_part_cnt_enc);
 
 	stats_enc = (Stats *) stats;
 
-    glob_manager_enc = (ManagerEnc *) aligned_alloc(64, sizeof(ManagerEnc));
+    // glob_manager_enc = (ManagerEnc *) aligned_alloc(64, sizeof(ManagerEnc));
+	glob_manager_enc = (ManagerEnc *) malloc(sizeof(ManagerEnc));
 	glob_manager_enc->init();
 
 	if (g_cc_alg_enc == DL_DETECT) 
@@ -31,7 +32,8 @@ void global_init_ecall(void * stats) {
 }
 
 void index_init_ecall(int part_cnt, void * table, std::string iname, uint64_t bucket_cnt) {
-	IndexEnc * index = (IndexEnc *) aligned_alloc(64, sizeof(IndexEnc));
+	// IndexEnc * index = (IndexEnc *) aligned_alloc(64, sizeof(IndexEnc));
+	IndexEnc * index = (IndexEnc *) malloc(sizeof(IndexEnc));
 	new(index) IndexEnc();
 	
 	table_t * tbl = (table_t *) table;
@@ -44,15 +46,18 @@ void index_init_ecall(int part_cnt, void * table, std::string iname, uint64_t bu
 void init_txn_in_enc(txn_man *& m_txn, thread_t * h_thd) {
 	switch (WORKLOAD) {
 		case YCSB :
-			m_txn = (ycsb_txn_man *) aligned_alloc(64, sizeof(ycsb_txn_man));
+			// m_txn = (ycsb_txn_man *) aligned_alloc(64, sizeof(ycsb_txn_man));
+			m_txn = (ycsb_txn_man *) malloc(sizeof(ycsb_txn_man));
 			new(m_txn) ycsb_txn_man();
 			break;
 		case TPCC :
-			m_txn = (tpcc_txn_man *) aligned_alloc(64, sizeof(tpcc_txn_man));
+			// m_txn = (tpcc_txn_man *) aligned_alloc(64, sizeof(tpcc_txn_man));
+			m_txn = (tpcc_txn_man *) malloc(sizeof(tpcc_txn_man));
 			new(m_txn) tpcc_txn_man();
 			break;
 		case TEST :
-			m_txn = (TestTxnMan *) aligned_alloc(64, sizeof(TestTxnMan));
+			// m_txn = (TestTxnMan *) aligned_alloc(64, sizeof(TestTxnMan));
+			m_txn = (TestTxnMan *) malloc(sizeof(TestTxnMan));
 			new(m_txn) TestTxnMan();
 			break;
 		default:
@@ -147,7 +152,7 @@ int runTest(void * txn)
 // 		txn->start_ts = get_next_ts(); 
 // #endif
 		rc = ((TestTxnMan *)txn)->run_txn(g_test_case, 1);
-		printf("READ_WRITE TEST PASSED\n");
+		// printf("READ_WRITE TEST PASSED\n");
 		return FINISH;
 	}
 	else if (g_test_case == CONFLICT) {

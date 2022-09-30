@@ -5,7 +5,7 @@
 #include "tpcc_helper.h"
 #include "common/base_query.h"
 // #include "wl.h"
-#include "common/thread.h"
+#include "db_thread.h"
 #include "table.h"
 #include "row_enc.h"
 #include "index_hash.h"
@@ -215,7 +215,8 @@ RC tpcc_txn_man::run_payment(tpcc_query * query) {
 	strncpy(h_data, w_name, 10);
 	int length = strlen(h_data);
 	if (length > 10) length = 10;
-	strcpy(&h_data[length], "    ");
+	
+	strncpy(&h_data[length], "    ", 4);
 	strncpy(&h_data[length + 4], d_name, 10);
 	h_data[length+14] = '\0';
 	/*=============================================================================+

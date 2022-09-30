@@ -1,5 +1,5 @@
-#ifndef THREAD_H_
-#define THREAD_H_
+#ifndef DB_THREAD_H_
+#define DB_THREAD_H_
 
 
 // #include "global.h"
@@ -20,7 +20,8 @@ public:
 	ts_t starttime;
 	base_query * m_query;
 
-	uint64_t 	get_thd_id();
+	// uint64_t 	get_thd_id();
+	uint64_t	get_thd_id() { return _thd_id; }
 
 	uint64_t 	get_host_cid();
 	void 	 	set_host_cid(uint64_t cid);

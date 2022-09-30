@@ -14,7 +14,10 @@ public :
 	RC init_table();
 	RC init_schema(std::string schema_file);
 	// RC get_txn_man(txn_man *& txn_manager, thread_t * h_thd);
-	int key_to_part(uint64_t key);
+	int key_to_part(uint64_t key) {
+		uint64_t rows_per_part = SYNTH_TABLE_SIZE / PART_CNT;
+		return key / rows_per_part;
+	};
 	INDEX * the_index;
 	table_t * the_table;
 private:

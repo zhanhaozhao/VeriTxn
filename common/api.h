@@ -1,7 +1,7 @@
 #ifndef API_H_
 #define API_H_
 
-#include "thread.h"
+#include "db_thread.h"
 
 void generate_txn_ocall(thread_t * h_thd, base_query *& m_query);
 

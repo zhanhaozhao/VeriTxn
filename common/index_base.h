@@ -21,6 +21,7 @@ class index_base {
 public:
 	virtual RC 			init() { return RCOK; };
 	virtual RC 			init(uint64_t size) { return RCOK; };
+	virtual ~index_base() = default;
 
 	virtual bool 		index_exist(idx_key_t key)=0; // check if the key exist.
 

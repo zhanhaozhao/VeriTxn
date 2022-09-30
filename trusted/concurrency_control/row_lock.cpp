@@ -1,9 +1,10 @@
 #include "row_enc.h"
 #include "txn.h"
 #include "row_lock.h"
-#include "common/mem_alloc.h"
+// #include "common/mem_alloc.h"
 // #include "manager.h"
 #include "global_enc_struct.h"
+// #include "tlibc/pthread.h"
 
 void Row_lock::init(row_t * row) {
 	_row = row;
@@ -137,7 +138,7 @@ final:
 	if (rc == WAIT && CC_ALG == DL_DETECT) {
 		// Update the waits-for graph
 		ASSERT(waiters_tail->txn == txn);
-		txnids = (uint64_t *) mem_allocator_enc.alloc(sizeof(uint64_t) * (owner_cnt + waiter_cnt), part_id);
+		txnids = (uint64_t *) malloc(sizeof(uint64_t) * (owner_cnt + waiter_cnt));
 		txncnt = 0;
 		LockEntry * en = waiters_tail->prev;
 		while (en != NULL) {
@@ -239,10 +240,10 @@ bool Row_lock::conflict_lock(lock_t l1, lock_t l2) {
 
 LockEntry * Row_lock::get_entry() {
 	LockEntry * entry = (LockEntry *) 
-		mem_allocator_enc.alloc(sizeof(LockEntry), _row->get_part_id());
+		malloc(sizeof(LockEntry));
 	return entry;
 }
 void Row_lock::return_entry(LockEntry * entry) {
-	mem_allocator_enc.free(entry, sizeof(LockEntry));
+	free(entry);
 }
 

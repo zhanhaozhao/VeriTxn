@@ -1,6 +1,7 @@
-#include "common/mem_alloc.h"
-#include "common/helper.h"
+#include "mem_alloc.h"
+#include "helper.h"
 #include "global.h"
+// #include "global_common.h"
 
 // Assume the data is strided across the L2 slices, stride granularity 
 // is the size of a page
@@ -134,7 +135,7 @@ void mem_alloc::free(void * ptr, uint64_t size) {
 		int size_id = get_size_id(size);
 		_arenas[arena_id][size_id].free(ptr);
 	} else {
-		std::free(ptr);
+		free(ptr);
 	}
 }
 

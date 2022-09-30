@@ -33,7 +33,7 @@
 			UInt32 padsize = sizeof(type) * (scale); \
 			if (g_mem_pad_enc && padsize % CL_SIZE != 0) \
 				padsize += CL_SIZE - padsize % CL_SIZE; \
-			name[i] = (type *) mem_allocator_enc.alloc(padsize, i); \
+			name[i] = (type *) malloc(padsize); \
 			for (UInt32 j = 0; j < scale; j++) \
 				new (&name[i][j]) type(); \
 		}\
@@ -52,7 +52,7 @@
 			int padsize = sizeof(type); \
 			if (g_mem_pad && padsize % CL_SIZE != 0) \
 				padsize += CL_SIZE - padsize % CL_SIZE; \
-			name[i] = (type *) mem_allocator.alloc(padsize, i); \
+			name[i] = (type *) malloc(padsize); \
 			new (name[i]) type(); \
 		}\
 	} else \

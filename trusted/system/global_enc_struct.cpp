@@ -8,7 +8,7 @@
 // #include "plock.h"
 // #include "occ.h"
 
-mem_alloc mem_allocator_enc;
+// mem_alloc_enc mem_allocator_enc;
 Stats * stats_enc;
 DL_detect dl_detector;
 

@@ -77,11 +77,12 @@ Enclave_Cpp_Flags += -I$(PROJECT_ROOT_DIR) -Icommon/ -Itrusted/ -Itrusted/concur
 
 Crypto_Library_Name := sgx_tcrypto
 
+# -L$(PROJECT_ROOT_DIR)/libs -l:libjemalloc.a
 Enclave_Link_Flags := $(SGX_COMMON_CFLAGS) \
 	-Wl,--no-undefined -nostdlib -nodefaultlibs -nostartfiles \
 	-L$(SGX_LIBRARY_PATH) \
 	-Wl,--whole-archive -l$(Trts_Library_Name) -Wl,--no-whole-archive \
-	-Wl,--start-group -lsgx_tstdc -lsgx_tcxx -l$(Crypto_Library_Name) \
+	-Wl,--start-group -lsgx_tstdc -lsgx_tcxx -lsgx_pthread -l$(Crypto_Library_Name) \
 	-l$(Service_Library_Name) -Wl,--end-group \
 	-Wl,-Bstatic -Wl,-Bsymbolic \
 	-Wl,-pie,-eenclave_entry -Wl,--export-dynamic \
@@ -123,7 +124,7 @@ trusted/Enclave_t.o: ./trusted/Enclave_t.c
 	@echo "CXX   <=  $<"
 
 ## build files needed from other directory
-trusted/Enclave.o: trusted/Enclave.cc
+trusted/Enclave.o: trusted/Enclave.cpp
 	$(CXX) $(Enclave_Cpp_Flags) -c $< -o $@
 	@echo "CXX  <=  $<"
 

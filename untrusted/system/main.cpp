@@ -4,7 +4,7 @@
 #include "ycsb.h"
 #include "tpcc.h"
 #include "test.h"
-#include "common/thread.h"
+#include "db_thread.h"
 // #include "manager.h"
 // #include "common/mem_alloc.h"
 // #include "common/query.h"

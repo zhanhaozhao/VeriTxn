@@ -52,9 +52,17 @@ public:
 	uint64_t 		get_field_index(int id) { return _columns[id].index; };
 	char * 			get_field_type(uint64_t id);
 	char * 			get_field_name(uint64_t id);
-	uint64_t 		get_field_id(const char * name);
+	uint64_t 		get_field_id(const char * name) {
+		UInt32 i;
+		for (i = 0; i < field_cnt; i++) {
+			if (strcmp(name, _columns[i].name) == 0)
+				break;
+		}
+		assert (i < field_cnt);
+		return i;
+	}
 	char * 			get_field_type(char * name);
-	uint64_t 		get_field_index(char * name);
+	uint64_t 		get_field_index(char * name) {return _columns[get_field_id(name)].index;}
 
 	void 			print_schema();
 	Column * 		_columns;
