@@ -24,7 +24,7 @@ Query_queue::init(workload * h_wl) {
 #if WORKLOAD == YCSB	
 	ycsb_query::calculateDenom();
 #elif WORKLOAD == TPCC
-	assert(tpcc_buffer != NULL);
+	// assert(tpcc_buffer != NULL);
 #endif
 	int64_t begin = get_server_clock();
 	pthread_t p_thds[g_thread_cnt - 1];
@@ -40,7 +40,7 @@ Query_queue::init(workload * h_wl) {
 
 void 
 Query_queue::init_per_thread(int thread_id) {	
-	all_queries[thread_id] = (Query_thd *) _mm_malloc(sizeof(Query_thd), 64);
+	all_queries[thread_id] = (Query_thd *) aligned_alloc(64, sizeof(Query_thd));
 	all_queries[thread_id]->init(_wl, thread_id);
 }
 
@@ -77,7 +77,11 @@ Query_thd::init(workload * h_wl, int thread_id) {
 #if WORKLOAD == YCSB	
 	queries = (ycsb_query *) 
 		mem_allocator.alloc(sizeof(ycsb_query) * request_cnt, thread_id);
-	srand48_r(thread_id + 1, &buffer);
+	// srand48_r(thread_id + 1, &buffer);
+	dre = std::default_random_engine(thread_id + 1);
+	uid = std::uniform_real_distribution<double>(0.0, 1.0);
+	iid = std::uniform_int_distribution<uint64_t>(0, 10);
+
 #elif WORKLOAD == TPCC
 	queries = (tpcc_query *) _mm_malloc(sizeof(tpcc_query) * request_cnt, 64);
 #endif

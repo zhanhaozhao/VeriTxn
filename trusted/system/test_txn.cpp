@@ -75,7 +75,7 @@ TestTxnMan::testConflict(int access_num)
 			row_local->set_value(1, 1234.5);
 			row_local->set_value(2, 8589934592UL);
 			row_local->set_value(3, str);
-			sleep(1);
+			// sleep(1);
 		} else {
 			rc = Abort;
 			break;

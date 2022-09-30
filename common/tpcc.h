@@ -1,5 +1,5 @@
-#ifndef _TPCC_H_
-#define _TPCC_H_
+#ifndef TPCC_H_
+#define TPCC_H_
 
 #include "wl.h"
 // #include "txn.h"

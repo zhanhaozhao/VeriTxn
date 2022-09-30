@@ -1,5 +1,5 @@
-#ifndef _PLOCK_H_
-#define _PLOCK_H_
+#ifndef PLOCK_H_
+#define PLOCK_H_
 
 // #include "global.h"
 #include "common/global_common.h"

@@ -1,5 +1,5 @@
-#ifndef _MANAGER_H_
-#define _MANAGER_H_
+#ifndef MANAGER_H_
+#define MANAGER_H_
 
 
 #include "common/global_common.h"

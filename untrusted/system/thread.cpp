@@ -24,7 +24,10 @@
 void thread_t::init(uint64_t thd_id, workload * workload) {
 	_thd_id = thd_id;
 	_wl = workload;
-	srand48_r((_thd_id + 1) * get_sys_clock(), &buffer);
+	// srand48_r((_thd_id + 1) * get_sys_clock(), &buffer);
+	dre = std::default_random_engine((_thd_id + 1) * get_sys_clock());
+	uid = std::uniform_real_distribution<double>(0.0,1.0);
+
 	_abort_buffer_size = ABORT_BUFFER_SIZE;
 	_abort_buffer = (AbortBufferEntry *) _mm_malloc(sizeof(AbortBufferEntry) * _abort_buffer_size, 64); 
 	for (int i = 0; i < _abort_buffer_size; i++)
@@ -75,8 +78,9 @@ RC thread_t::run() {
 		if (rc == Abort) {
 			uint64_t penalty = 0;
 			if (ABORT_PENALTY != 0)  {
-				double r;
-				drand48_r(&buffer, &r);
+				// double r;
+				// drand48_r(&buffer, &r);
+				double r = uid(dre);
 				penalty = r * ABORT_PENALTY;
 			}
 			if (!_abort_buffer_enable)

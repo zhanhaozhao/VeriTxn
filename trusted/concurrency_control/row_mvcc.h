@@ -1,5 +1,5 @@
-#ifndef _ROW_MVCC_H_
-#define _ROW_MVCC_H_
+#ifndef ROW_MVCC_H_
+#define ROW_MVCC_H_
 
 
 // class table_t;

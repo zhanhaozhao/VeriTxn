@@ -12,7 +12,7 @@ RC IndexHash::init(uint64_t bucket_cnt, int part_cnt) {
 	_bucket_cnt_per_part = bucket_cnt / part_cnt;
 	_buckets = new BucketHeader * [part_cnt];
 	for (int i = 0; i < part_cnt; i++) {
-		_buckets[i] = (BucketHeader *) _mm_malloc(sizeof(BucketHeader) * _bucket_cnt_per_part, 64);
+		_buckets[i] = (BucketHeader *) aligned_alloc(64, sizeof(BucketHeader) * _bucket_cnt_per_part);
 		for (uint32_t n = 0; n < _bucket_cnt_per_part; n ++)
 			_buckets[i][n].init();
 	}
@@ -137,25 +137,26 @@ void BucketHeader::read_item(idx_key_t key, itemid_t * &item, const char * tname
 			break;
 		cur_node = cur_node->next;
 	}
-	M_ASSERT(cur_node->key == key, "Key does not exist!");
+	// M_ASSERT(cur_node->key == key, "Key does not exist!");
+	assert(cur_node->key == key);
 	item = cur_node->items;
 }
 
 DFlow BucketHeader::encode() const {
-    vector <encoded_record> data;
+    std::vector <encoded_record> data;
     BucketNode * cur_node = first_node;
     while (cur_node != nullptr) {
-        data.emplace_back(make_pair(to_string(cur_node->key), cur_node->encode()));
+        data.emplace_back(make_pair(std::to_string(cur_node->key), cur_node->encode()));
         cur_node = cur_node->next;
     }
     return encode_vec(data);
 }
 
 void BucketHeader::decode(const DFlow & e) {
-    vector <encoded_record> data = decode_vec(e);
+    std::vector <encoded_record> data = decode_vec(e);
     this->init();
     for (const auto& it:data) {
-        auto tmp = new BucketNode(stoi(it.first));
+        auto tmp = new BucketNode(std::stoi(it.first));
         tmp->decode(it.second);
         if (this->first_node == NULL) {
             this->first_node = tmp;
@@ -167,18 +168,18 @@ void BucketHeader::decode(const DFlow & e) {
 }
 
 DFlow BucketNode::encode() const {
-    vector <encoded_record> data;
-    string res_items;
+    std::vector <encoded_record> data;
+    std::string res_items;
     itemid_t * it = items;
-    data.emplace_back(make_pair(to_string(this->key), ""));
+    data.emplace_back(make_pair(std::to_string(this->key), ""));
     auto tmp = (base_row_t*)(it->location);
-    data.emplace_back(make_pair(to_string(tmp->get_part_id()), tmp->encode()));
+    data.emplace_back(make_pair(std::to_string(tmp->get_part_id()), tmp->encode()));
     return encode_vec(data);
 }
 
 void BucketNode::decode(const DFlow & e) {
-    vector <encoded_record> data = decode_vec(e);
-    this->init(stoi(data[0].first));
+    std::vector <encoded_record> data = decode_vec(e);
+    this->init(std::stoi(data[0].first));
     this->items = new itemid_t;
     assert(data.size() == 2);
     auto * cur_row = new base_row_t;

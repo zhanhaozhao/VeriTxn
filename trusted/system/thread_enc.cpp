@@ -1,4 +1,5 @@
 #include "thread_enc.h"
+
 #include "ycsb_txn.h"
 #include "tpcc_txn.h"
 #include "test_txn.h"
@@ -15,7 +16,7 @@ void global_init_ecall(void * stats) {
 
 	stats_enc = (Stats *) stats;
 
-    glob_manager_enc = (ManagerEnc *) _mm_malloc(sizeof(ManagerEnc), 64);
+    glob_manager_enc = (ManagerEnc *) aligned_alloc(64, sizeof(ManagerEnc));
 	glob_manager_enc->init();
 
 	if (g_cc_alg_enc == DL_DETECT) 
@@ -30,7 +31,7 @@ void global_init_ecall(void * stats) {
 }
 
 void index_init_ecall(int part_cnt, void * table, std::string iname, uint64_t bucket_cnt) {
-	IndexEnc * index = (IndexEnc *) _mm_malloc(sizeof(IndexEnc), 64);
+	IndexEnc * index = (IndexEnc *) aligned_alloc(64, sizeof(IndexEnc));
 	new(index) IndexEnc();
 	
 	table_t * tbl = (table_t *) table;
@@ -43,15 +44,15 @@ void index_init_ecall(int part_cnt, void * table, std::string iname, uint64_t bu
 void init_txn_in_enc(txn_man *& m_txn, thread_t * h_thd) {
 	switch (WORKLOAD) {
 		case YCSB :
-			m_txn = (ycsb_txn_man *) _mm_malloc( sizeof(ycsb_txn_man), 64 );
+			m_txn = (ycsb_txn_man *) aligned_alloc(64, sizeof(ycsb_txn_man));
 			new(m_txn) ycsb_txn_man();
 			break;
 		case TPCC :
-			m_txn = (tpcc_txn_man *) _mm_malloc( sizeof(tpcc_txn_man), 64 );
+			m_txn = (tpcc_txn_man *) aligned_alloc(64, sizeof(tpcc_txn_man));
 			new(m_txn) tpcc_txn_man();
 			break;
 		case TEST :
-			m_txn = (TestTxnMan *) _mm_malloc( sizeof(TestTxnMan), 64 );
+			m_txn = (TestTxnMan *) aligned_alloc(64, sizeof(TestTxnMan));
 			new(m_txn) TestTxnMan();
 			break;
 		default:

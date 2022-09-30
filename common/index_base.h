@@ -1,5 +1,5 @@
-#ifndef _INDEX_BASE_H_
-#define _INDEX_BASE_H_
+#ifndef INDEX_BASE_H_
+#define INDEX_BASE_H_
 
 #include "global_common.h"
 #include "common/helper.h"

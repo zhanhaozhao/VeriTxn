@@ -1,5 +1,5 @@
-#ifndef _GLOBAL_ENC_H_
-#define _GLOBAL_ENC_H_
+#ifndef GLOBAL_ENC_H_
+#define GLOBAL_ENC_H_
 
 // #include "stdint.h"
 // #include <unistd.h>

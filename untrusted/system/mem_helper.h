@@ -1,7 +1,20 @@
-#ifndef _MEM_HELPER_H_
-#define _MEM_HELPER_H_
+#ifndef MEM_HELPER_H_
+#define MEM_HELPER_H_
 
 #include "global_struct.h"
+
+
+/************************************************/
+// ASSERT Helper
+/************************************************/
+#define M_ASSERT(cond, ...) \
+	if (!(cond)) {\
+		printf("ASSERTION FAILURE [%s : %d] ", \
+		__FILE__, __LINE__); \
+		printf(__VA_ARGS__);\
+		assert(false);\
+	}
+
 
 /************************************************/
 // STATS helper

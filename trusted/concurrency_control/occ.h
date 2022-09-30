@@ -1,5 +1,5 @@
-#ifndef _OCC_H_
-#define _OCC_H_
+#ifndef OCC_H_
+#define OCC_H_
 
 // #include "row.h"
 

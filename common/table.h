@@ -1,5 +1,5 @@
-#ifndef _TABLE_H_
-#define _TABLE_H_
+#ifndef TABLE_H_
+#define TABLE_H_
 
 // #include "global_common.h"
 #include "catalog.h"

@@ -1,5 +1,5 @@
-#ifndef _MEM_ALLOC_H_
-#define _MEM_ALLOC_H_
+#ifndef MEM_ALLOC_H_
+#define MEM_ALLOC_H_
 
 // #include "global.h"
 // #include "common/global_common.h"

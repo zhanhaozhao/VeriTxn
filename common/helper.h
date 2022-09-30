@@ -1,5 +1,5 @@
-#ifndef _HELPER_H_
-#define _HELPER_H_
+#ifndef HELPER_H_
+#define HELPER_H_
 
 #include <stdlib.h>
 // #include <iostream>
@@ -28,17 +28,6 @@
 #define COMPILER_BARRIER asm volatile("" ::: "memory");
 #define PAUSE { __asm__ ( "pause;" ); }
 //#define PAUSE usleep(1);
-
-/************************************************/
-// ASSERT Helper
-/************************************************/
-#define M_ASSERT(cond, ...) \
-	if (!(cond)) {\
-		printf("ASSERTION FAILURE [%s : %d] ", \
-		__FILE__, __LINE__); \
-		printf(__VA_ARGS__);\
-		assert(false);\
-	}
 
 #define ASSERT(cond) assert(cond)
 
@@ -114,7 +103,8 @@ uint64_t merge_idx_key(uint64_t key_cnt, uint64_t * keys);
 uint64_t merge_idx_key(uint64_t key1, uint64_t key2);
 uint64_t merge_idx_key(uint64_t key1, uint64_t key2, uint64_t key3);
 
-extern timespec * res;
+// extern timespec * res;
+
 inline uint64_t get_server_clock() {
 #if defined(__i386__)
     uint64_t ret;

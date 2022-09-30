@@ -1,5 +1,5 @@
-#ifndef _QUERY_H_
-#define _QUERY_H_
+#ifndef QUERY_H_
+#define QUERY_H_
 
 // #include "global.h"
 // #include "helper.h"

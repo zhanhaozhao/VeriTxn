@@ -1,16 +1,15 @@
-#ifndef _GLOBAL_COMMON_H_
-#define _GLOBAL_COMMON_H_
+#ifndef GLOBAL_COMMON_H_
+#define GLOBAL_COMMON_H_
 
 // #include "stdint.h"
 #include <iostream>
 #include <unistd.h>
 // #include <cstddef>
-// #include <cstdlib>
+#include <cstdlib>
 #include <cassert>
 // #include <stdio.h>
 // #include <fstream>
-#include <string>
-#include <mm_malloc.h>
+// #include <mm_malloc.h>
 // #include <typeinfo>
 // #include <list>
 #include <map>
@@ -19,7 +18,7 @@
 // #include <vector>
 // #include <sstream>
 
-// #include "pthread.h"
+#include "pthread.h"
 #include "config.h"
 
 // #include "stats.h"

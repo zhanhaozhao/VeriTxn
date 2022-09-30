@@ -1,5 +1,5 @@
-#ifndef _MANAGER_ENC_H_
-#define _MANAGER_ENC_H_
+#ifndef MANAGER_ENC_H_
+#define MANAGER_ENC_H_
 
 
 // #include "common/helper.h"

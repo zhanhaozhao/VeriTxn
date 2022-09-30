@@ -1,9 +1,10 @@
-#pragma once
+#ifndef INDEX_ENC_H_
+#define INDEX_ENC_H_
 
 #include "global_enc.h"
 #include "row_enc.h"
-#include "mem_helper_enc.h"
-#include "common/helper.h"
+// #include "mem_helper_enc.h"
+// #include "common/helper.h"
 
 #define SGX_DISK    //
 //#define TEST_C //
@@ -69,3 +70,5 @@ private:
 //    static DFlow load_disk(int part_id, uint64_t bkt_idx);
 //    static void flush_disk(int part_id, uint64_t bkt_idx, const DFlow & e);
 };
+
+#endif

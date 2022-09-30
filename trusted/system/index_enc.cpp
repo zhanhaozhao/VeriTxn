@@ -2,15 +2,20 @@
 // Created by pan on 2022/9/28.
 //
 
-#include <utility>
-#include "global_enc.h"
+// #include <utility>
+// #include "global_enc.h"
 #include "index_enc.h"
-#include "vector"
+// #include "vector"
+#include <cstdlib>
+// #include <stdlib.h>
+
+
+#include "mem_helper_enc.h"
 #include "row_enc.h"
 #include "coder.h"
 #include "api.h"
 
-uint64_t compute_hash(string const& s) {
+uint64_t compute_hash(std::string const& s) {
     const int p = 31;
     const int m = 1e9 + 9;
     uint64_t hash_value = 0;
@@ -22,9 +27,9 @@ uint64_t compute_hash(string const& s) {
     return hash_value;
 }
 
-inline uint64_t string_hash(const string& s) {
+inline uint64_t string_hash(const std::string& s) {
     return compute_hash(s);
-    return uint64_t (hash<string>{}(s));
+    return uint64_t (std::hash<std::string>{}(s));
 }
 
 void test_encoder(const BucketHeader_ENC* x);
@@ -38,9 +43,12 @@ RC IndexEnc::init(uint64_t bucket_cnt, int part_cnt) {
 #endif
     _default_verify_hash = 0;
     for (int i = 0; i < part_cnt; i++) {
-        _verify_hash[i] = (u_int64_t *) _mm_malloc(sizeof(u_int64_t) * _bucket_cnt_per_part, 64);
+        _verify_hash[i] = (u_int64_t *) aligned_alloc(64, sizeof(u_int64_t) * _bucket_cnt_per_part);
+        // MEMISSUE
+        // _verify_hash[i] = (u_int64_t *) malloc(sizeof(u_int64_t) * _bucket_cnt_per_part);
 #ifndef SGX_DISK
-        _buckets[i] = (BucketHeader_ENC *) _mm_malloc(sizeof(BucketHeader_ENC) * _bucket_cnt_per_part, 64);
+        _buckets[i] = (BucketHeader_ENC *) aligned_alloc(64, sizeof(BucketHeader_ENC) * _bucket_cnt_per_part);
+        // _buckets[i] = (BucketHeader_ENC *) malloc(sizeof(BucketHeader_ENC) * _bucket_cnt_per_part);
 #endif
         for (uint32_t n = 0; n < _bucket_cnt_per_part; n ++) {
 #ifndef SGX_DISK
@@ -212,7 +220,9 @@ void BucketHeader_ENC::read_item(idx_key_t key, itemid_t * &item) const {
             break;
         cur_node = cur_node->next;
     }
-    M_ASSERT(cur_node->key == key, "Key does not exist!");
+    // , "Key does not exist!"
+    assert(cur_node->key == key);
+    
     item = cur_node->items;
 }
 
@@ -221,10 +231,10 @@ uint64_t BucketHeader_ENC::get_hash() const {
 }
 
 DFlow BucketHeader_ENC::encode() const {
-    vector <encoded_record> data;
+    std::vector <encoded_record> data;
     BucketNode_ENC * cur_node = first_node;
     while (cur_node != nullptr) {
-        data.emplace_back(make_pair(to_string(cur_node->key), cur_node->encode()));
+        data.emplace_back(make_pair(std::to_string(cur_node->key), cur_node->encode()));
         test_encoder(cur_node);
         cur_node = cur_node->next;
     }
@@ -232,7 +242,7 @@ DFlow BucketHeader_ENC::encode() const {
 }
 
 void BucketHeader_ENC::decode(const DFlow & e) {
-    vector <encoded_record> data = decode_vec(e);
+    std::vector <encoded_record> data = decode_vec(e);
     this->init();
     for (const auto& it:data) {
         auto tmp = new BucketNode_ENC(stoi(it.first));
@@ -267,19 +277,19 @@ void test_encoder_row(row_t* x) {
 }
 
 DFlow BucketNode_ENC::encode() const {
-    vector <encoded_record> data;
-    string res_items;
+    std::vector <encoded_record> data;
+    std::string res_items;
     itemid_t * it = items;
-    data.emplace_back(make_pair(to_string(this->key), ""));
+    data.emplace_back(std::make_pair(std::to_string(this->key), ""));
     auto tmp = (row_t*)(it->location);
     test_encoder_row(tmp);
-    data.emplace_back(make_pair(to_string(tmp->get_part_id()), tmp->encode()));
+    data.emplace_back(std::make_pair(std::to_string(tmp->get_part_id()), tmp->encode()));
     return encode_vec(data);
 }
 
 void BucketNode_ENC::decode(const DFlow & e) {
-    vector <encoded_record> data = decode_vec(e);
-    this->init(stoi(data[0].first));
+    std::vector <encoded_record> data = decode_vec(e);
+    this->init(std::stoi(data[0].first));
     this->items = new itemid_t;
     assert(data.size() == 2);
     auto * cur_row = new row_t;

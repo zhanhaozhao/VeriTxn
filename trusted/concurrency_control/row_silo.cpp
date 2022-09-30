@@ -72,7 +72,8 @@ Row_silo::write(row_t * data, uint64_t tid) {
 	_row->copy(data);
 #if ATOMIC_WORD
 	uint64_t v = _tid_word;
-	M_ASSERT(tid > (v & (~LOCK_BIT)) && (v & LOCK_BIT), "tid=%ld, v & LOCK_BIT=%ld, v & (~LOCK_BIT)=%ld\n", tid, (v & LOCK_BIT), (v & (~LOCK_BIT)));
+	// "tid=%ld, v & LOCK_BIT=%ld, v & (~LOCK_BIT)=%ld\n", tid, (v & LOCK_BIT), (v & (~LOCK_BIT))
+	assert(tid > (v & (~LOCK_BIT)) && (v & LOCK_BIT));
 	_tid_word = (tid | LOCK_BIT); 
 #else
 	_tid = tid;

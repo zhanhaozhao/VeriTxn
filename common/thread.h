@@ -1,12 +1,14 @@
-#ifndef _THREAD_H_
-#define _THREAD_H_
+#ifndef THREAD_H_
+#define THREAD_H_
 
 
 // #include "global.h"
 // #include "txn.h"
 // #include "global_common.h"
 // #include "wl.h"
+#include "stdlib.h"
 #include "base_query.h"
+#include <random>
 
 // class workload;
 // class base_query;
@@ -41,7 +43,10 @@ private:
 	ts_t 		get_next_ts();
 
 	// RC	 		runTest(txn_man * txn);
-	drand48_data buffer;
+	// drand48_data buffer;
+	std::default_random_engine dre;
+	std::uniform_real_distribution<double> uid;
+
 
 	// A restart buffer for aborted txns.
 	struct AbortBufferEntry	{

@@ -1,5 +1,5 @@
-#ifndef _TXN_H_
-#define _TXN_H_
+#ifndef TXN_H_
+#define TXN_H_
 
 
 // #include "global.h"

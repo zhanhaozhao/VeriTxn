@@ -1,5 +1,5 @@
-#ifndef _WL_H_
-#define _WL_H_
+#ifndef WL_H_
+#define WL_H_
 
 #include "global_common.h"
 #include "table.h"

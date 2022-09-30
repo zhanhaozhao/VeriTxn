@@ -1,5 +1,5 @@
-#ifndef _TEST_TXN_H
-#define _TEST_TXN_H
+#ifndef TEST_TXN_H
+#define TEST_TXN_H
 
 #include "txn.h"
 #include "test.h"

@@ -1,5 +1,5 @@
-#ifndef _ROW_SILO_H_
-#define _ROW_SILO_H_
+#ifndef ROW_SILO_H_
+#define ROW_SILO_H_
 
 
 // class table_t;

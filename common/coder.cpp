@@ -2,15 +2,15 @@
 // Created by pan on 2022/9/28.
 //
 
-#define DFlow std::string
-
 #include <cassert>
 #include "coder.h"
 
-using namespace std;
+#define DFlow std::string
 
-DFlow encode_vec(const vector<pair<string,string> > &data) {
-    string result;
+// using namespace std;
+
+DFlow encode_vec(const std::vector<std::pair<std::string,std::string> > &data) {
+    std::string result;
     for (const auto& t:data) {
         result.append("{" + t.first + "}{" + t.second + "}");
     }
@@ -19,8 +19,8 @@ DFlow encode_vec(const vector<pair<string,string> > &data) {
     return result;
 }
 
-vector<pair<string, string> > decode_vec(const string &e) {
-    vector <pair<string, string>> vector;
+std::vector<std::pair<std::string, std::string> > decode_vec(const std::string &e) {
+    std::vector <std::pair<std::string, std::string>> vector;
     int n = int(e.size()), depth = 0;
     if (n == 0) {
         return vector;
@@ -28,7 +28,7 @@ vector<pair<string, string> > decode_vec(const string &e) {
     assert(n > 1);
     assert(e[0] == '{' && e[n - 1] == '}');
     bool is_first = true;
-    string tmp, fi;
+    std::string tmp, fi;
     for (int i = 0; i < n; i++) {
         if (depth > 1 || (depth == 1 && e[i] != '}')) {
             tmp.push_back(e[i]);

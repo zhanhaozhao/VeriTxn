@@ -5,8 +5,9 @@
 #ifndef DBX1000_DISK_H
 #define DBX1000_DISK_H
 
-#include "../../untrusted/system/global.h"
-#include "string"
+// #include "../../untrusted/system/global.h"
+// #include "string"
+#include "global_common.h"
 
 
 class disk {

@@ -1,5 +1,5 @@
-#ifndef _ROW_TICTOC_H_
-#define _ROW_TICTOC_H_
+#ifndef ROW_TICTOC_H_
+#define ROW_TICTOC_H_
 
 // #include "global.h"
 #include "row_enc.h"

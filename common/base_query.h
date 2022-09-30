@@ -1,7 +1,8 @@
-#ifndef _BASE_QUERY_H_
-#define _BASE_QUERY_H_
+#ifndef BASE_QUERY_H_
+#define BASE_QUERY_H_
 
 #include "wl.h"
+#include <random>
 
 // #include "global.h"
 // #include "helper.h"
@@ -32,7 +33,10 @@ public:
 	tpcc_query * queries;
 #endif
 	char pad[CL_SIZE - sizeof(void *) - sizeof(int)];
-	drand48_data buffer;
+	// drand48_data buffer;
+	std::default_random_engine dre;
+	std::uniform_real_distribution<double> uid;
+	std::uniform_int_distribution<uint64_t> iid;
 };
 
 

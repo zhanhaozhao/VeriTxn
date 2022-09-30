@@ -26,7 +26,7 @@ void txn_man::init(thread_t * h_thd, workload * h_wl, uint64_t thd_id) {
 	row_cnt = 0;
 	wr_cnt = 0;
 	insert_cnt = 0;
-	accesses = (Access **) _mm_malloc(sizeof(Access *) * MAX_ROW_PER_TXN, 64);
+	accesses = (Access **) aligned_alloc(64, sizeof(Access *) * MAX_ROW_PER_TXN);
 	for (int i = 0; i < MAX_ROW_PER_TXN; i++)
 		accesses[i] = NULL;
 	num_accesses_alloc = 0;
@@ -132,15 +132,15 @@ row_t * txn_man::get_row(row_t * row, access_t type) {
 	uint64_t starttime = get_cur_time_ocall();
 	RC rc = RCOK;
 	if (accesses[row_cnt] == NULL) {
-		Access * access = (Access *) _mm_malloc(sizeof(Access), 64);
+		Access * access = (Access *) aligned_alloc(64, sizeof(Access));
 		accesses[row_cnt] = access;
 #if (CC_ALG == SILO || CC_ALG == TICTOC)
-		access->data = (row_t *) _mm_malloc(sizeof(row_t), 64);
+		access->data = (row_t *) aligned_alloc(64, sizeof(row_t));
 		access->data->init(MAX_TUPLE_SIZE);
-		access->orig_data = (row_t *) _mm_malloc(sizeof(row_t), 64);
+		access->orig_data = (row_t *) aligned_alloc(64, sizeof(row_t));
 		access->orig_data->init(MAX_TUPLE_SIZE);
 #elif (CC_ALG == DL_DETECT || CC_ALG == NO_WAIT || CC_ALG == WAIT_DIE)
-		access->orig_data = (row_t *) _mm_malloc(sizeof(row_t), 64);
+		access->orig_data = (row_t *) aligned_alloc(64, sizeof(row_t));
 		access->orig_data->init(MAX_TUPLE_SIZE);
 #endif
 		num_accesses_alloc ++;

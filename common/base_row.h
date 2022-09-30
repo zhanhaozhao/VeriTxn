@@ -1,5 +1,5 @@
-#ifndef _BASE_ROW_H_
-#define _BASE_ROW_H_
+#ifndef BASE_ROW_H_
+#define BASE_ROW_H_
 
 // #include <cassert>
 // #include "global.h"

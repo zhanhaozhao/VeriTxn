@@ -1,5 +1,5 @@
-#ifndef _ROW_OCC_H_
-#define _ROW_OCC_H_
+#ifndef ROW_OCC_H_
+#define ROW_OCC_H_
 
 // class table_t;
 // class Catalog;

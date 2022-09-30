@@ -1,5 +1,5 @@
-#ifndef _INDEX_HASH_H_
-#define _INDEX_HASH_H_
+#ifndef INDEX_HASH_H_
+#define INDEX_HASH_H_
 
 #define DFlow std::string
 

@@ -1,5 +1,5 @@
-#ifndef _YCSB_TXN_H
-#define _YCSB_TXN_H
+#ifndef YCSB_TXN_H
+#define YCSB_TXN_H
 
 
 #include "txn.h"

@@ -1,5 +1,5 @@
-#ifndef _INDEX_BTREE_H_
-#define _INDEX_BTREE_H_
+#ifndef INDEX_BTREE_H_
+#define INDEX_BTREE_H_
 
 // #include "global_common.h"
 // #include "common/helper.h"

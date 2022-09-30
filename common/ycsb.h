@@ -1,5 +1,5 @@
-#ifndef _YCSB_H_
-#define _YCSB_H_
+#ifndef YCSB_H_
+#define YCSB_H_
 
 // #include "global.h"
 #include "wl.h"

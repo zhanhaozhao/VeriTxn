@@ -1,12 +1,14 @@
 //
 // Created by pan on 2022/9/28.
 //
-#include "string"
-#include "vector"
+// #include "string"
+#include <vector>
 
-using namespace std;
+#include "global_common.h"
 
-typedef pair<string, string> encoded_record;
+// using namespace std;
 
-string encode_vec(const vector<pair<string,string> > &data);
-vector<pair<string, string> > decode_vec(const string &e);
+typedef std::pair<std::string, std::string> encoded_record;
+
+std::string encode_vec(const std::vector<std::pair<std::string,std::string> > &data);
+std::vector<std::pair<std::string, std::string> > decode_vec(const std::string &e);

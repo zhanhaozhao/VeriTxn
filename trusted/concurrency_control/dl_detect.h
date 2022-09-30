@@ -1,5 +1,5 @@
-#ifndef _DL_DETECT_
-#define _DL_DETECT_
+#ifndef DL_DETECT_
+#define DL_DETECT_
 
 #include <limits.h>
 #include <list>

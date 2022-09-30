@@ -1,5 +1,5 @@
-#ifndef _ROW_HEKATON_H_
-#define _ROW_HEKATON_H_
+#ifndef ROW_HEKATON_H_
+#define ROW_HEKATON_H_
 
 
 #include "row_mvcc.h"

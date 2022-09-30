@@ -1,5 +1,5 @@
-#ifndef _YCSB_QUERY_H_
-#define _YCSB_QUERY_H_
+#ifndef YCSB_QUERY_H_
+#define YCSB_QUERY_H_
 
 // #include "global.h"
 // #include "common/helper.h"

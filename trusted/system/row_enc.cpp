@@ -12,6 +12,7 @@
 #include "row_tictoc.h"
 #include "row_silo.h"
 #include "mem_helper_enc.h"
+#include "coder.h"
 // #include "row_vll.h"
 // #include "common/mem_alloc.h"
 // #include "manager_enc.h"
@@ -23,13 +24,13 @@ row_t::init(table_t * host_table, uint64_t part_id, uint64_t row_id) {
 	this->table = host_table;
 	Catalog * schema = host_table->get_schema();
 	int tuple_size = schema->get_tuple_size();
-	data = (char *) _mm_malloc(sizeof(char) * tuple_size, 64);
+	data = (char *) aligned_alloc(64, sizeof(char) * tuple_size);
 	return RCOK;
 }
 void 
 row_t::init(int size) 
 {
-	data = (char *) _mm_malloc(size, 64);
+	data = (char *) aligned_alloc(64, size);
 }
 
 RC 
@@ -308,30 +309,30 @@ void row_t::return_row(access_t type, txn_man * txn, row_t * row) {
 #endif
 }
 
-#include "string"
-#include "vector"
-#include "coder.h"
+// #include "string"
+// #include "vector"
+// #include "coder.h"
 
-using namespace std;
+// using namespace std;
 
-string row_t::encode() {
-    vector<pair<string, string> > data_items;
+std::string row_t::encode() {
+    std::vector<std::pair<std::string, std::string> > data_items;
 //    puts(table->get_table_name());
-    data_items.emplace_back(make_pair("table_name:", string(table->get_table_name())));
-    data_items.emplace_back(make_pair("primary_key:", to_string(_primary_key)));
-    data_items.emplace_back(make_pair("part_id:", to_string(_part_id)));
-    data_items.emplace_back(make_pair("row_id:", to_string(_row_id)));
+    data_items.emplace_back(std::make_pair("table_name:", std::string(table->get_table_name())));
+    data_items.emplace_back(std::make_pair("primary_key:", std::to_string(_primary_key)));
+    data_items.emplace_back(std::make_pair("part_id:", std::to_string(_part_id)));
+    data_items.emplace_back(std::make_pair("row_id:", std::to_string(_row_id)));
     auto siz = get_tuple_size();
-    string data_str;
+    std::string data_str;
     for (unsigned i=0;i<siz;i++) data_str.push_back(data[i]+1);
     data_items.emplace_back(make_pair("data:", data_str));
     return encode_vec(data_items);
 }
 
-void row_t::decode(const string& e) {
-    vector<pair<string, string> > data_items = decode_vec(e);
+void row_t::decode(const std::string& e) {
+    std::vector<std::pair<std::string, std::string> > data_items = decode_vec(e);
     assert(data_items.size() == 5);
-    const string &data_s = data_items[4].second;
+    const std::string &data_s = data_items[4].second;
     this->init(int(data_s.length()));
     auto nam = data_items[0].second.c_str();
     this->table = tab_map->get_table(nam);

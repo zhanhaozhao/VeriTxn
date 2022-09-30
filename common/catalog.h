@@ -1,10 +1,11 @@
-#ifndef _CATALOG_H_
-#define _CATALOG_H_
+#ifndef CATALOG_H_
+#define CATALOG_H_
 
 // #include <map>
 // #include <vector>
-#include <cstring>
 #include "global_common.h"
+#include <cstring>
+// #include <string.h>
 // #include "catalog.h"
 // #include "helper.h"
 
@@ -14,17 +15,17 @@ public:
 		this->type = new char[80];
 		this->name = new char[80];
 	}
-	Column(uint64_t size, char * type, char * name, 
-		uint64_t id, uint64_t index) 
-	{
-		this->size = size;
-		this->id = id;
-		this->index = index;
-		this->type = new char[80];
-		this->name = new char[80];
-		strcpy(this->type, type);
-		strcpy(this->name, name);
-	};
+	// Column(uint64_t size, char * type, char * name, 
+	// 	uint64_t id, uint64_t index) 
+	// {
+	// 	this->size = size;
+	// 	this->id = id;
+	// 	this->index = index;
+	// 	this->type = new char[80];
+	// 	this->name = new char[80];
+	// 	std::strcpy(this->type, type);
+	// 	std::strcpy(this->name, name);
+	// };
 
 	UInt64 id;
 	UInt32 size;

@@ -1,5 +1,5 @@
-#ifndef _API_H_
-#define _API_H_
+#ifndef API_H_
+#define API_H_
 
 #include "thread.h"
 

@@ -5,6 +5,7 @@
 #include "base_row.h"
 #include "cstring"
 #include "global_struct.h"
+#include "coder.h"
 // #include "txn.h"
 // #include "row_lock.h"
 // #include "row_ts.h"
@@ -24,13 +25,13 @@ base_row_t::init(table_t * host_table, uint64_t part_id, uint64_t row_id) {
 	this->table = host_table;
 	Catalog * schema = host_table->get_schema();
 	int tuple_size = schema->get_tuple_size();
-	data = (char *) _mm_malloc(sizeof(char) * tuple_size, 64);
+	data = (char *) aligned_alloc(64, sizeof(char) * tuple_size);
 	return RCOK;
 }
 void 
 base_row_t::init(int size) 
 {
-	data = (char *) _mm_malloc(size, 64);
+	data = (char *) aligned_alloc(64, size);
 }
 
 RC 
@@ -45,15 +46,15 @@ void base_row_t::init_manager(base_row_t * row) {
 #elif CC_ALG == TIMESTAMP
     manager = (Row_ts *) mem_allocator.alloc(sizeof(Row_ts), _part_id);
 #elif CC_ALG == MVCC
-    manager = (Row_mvcc *) _mm_malloc(sizeof(Row_mvcc), 64);
+    manager = (Row_mvcc *) aligned_alloc(64, sizeof(Row_mvcc));
 #elif CC_ALG == HEKATON
-    manager = (Row_hekaton *) _mm_malloc(sizeof(Row_hekaton), 64);
+    manager = (Row_hekaton *) aligned_alloc(64, sizeof(Row_hekaton));
 #elif CC_ALG == OCC
     // manager = (Row_occ *) mem_allocator.alloc(sizeof(Row_occ), _part_id);
 #elif CC_ALG == TICTOC
-	manager = (Row_tictoc *) _mm_malloc(sizeof(Row_tictoc), 64);
+	manager = (Row_tictoc *) aligned_alloc(64, sizeof(Row_tictoc));
 #elif CC_ALG == SILO
-	manager = (Row_silo *) _mm_malloc(sizeof(Row_silo), 64);
+	manager = (Row_silo *) aligned_alloc(64, sizeof(Row_silo));
 #endif
 
 #if CC_ALG != HSTORE
@@ -132,28 +133,28 @@ void base_row_t::free_row() {
 	free(data);
 }
 
-#include "string"
-#include "vector"
-#include "coder.h"
+// #include "string"
+// #include "vector"
+// #include "coder.h"
 
-string base_row_t::encode() {
-    vector<pair<string, string> > data_items;
+std::string base_row_t::encode() {
+    std::vector<std::pair<std::string, std::string> > data_items;
 //    puts(table->get_table_name());
-    data_items.emplace_back(make_pair("table_name:", string(table->get_table_name())));
-    data_items.emplace_back(make_pair("primary_key:", to_string(_primary_key)));
-    data_items.emplace_back(make_pair("part_id:", to_string(_part_id)));
-    data_items.emplace_back(make_pair("row_id:", to_string(_row_id)));
+    data_items.emplace_back(make_pair("table_name:", std::string(table->get_table_name())));
+    data_items.emplace_back(make_pair("primary_key:", std::to_string(_primary_key)));
+    data_items.emplace_back(make_pair("part_id:", std::to_string(_part_id)));
+    data_items.emplace_back(make_pair("row_id:", std::to_string(_row_id)));
     auto siz = get_tuple_size();
-    string data_str;
+    std::string data_str;
     for (unsigned i=0;i<siz;i++) data_str.push_back(data[i]+1);
-    data_items.emplace_back(make_pair("data:", data_str));
+    data_items.emplace_back(std::make_pair("data:", data_str));
     return encode_vec(data_items);
 }
 
-void base_row_t::decode(const string& e) {
-    vector<pair<string, string> > data_items = decode_vec(e);
+void base_row_t::decode(const std::string& e) {
+    std::vector<std::pair<std::string, std::string> > data_items = decode_vec(e);
     assert(data_items.size() == 5);
-    const string &data_s = data_items[4].second;
+    const std::string &data_s = data_items[4].second;
     this->init(int(data_s.length()));
     auto nam = data_items[0].second.c_str();
     this->table = global_table_map->get_table(nam);

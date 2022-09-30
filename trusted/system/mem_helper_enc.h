@@ -1,5 +1,5 @@
-#ifndef _MEM_HELPER_ENC_H_
-#define _MEM_HELPER_ENC_H_
+#ifndef MEM_HELPER_ENC_H_
+#define MEM_HELPER_ENC_H_
 
 #include "global_enc_struct.h"
 

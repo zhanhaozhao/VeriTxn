@@ -1,5 +1,5 @@
-#ifndef _ROW_ENC_H_
-#define _ROW_ENC_H_
+#ifndef ROW_ENC_H_
+#define ROW_ENC_H_
 
 #include <cassert>
 // #include "global.h"

@@ -1,5 +1,5 @@
-#ifndef _TPCC_QUERY_H_
-#define _TPCC_QUERY_H_
+#ifndef TPCC_QUERY_H_
+#define TPCC_QUERY_H_
 
 // #include "global.h"
 // #include "common/helper.h"

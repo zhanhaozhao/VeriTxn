@@ -1,5 +1,5 @@
-#ifndef _GLOBAL_STRUCT_H_
-#define _GLOBAL_STRUCT_H_
+#ifndef GLOBAL_STRUCT_H_
+#define GLOBAL_STRUCT_H_
 
 #include "global.h"
 

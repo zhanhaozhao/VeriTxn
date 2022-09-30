@@ -1,8 +1,10 @@
-#ifndef _TPCC_HELPER_H_
-#define _TPCC_HELPER_H_
+#ifndef TPCC_HELPER_H_
+#define TPCC_HELPER_H_
 
 // #include "global.h"
 #include "common/helper.h"
+#include <vector>
+#include <random>
 
 uint64_t distKey(uint64_t d_id, uint64_t d_w_id);
 uint64_t custKey(uint64_t c_id, uint64_t c_d_id, uint64_t c_w_id);
@@ -14,7 +16,12 @@ uint64_t stockKey(uint64_t s_i_id, uint64_t s_w_id);
 
 uint64_t Lastname(uint64_t num, char* name);
 
-extern drand48_data ** tpcc_buffer;
+// extern drand48_data ** tpcc_buffer;
+
+extern std::vector<std::default_random_engine> tpccdre;
+// extern std::vector<std::uniform_real_distribution<double> > tpccurd;
+extern std::vector<std::uniform_int_distribution<uint64_t> > tpccuid;
+
 // return random data from [0, max-1]
 uint64_t RAND(uint64_t max, uint64_t thd_id);
 // random number from [x, y]

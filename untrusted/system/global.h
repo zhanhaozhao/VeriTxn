@@ -1,10 +1,11 @@
-#ifndef _GLOBAL_H_
-#define _GLOBAL_H_
+#ifndef GLOBAL_H_
+#define GLOBAL_H_
 
 #include <time.h> 
 #include <sys/time.h>
 
 #include "common/global_common.h"
+#include <mm_malloc.h>
 
 #ifndef NOGRAPHITE
 #include "carbon_user.h"

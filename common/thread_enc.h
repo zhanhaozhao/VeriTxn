@@ -1,7 +1,8 @@
-#ifndef _THREAD_ENC_H_
-#define _THREAD_ENC_H_
+#ifndef THREAD_ENC_H_
+#define THREAD_ENC_H_
 
-#include <string>
+#include "global_common.h"
+// #include <cstring>
 // #include "txn.h"
 // #include "stats.h"
 // #include "common/thread.h"

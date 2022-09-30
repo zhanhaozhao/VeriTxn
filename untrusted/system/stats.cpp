@@ -9,9 +9,9 @@
 void Stats_thd::init(uint64_t thd_id) {
 	clear();
 	all_debug1 = (uint64_t *)
-		_mm_malloc(sizeof(uint64_t) * MAX_TXN_PER_PART, 64);
+		aligned_alloc(64, sizeof(uint64_t) * MAX_TXN_PER_PART);
 	all_debug2 = (uint64_t *)
-		_mm_malloc(sizeof(uint64_t) * MAX_TXN_PER_PART, 64);
+		aligned_alloc(64, sizeof(uint64_t) * MAX_TXN_PER_PART);
 }
 
 void Stats_thd::clear() {
@@ -47,9 +47,9 @@ void Stats::init() {
 	if (!STATS_ENABLE) 
 		return;
 	_stats = (Stats_thd**) 
-			_mm_malloc(sizeof(Stats_thd*) * g_thread_cnt, 64);
+			aligned_alloc(64, sizeof(Stats_thd*) * g_thread_cnt);
 	tmp_stats = (Stats_tmp**) 
-			_mm_malloc(sizeof(Stats_tmp*) * g_thread_cnt, 64);
+			aligned_alloc(64, sizeof(Stats_tmp*) * g_thread_cnt);
 	dl_detect_time = 0;
 	dl_wait_time = 0;
 	deadlock = 0;
@@ -60,9 +60,9 @@ void Stats::init(uint64_t thread_id) {
 	if (!STATS_ENABLE) 
 		return;
 	_stats[thread_id] = (Stats_thd *) 
-		_mm_malloc(sizeof(Stats_thd), 64);
+		aligned_alloc(64, sizeof(Stats_thd));
 	tmp_stats[thread_id] = (Stats_tmp *)
-		_mm_malloc(sizeof(Stats_tmp), 64);
+		aligned_alloc(64, sizeof(Stats_tmp));
 
 	_stats[thread_id]->init(thread_id);
 	tmp_stats[thread_id]->init();
