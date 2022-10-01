@@ -7,7 +7,7 @@
 void 
 Row_occ::init(row_t * row) {
 	_row = row;
-	int part_id = row->get_part_id();
+	// int part_id = row->get_part_id();
 	_latch = (pthread_mutex_t *) malloc(sizeof(pthread_mutex_t));
 	pthread_mutex_init( _latch, NULL );
 	wts = 0;

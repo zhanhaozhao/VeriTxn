@@ -40,7 +40,7 @@ Query_queue::init(workload * h_wl) {
 
 void 
 Query_queue::init_per_thread(int thread_id) {	
-	all_queries[thread_id] = (Query_thd *) aligned_alloc(64, sizeof(Query_thd));
+	all_queries[thread_id] = (Query_thd *) _mm_malloc(sizeof(Query_thd), 64);
 	all_queries[thread_id]->init(_wl, thread_id);
 }
 

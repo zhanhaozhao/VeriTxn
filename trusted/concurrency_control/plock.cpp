@@ -10,7 +10,7 @@
 // per-partition Manager
 /************************************************/
 void PartMan::init() {
-	uint64_t part_id = get_part_id(this);
+	// uint64_t part_id = get_part_id(this);
 	waiter_cnt = 0;
 	owner = NULL;
 	waiters = (txn_man **)

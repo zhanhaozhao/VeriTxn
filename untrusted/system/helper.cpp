@@ -1,6 +1,6 @@
 #include "global.h"
 #include "common/helper.h"
-#include "common/mem_alloc.h"
+#include "mem_alloc.h"
 #include "time.h"
 
 bool itemid_t::operator==(const itemid_t &other) const {
@@ -25,9 +25,9 @@ void itemid_t::init() {
 	next = NULL;
 }
 
-int get_thdid_from_txnid(uint64_t txnid) {
-	return txnid % g_thread_cnt;
-}
+// int get_thdid_from_txnid(uint64_t txnid) {
+// 	return txnid % g_thread_cnt;
+// }
 
 // uint64_t get_part_id(void * addr) {
 // 	return ((uint64_t)addr / PAGE_SIZE) % g_part_cnt; 

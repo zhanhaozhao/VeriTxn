@@ -8,7 +8,7 @@
 
 void Row_ts::init(row_t * row) {
 	_row = row;
-	uint64_t part_id = row->get_part_id();
+	// uint64_t part_id = row->get_part_id();
 	wts = 0;
 	rts = 0;
 	min_wts = UINT64_MAX;
@@ -25,7 +25,7 @@ void Row_ts::init(row_t * row) {
 }
 
 TsReqEntry * Row_ts::get_req_entry() {
-	uint64_t part_id = get_part_id(_row);
+	// uint64_t part_id = get_part_id(_row);
 	return (TsReqEntry *) malloc(sizeof(TsReqEntry));
 }
 

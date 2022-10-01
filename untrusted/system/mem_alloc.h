@@ -5,6 +5,8 @@
 // #include "common/global_common.h"
 // #include <map>
 #include "stdint.h"
+#include <utility>
+#include "pthread.h"
 // #include <iostream>
 // #include "Arena.h"
 

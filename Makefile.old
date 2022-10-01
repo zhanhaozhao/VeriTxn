@@ -22,7 +22,7 @@ LDFLAGS += $(CFLAGS)
 
 CPPS = $(foreach dir, $(SRC_DIRS), $(wildcard $(dir)*.cpp))
 OBJS = $(CPPS:.cpp=.o)
-DEPS = $(CPPS:.cpp=.d)
+# DEPS = $(CPPS:.cpp=.d)
 
 all:rundb
 
@@ -31,12 +31,14 @@ rundb : $(OBJS)
 
 -include $(OBJS:%.o=%.d)
 
-%.d: %.cpp
-	$(CC) -MM -MT $*.o -MF $@ $(CFLAGS) $<
+# %.d: %.cpp
+#	$(CC) -MM -MT $*.o -MF $@ $(CFLAGS) $<
 
 %.o: %.cpp
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 .PHONY: clean
 clean:
-	rm -f rundb ./trusted/*.o ./trusted/*.d ./untrusted/*.o ./untrusted/*.d ./common/*.o ./common/*.d $(OBJS) $(DEPS)
+	rm -f rundb ./trusted/*.o ./trusted/*.d ./untrusted/*.o ./untrusted/*.d ./common/*.o ./common/*.d $(OBJS)
+
+# $(DEPS)

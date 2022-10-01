@@ -109,16 +109,16 @@ DL_detect::detect_cycle(uint64_t txnid) {
 	INC_GLOB_STATS_ENC(cycle_detect, 1);
 	bool deadlock = false;
 
-	int thd = get_thdid_from_txnid(txnid);
-	DetectData * detect_data = (DetectData *)
+	// int thd = get_thdid_from_txnid(txnid);
+	DetectData * detect_data = (DetectData *) malloc(sizeof(DetectData));
 		// mem_allocator_enc.alloc(sizeof(DetectData), thd);
-		malloc(sizeof(DetectData));
-	detect_data->visited = (bool * )
+
+	detect_data->visited = (bool * ) malloc(sizeof(bool));
 		// mem_allocator_enc.alloc(sizeof(bool) * V, thd);
-		malloc(sizeof(bool));
-	detect_data->recStack = (bool * )
+
+	detect_data->recStack = (bool * ) malloc(sizeof(bool));
 		// mem_allocator_enc.alloc(sizeof(bool) * V, thd);	
-		malloc(sizeof(bool));
+
 	for(int i = 0; i < V; i++) {
         detect_data->visited[i] = false;
 		detect_data->recStack[i] = false;

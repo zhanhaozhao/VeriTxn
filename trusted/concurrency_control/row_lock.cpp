@@ -31,7 +31,7 @@ RC Row_lock::lock_get(lock_t type, txn_man * txn) {
 RC Row_lock::lock_get(lock_t type, txn_man * txn, uint64_t* &txnids, int &txncnt) {
 	assert (CC_ALG == DL_DETECT || CC_ALG == NO_WAIT || CC_ALG == WAIT_DIE);
 	RC rc;
-	int part_id =_row->get_part_id();
+	// int part_id =_row->get_part_id();
 	if (g_central_man_enc)
 		glob_manager_enc->lock_row(_row);
 	else 
