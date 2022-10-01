@@ -1,7 +1,7 @@
 SGX_SDK ?= /opt/intel/sgxsdk
 SGX_MODE ?= HW
 SGX_ARCH ?= x64
-SGX_DEBUG ?= 0
+SGX_DEBUG ?= 1
 
 PROJECT_ROOT_DIR := $(shell readlink -f ..)
 # Enclave_Search_Dirs ?= $(shell \
@@ -17,7 +17,7 @@ INSTALL_INCLUDE_DIR = $(INSTALL_PREFIX)/include
 
 all:
 	$(MAKE) -ef sgx_t.mk all SGX_MODE=$(SGX_MODE) SGX_DEBUG=$(SGX_DEBUG) Enclave_Search_Dirs="$(Enclave_Search_Dirs)"
-# $(MAKE) -ef sgx_u.mk all SGX_MODE=$(SGX_MODE) SGX_DEBUG=$(SGX_DEBUG) Enclave_Search_Dirs="$(Enclave_Search_Dirs)" 
+	$(MAKE) -ef sgx_u.mk all SGX_MODE=$(SGX_MODE) SGX_DEBUG=$(SGX_DEBUG) Enclave_Search_Dirs="$(Enclave_Search_Dirs)" 
 
 HEADERS := untrusted/worker.h
 
@@ -30,7 +30,7 @@ install:
 
 clean:
 	$(MAKE) -ef sgx_t.mk clean
-# $(MAKE) -ef sgx_u.mk clean
+	$(MAKE) -ef sgx_u.mk clean
 
 mrproper: clean
 	rm -rf ./install

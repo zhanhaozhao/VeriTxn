@@ -63,11 +63,11 @@ ManagerEnc::get_ts(uint64_t thread_id) {
 			time = ATOM_FETCH_ADD((*timestamp), 1);
 		break;
 	case TS_HW :
-#ifndef NOGRAPHITE
-		time = CarbonGetTimestamp();
-#else
+// #ifndef NOGRAPHITE
+// 		time = CarbonGetTimestamp();
+// #else
 		assert(false);
-#endif
+// #endif
 		break;
 	case TS_CLOCK :
 		time = get_cur_time_ocall() * g_thread_cnt_enc + thread_id;

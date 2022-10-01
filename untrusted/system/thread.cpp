@@ -44,9 +44,9 @@ void thread_t::set_cur_cid(uint64_t cid) {_cur_cid = cid; }
 RC thread_t::run() {
 
 // Get a thread number
-#if !NOGRAPHITE
-	_thd_id = CarbonGetTileId();
-#endif
+// #if !NOGRAPHITE
+// 	_thd_id = CarbonGetTileId();
+// #endif
 	if (warmup_finish) {
 		mem_allocator.register_thread(_thd_id);
 	}

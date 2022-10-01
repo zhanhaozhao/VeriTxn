@@ -123,20 +123,20 @@ inline uint64_t get_server_clock() {
 }
 
 inline uint64_t get_sys_clock() {
-#ifndef NOGRAPHITE
-	static volatile uint64_t fake_clock = 0;
-	if (warmup_finish)
-		return CarbonGetTime();   // in ns
-	else {
-		return ATOM_ADD_FETCH(fake_clock, 100);
-	}
-#else
+// #ifndef NOGRAPHITE
+// 	static volatile uint64_t fake_clock = 0;
+// 	if (warmup_finish)
+// 		return CarbonGetTime();   // in ns
+// 	else {
+// 		return ATOM_ADD_FETCH(fake_clock, 100);
+// 	}
+// #else
   #if TIME_ENABLE
 	return get_server_clock();
   #else
 	return 0;
   #endif
-#endif
+// #endif
 }
 
 class myrand {

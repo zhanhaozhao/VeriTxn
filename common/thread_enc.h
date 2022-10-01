@@ -2,6 +2,7 @@
 #define THREAD_ENC_H_
 
 #include "global_common.h"
+#include "common/config.h"
 // #include <cstring>
 // #include "txn.h"
 // #include "stats.h"

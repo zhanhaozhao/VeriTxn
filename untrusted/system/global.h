@@ -3,14 +3,14 @@
 
 #include <time.h> 
 #include <sys/time.h>
-
-#include "common/global_common.h"
 #include <mm_malloc.h>
 
-#ifndef NOGRAPHITE
-#include "carbon_user.h"
-#endif
+#include "common/config.h"
+#include "common/global_common.h"
 
+// #ifndef NOGRAPHITE
+// #include "carbon_user.h"
+// #endif
 
 // #include "mem_alloc.h"
 // #include "stats.h"
@@ -43,9 +43,9 @@ class table_map;
 extern bool volatile warmup_finish;
 extern bool volatile enable_thread_mem_pool;
 extern pthread_barrier_t warmup_bar;
-#ifndef NOGRAPHITE
-extern carbon_barrier_t enable_barrier;
-#endif
+// #ifndef NOGRAPHITE
+// extern carbon_barrier_t enable_barrier;
+// #endif
 
 /******************************************/
 // Global Parameter

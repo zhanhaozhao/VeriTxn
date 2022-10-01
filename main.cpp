@@ -1,10 +1,10 @@
-#include <thread_enc.h>
-#include "global.h"
-#include "global_struct.h"
-#include "ycsb.h"
-#include "tpcc.h"
-#include "test.h"
-#include "db_thread.h"
+#include "common/thread_enc.h"
+#include "untrusted/system/global.h"
+#include "untrusted/system/global_struct.h"
+#include "common/ycsb.h"
+#include "common/tpcc.h"
+#include "common/test.h"
+#include "common/db_thread.h"
 // #include "manager.h"
 // #include "common/mem_alloc.h"
 // #include "common/query.h"
@@ -16,6 +16,14 @@
 
 // #include "global_enc.h"
 
+#include "common/config.h"
+#ifdef USE_SGX
+#include "sgx_urts.h"
+#define ENCLAVE_FILENAME "Enclave.signed.so"
+extern sgx_enclave_id_t enclave_id;
+#endif // USE_SGX
+
+
 void * f(void *);
 
 thread_t ** m_thds;
@@ -26,6 +34,20 @@ void parser(int argc, char * argv[]);
 
 int main(int argc, char* argv[])
 {
+
+#ifdef USE_SGX
+  sgx_launch_token_t t;
+  int updated = 0;
+  memset(t, 0, sizeof(sgx_launch_token_t));
+  sgx_status_t enclave_status = sgx_create_enclave(ENCLAVE_FILENAME,
+    SGX_DEBUG_FLAG, &t, &updated, &enclave_id, NULL);
+  if (enclave_status != SGX_SUCCESS) {
+    printf("Failed to create Enclave : error %d - %#x.\n", enclave_status,
+      enclave_status);
+    return 1;
+  } else printf("Enclave launched with id: %ld.\n", enclave_id); 
+#endif // USE_SGX
+
 	parser(argc, argv);
 	
 	mem_allocator.init(g_part_cnt, MEM_SIZE / g_part_cnt); 
@@ -89,9 +111,9 @@ int main(int argc, char* argv[])
 	}
 	warmup_finish = true;
 	pthread_barrier_init( &warmup_bar, NULL, g_thread_cnt );
-#ifndef NOGRAPHITE
-	CarbonBarrierInit(&enable_barrier, g_thread_cnt);
-#endif
+// #ifndef NOGRAPHITE
+// 	CarbonBarrierInit(&enable_barrier, g_thread_cnt);
+// #endif
 	pthread_barrier_init( &warmup_bar, NULL, g_thread_cnt );
 
 	// spawn and run txns again.
@@ -112,6 +134,12 @@ int main(int argc, char* argv[])
 	} else {
 		((TestWorkload *)m_wl)->summarize();
 	}
+
+#ifdef USE_SGX
+  enclave_status = sgx_destroy_enclave(enclave_id);
+  assert(enclave_status == SGX_SUCCESS);
+#endif // USE_SGX
+
 	return 0;
 }
 

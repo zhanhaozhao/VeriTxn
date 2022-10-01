@@ -4,8 +4,8 @@ PROJECT_ROOT_DIR ?= $(shell readlink -f .)
 SGX_SDK ?= /opt/intel/sgxsdk
 SGX_MODE ?= HW
 SGX_ARCH ?= x64
-SGX_DEBUG ?= 0
-SGX_PRERELEASE ?= 1
+SGX_DEBUG ?= 1
+# SGX_PRERELEASE ?= 1
 ifeq ($(shell getconf LONG_BIT), 32)
 	SGX_ARCH := x86
 else ifeq ($(findstring -m32, $(CXXFLAGS)), -m32)
@@ -133,7 +133,7 @@ trusted/Enclave_ocall.o: trusted/Enclave_ocall.cpp
 	@echo "CXX  <=  $<"
 
 ### Enclave Image ###
-SRC_DIRS = ./ ./common/ ./trusted/system/ ./trusted/concurrency_control/
+SRC_DIRS = ./common/ ./trusted/system/ ./trusted/concurrency_control/
 CPPS = $(foreach dir, $(SRC_DIRS), $(wildcard $(dir)*.cpp))
 OBJS = $(CPPS:.cpp=_t.o)
 

@@ -3,6 +3,10 @@
 // #include "plock.h"
 // #include "occ.h"
 
+#ifdef USE_SGX
+#include "sgx_eid.h"
+#endif // USE_SGX
+
 // mem_alloc mem_allocator;
 // Stats stats;
 // // DL_detect dl_detector;
@@ -17,9 +21,9 @@
 bool volatile warmup_finish = false;
 bool volatile enable_thread_mem_pool = false;
 pthread_barrier_t warmup_bar;
-#ifndef NOGRAPHITE
-carbon_barrier_t enable_barrier;
-#endif
+// #ifndef NOGRAPHITE
+// carbon_barrier_t enable_barrier;
+// #endif
 
 ts_t g_abort_penalty = ABORT_PENALTY;
 bool g_central_man = CENTRAL_MAN;
@@ -63,3 +67,8 @@ UInt32 g_cust_per_dist = 2000;
 UInt32 g_max_items = 100000;
 UInt32 g_cust_per_dist = 3000;
 #endif
+
+// enclave id
+#ifdef USE_SGX
+sgx_enclave_id_t enclave_id = 0;
+#endif // USE_SGX

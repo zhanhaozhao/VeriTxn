@@ -99,7 +99,7 @@ void mem_alloc::unregister() {
 int 
 mem_alloc::get_arena_id() {
 	int arena_id; 
-#if NOGRAPHITE
+// #if NOGRAPHITE
 	pthread_t pid = pthread_self();
 	int entry = pid % _bucket_cnt;
 	while (pid_arena[entry].first != pid) {
@@ -108,9 +108,9 @@ mem_alloc::get_arena_id() {
 		entry = (entry + 1) % _bucket_cnt;
 	}
 	arena_id = pid_arena[entry].second;
-#else 
-	arena_id = CarbonGetTileId();
-#endif
+// #else 
+// 	arena_id = CarbonGetTileId();
+// #endif
 	return arena_id;
 }
 
