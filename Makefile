@@ -2,7 +2,7 @@ PROJECT_ROOT ?= $(shell readlink -f .)
 
 
 CC=g++
-CFLAGS=-Wall -g -std=c++0x
+CFLAGS=-Wall -g -std=c++0x -no-pie
 
 .SUFFIXES: .o .cpp .h
 
@@ -16,13 +16,13 @@ INCLUDE = -I. -I./common/ -I./untrusted/system/ -I./untrusted/benchmarks/ -I./un
 # LDFLAGS = -Wall -L. -L./libs -pthread -g -lrt -std=c++0x -O0 -ljemalloc
 
 CFLAGS += $(INCLUDE) -D NOGRAPHITE=1 -Werror -Wno-comment -O0
-LDFLAGS = -Wall -L. -pthread -g -lrt -std=c++0x -O0 -ljemalloc
+LDFLAGS = -Wall -L.  -L./libs -pthread -g -lrt -std=c++0x -O0 -ljemalloc
 # LDFLAGS = -Wall -L. -pthread -g -lrt -std=c++0x -O0 -ljemalloc -fsanitize=address -fno-omit-frame-pointer -static-libasan
 LDFLAGS += $(CFLAGS)
 
 CPPS = $(foreach dir, $(SRC_DIRS), $(wildcard $(dir)*.cpp))
 OBJS = $(CPPS:.cpp=.o)
-# DEPS = $(CPPS:.cpp=.d)
+DEPS = $(CPPS:.cpp=.d)
 
 all:rundb
 
@@ -31,8 +31,8 @@ rundb : $(OBJS)
 
 -include $(OBJS:%.o=%.d)
 
-# %.d: %.cpp
-#	$(CC) -MM -MT $*.o -MF $@ $(CFLAGS) $<
+%.d: %.cpp
+	$(CC) -MM -MT $*.o -MF $@ $(CFLAGS) $<
 
 %.o: %.cpp
 	$(CC) -c $(CFLAGS) -o $@ $<
