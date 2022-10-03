@@ -3,6 +3,7 @@
 
 #include "global_enc.h"
 #include "row_enc.h"
+#include <atomic>
 // #include "mem_helper_enc.h"
 // #include "common/helper.h"
 
@@ -61,6 +62,7 @@ private:
     uint64_t 			_bucket_cnt_per_part;
     uint64_t 			_default_verify_hash;
     uint64_t**          _verify_hash;
+    std::atomic<BucketHeader_ENC*>** _cache;
 #ifndef SGX_DISK
     BucketHeader_ENC**      _buckets;
 #endif

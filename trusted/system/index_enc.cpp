@@ -7,6 +7,7 @@
 #include "index_enc.h"
 // #include "vector"
 #include <cstdlib>
+#include <atomic>
 // #include <stdlib.h>
 
 
@@ -38,6 +39,7 @@ void test_encoder(const BucketNode_ENC* x);
 RC IndexEnc::init(uint64_t bucket_cnt, int part_cnt) {
     _bucket_cnt_per_part = bucket_cnt / part_cnt;
     _verify_hash = new u_int64_t * [part_cnt];
+    _cache = new std::atomic<BucketHeader_ENC*>* [part_cnt];
 #ifndef SGX_DISK
     _buckets = new BucketHeader_ENC * [part_cnt];
 #endif
@@ -45,6 +47,7 @@ RC IndexEnc::init(uint64_t bucket_cnt, int part_cnt) {
     for (int i = 0; i < part_cnt; i++) {
         // _verify_hash[i] = (u_int64_t *) aligned_alloc(64, sizeof(u_int64_t) * _bucket_cnt_per_part);
         _verify_hash[i] = (u_int64_t *) malloc(sizeof(u_int64_t) * _bucket_cnt_per_part);
+        _cache[i] = new std::atomic<BucketHeader_ENC*> [_bucket_cnt_per_part];
 #ifndef SGX_DISK
         // _buckets[i] = (BucketHeader_ENC *) aligned_alloc(64, sizeof(BucketHeader_ENC) * _bucket_cnt_per_part);
         _buckets[i] = (BucketHeader_ENC *) malloc(sizeof(BucketHeader_ENC) * _bucket_cnt_per_part);
@@ -53,6 +56,7 @@ RC IndexEnc::init(uint64_t bucket_cnt, int part_cnt) {
 #ifndef SGX_DISK
             _buckets[i][n].init();
 #endif
+            _cache[i][n] = nullptr;
             _verify_hash[i][n] = _default_verify_hash;
         }
     }
@@ -111,7 +115,6 @@ RC IndexEnc::index_read(void* ocall_index, idx_key_t key, itemid_t * &item, int 
     return rc;
 }
 
-// todo: cache
 BucketHeader_ENC* IndexEnc::load_bucket(void * index, int part_id, uint64_t bkt_idx) {
 #ifndef SGX_DISK
 //    auto hs = _buckets[part_id][bkt_idx].get_hash();
@@ -121,13 +124,30 @@ BucketHeader_ENC* IndexEnc::load_bucket(void * index, int part_id, uint64_t bkt_
 //    assert (hs == _verify_hash[part_id][bkt_idx]);
     return &_buckets[part_id][bkt_idx];
 #else
-    auto * res_bucket = new BucketHeader_ENC;
-    // res_bucket->decode(load_disk(part_id, bkt_idx));
-    res_bucket->decode(get_bucket_ocall(index, part_id, bkt_idx));
-    // if (res_bucket->get_hash() != _verify_hash[part_id][bkt_idx]) {
-        // return nullptr;
-    // }
-    return res_bucket;
+//    auto * res_bucket = new BucketHeader_ENC;
+//    res_bucket->decode(get_bucket_ocall(index, part_id, bkt_idx));
+//    if (_verify_hash[part_id][bkt_idx] == _default_verify_hash) {
+//        _verify_hash[part_id][bkt_idx] = res_bucket->get_hash();
+//    } else {
+//        assert (_verify_hash[part_id][bkt_idx] == res_bucket->get_hash());
+//    }
+//    return res_bucket;
+    auto cur = _cache[part_id][bkt_idx].load();
+    if (cur == nullptr) {
+        auto * res_bucket = new BucketHeader_ENC;
+        res_bucket->decode(get_bucket_ocall(index, part_id, bkt_idx));
+        BucketHeader_ENC* tmp = nullptr;
+        if (!_cache[part_id][bkt_idx].compare_exchange_strong(tmp, res_bucket)) {
+            cur = _cache[part_id][bkt_idx].load();
+        } else {
+            cur = res_bucket;
+            if (_verify_hash[part_id][bkt_idx] == _default_verify_hash) {
+                _verify_hash[part_id][bkt_idx] = cur->get_hash();
+            }
+            assert(_verify_hash[part_id][bkt_idx] == cur->get_hash());
+        }
+    }
+    return cur;
 #endif
 }
 
@@ -140,11 +160,13 @@ void IndexEnc::flush_bucket(int part_id, uint64_t bkt_idx, BucketHeader_ENC* cur
     return;
 #else
     if (modified) {
-        _verify_hash[part_id][bkt_idx] = cur->get_hash();
+//        _verify_hash[part_id][bkt_idx] = cur->get_hash();
 //        flush_disk(part_id, bkt_idx, cur->encode());
 //        test_encoder(cur);
+    } else {
+
     }
-    delete cur;
+//    delete cur;
 #endif
 }
 

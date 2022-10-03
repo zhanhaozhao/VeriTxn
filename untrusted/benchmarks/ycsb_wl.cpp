@@ -65,7 +65,7 @@ RC ycsb_wl::init_table() {
 				int field_size = schema->get_field_size(fid);
 				char value[field_size];
 				for (int i = 0; i < field_size; i++) 
-					value[i] = (char)rand() % (1<<8) ;
+					value[i] = (char)('a' + random() % 25) ;
 				new_row->set_value(fid, value);
 			}
             itemid_t * m_item = 
@@ -157,5 +157,4 @@ void * ycsb_wl::init_table_slice() {
 // 	txn_manager->init(h_thd, this, h_thd->get_thd_id());
 // 	return RCOK;
 // }
-
 

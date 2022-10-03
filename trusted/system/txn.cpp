@@ -14,6 +14,7 @@
 #include "index_btree.h"
 #include "index_hash.h"
 #include "index_enc.h"
+#include "ycsb.h"
 
 #include "api.h"
 
@@ -27,7 +28,7 @@ void txn_man::init(thread_t * h_thd, workload * h_wl, uint64_t thd_id) {
 	wr_cnt = 0;
 	insert_cnt = 0;
 	// accesses = (Access **) aligned_alloc(64, sizeof(Access *) * MAX_ROW_PER_TXN);
-	accesses = (Access **) malloc(sizeof(Access *) * MAX_ROW_PER_TXN);
+	accesses = (Access **) malloc(sizeof(Access *) * (MAX_ROW_PER_TXN));
 	for (int i = 0; i < MAX_ROW_PER_TXN; i++)
 		accesses[i] = NULL;
 	num_accesses_alloc = 0;
@@ -201,7 +202,9 @@ txn_man::index_read(INDEX * index, idx_key_t key, int part_id) {
 	uint64_t starttime = get_cur_time_ocall();
 	itemid_t * item;
 	// index --> en_index;
-	IndexEnc * index_enc = (IndexEnc *) tab_map->_indexes[index->index_name];
+	// assert(index);
+	// IndexEnc * index_enc = (IndexEnc *) tab_map->_indexes[index->index_name];
+	IndexEnc * index_enc = (IndexEnc *) tab_map->_indexes["MAIN_INDEX"];
 	index_enc->index_read(index, key, item, part_id, get_thd_id());
 	// index->index_read(key, item, part_id, get_thd_id());
 	INC_TMP_STATS_ENC(get_thd_id(), time_index, get_cur_time_ocall() - starttime);
