@@ -241,6 +241,10 @@ void BucketHeader_ENC::read_item(idx_key_t key, itemid_t * &item) const {
             break;
         cur_node = cur_node->next;
     }
+//    if (cur_node == nullptr) {
+//        item = nullptr;
+//        return;
+//    }
     // , "Key does not exist!"
     assert(cur_node->key == key);
     
@@ -266,7 +270,7 @@ void BucketHeader_ENC::decode(const DFlow & e) {
     std::vector <encoded_record> data = decode_vec(e);
     this->init();
     for (const auto& it:data) {
-        auto tmp = new BucketNode_ENC(stoi(it.first));
+        auto tmp = new BucketNode_ENC(stoull(it.first));
         tmp->decode(it.second);
         if (this->first_node == NULL) {
             this->first_node = tmp;
@@ -302,22 +306,37 @@ DFlow BucketNode_ENC::encode() const {
     std::string res_items;
     itemid_t * it = items;
     data.emplace_back(std::make_pair(std::to_string(this->key), ""));
-    auto tmp = (row_t*)(it->location);
-    test_encoder_row(tmp);
-    data.emplace_back(std::make_pair(std::to_string(tmp->get_part_id()), tmp->encode()));
+    while (it->next != nullptr) {
+        auto tmp = (row_t*)(it->location);
+        test_encoder_row(tmp);
+        data.emplace_back(std::make_pair(std::to_string(tmp->get_part_id()), tmp->encode()));
+        it = it -> next;
+    }
     return encode_vec(data);
 }
 
 void BucketNode_ENC::decode(const DFlow & e) {
     std::vector <encoded_record> data = decode_vec(e);
-    this->init(std::stoi(data[0].first));
+    this->init(std::stoull(data[0].first));
     this->items = new itemid_t;
-    assert(data.size() == 2);
-    auto * cur_row = new row_t;
-    cur_row->decode(data[1].second);
-    this->items->location = (void*)cur_row;
-    this->items->valid = true;
-    this->items->type = DT_row;
+    assert(data.size() > 1);
+    int n = data.size();
+    itemid_t* last = nullptr;
+    for (int i = 1;i < n;i ++) {
+        auto * cur_row = new row_t;
+        cur_row->decode(data[1].second);
+        auto * cur_item = new itemid_t;
+        cur_item->location = (void*)cur_row;
+        cur_item->valid = true;
+        cur_item->type = DT_row;
+        cur_item->next = nullptr;
+        if (last == nullptr) {
+            this->items = cur_item;
+        } else {
+            last->next = cur_item;
+            last = cur_item;
+        }
+    }
 }
 
 void test_encoder(const BucketNode_ENC* x) {

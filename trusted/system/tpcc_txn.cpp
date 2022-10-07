@@ -441,7 +441,7 @@ RC tpcc_txn_man::run_new_order(tpcc_query * query) {
 //		r_ol->set_value(OL_SUPPLY_W_ID, &ol_supply_w_id);
 //		r_ol->set_value(OL_QUANTITY, &ol_quantity);
 //		r_ol->set_value(OL_AMOUNT, &ol_amount);
-#endif		
+#endif
 //		insert_row(r_ol, _wl->t_orderline);
 	}
 	assert( rc == RCOK );
@@ -466,7 +466,7 @@ tpcc_txn_man::run_order_status(tpcc_query * query) {
 		// EXEC SQL CLOSE c_name;
 
 		uint64_t key = custNPKey(query->c_last, query->c_d_id, query->c_w_id);
-		// XXX: the list is not sorted. But let's assume it's sorted... 
+		// XXX: the list is not sorted. But let's assume it's sorted...
 		// The performance won't be much different.
 		INDEX * index = _wl->i_customer_last;
 		uint64_t thd_id = get_thd_id();
@@ -512,7 +512,7 @@ tpcc_txn_man::run_order_status(tpcc_query * query) {
 	row_t * r_order = (row_t *) item->location;
 	row_t * r_order_local = get_row(r_order, RD);
 	if (r_order_local == NULL) {
-		assert(false); 
+		assert(false);
 		return finish(Abort);
 	}
 
@@ -597,7 +597,7 @@ tpcc_txn_man::run_delivery(tpcc_query * query) {
 		row_t * r_orderline = (row_t *)item->location;
 		r_orderling->get_value(OL_O_ID, no_o_id);
 		// TODO the orderline row should be removed from the table and indexes.
-		
+
 		index = _wl->i_order;
 		key = orderPrimaryKey(query->w_id, d_id, no_o_id);
 		itemid_t * item = index_read(index, key, wh_to_part(query->w_id));
@@ -618,7 +618,7 @@ tpcc_txn_man::run_delivery(tpcc_query * query) {
 			r_orderline->get_value(OL_AMOUNT, ol_amount);
 			sum_ol_amount += ol_amount;
 		}
-		
+
 		key = custKey(o_c_id, d_id, query->w_id);
 		itemid_t * item = index_read(_wl->i_customer_id, key, wh_to_part(query->w_id));
 		row_t * r_cust = (row_t *)item->location;

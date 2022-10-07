@@ -12,7 +12,7 @@
 
 class BucketNode_ENC {
 public:
-    BucketNode_ENC(idx_key_t key) {	init(key); };
+    BucketNode_ENC(idx_key_t key) {	init(key); next = nullptr; items = nullptr;};
     void init(idx_key_t key) {
         this->key = key;
         next = nullptr;
