@@ -99,9 +99,11 @@ RC workload::init_schema(std::string schema_file) {
 			index->init(part_cnt, tables[tname], g_synth_table_size * 2);
 			index->index_name = iname;
 			index_init_ecall(part_cnt, (void *) tables[tname], iname, g_synth_table_size * 2);
+			global_table_map->_indexes[iname] = index;
 	#elif WORKLOAD == TPCC
 			assert(tables[tname] != NULL);
 			index->init(part_cnt, tables[tname], stoi( items[1] ) * part_cnt);
+            global_table_map->_indexes[iname] = index;
 	#endif
 #else
 			index->init(part_cnt, tables[tname]);
