@@ -4,9 +4,9 @@
 
 // drand48_data ** tpcc_buffer;
 
-std::vector<std::default_random_engine> tpccdre;
+std::vector<std::default_random_engine> tpccdre(g_thread_cnt, std::default_random_engine(0));
 // extern std::vector<std::uniform_real_distribution<double> > tpccurd;
-std::vector<std::uniform_int_distribution<uint64_t> > tpccuid;
+std::vector<std::uniform_int_distribution<uint64_t> > tpccuid(g_thread_cnt, std::uniform_int_distribution<uint64_t>(0, 1));
 
 // uint64_t distKey(uint64_t d_id, uint64_t d_w_id)  {
 // 	return d_w_id * DIST_PER_WARE + d_id; 

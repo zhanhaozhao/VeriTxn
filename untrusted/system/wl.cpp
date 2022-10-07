@@ -103,6 +103,7 @@ RC workload::init_schema(std::string schema_file) {
 	#elif WORKLOAD == TPCC
 			assert(tables[tname] != NULL);
 			index->init(part_cnt, tables[tname], stoi( items[1] ) * part_cnt);
+            global_table_map->_indexes[iname] = index;
 	#endif
 #else
 			index->init(part_cnt, tables[tname]);
