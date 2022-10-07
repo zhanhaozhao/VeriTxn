@@ -97,12 +97,12 @@ uint64_t NURand(uint64_t A, uint64_t x, uint64_t y, uint64_t thd_id) {
 uint64_t MakeAlphaString(int min, int max, char* str, uint64_t thd_id) {
     char char_list[] = {'1','2','3','4','5','6','7','8','9','a','b','c',
                         'd','e','f','g','h','i','j','k','l','m','n','o',
-                        'p','q','r','s','t','u','v','w','x','y','z','A',
+                        'p','q','r','s','t','u','v','w','x','y','A',
                         'B','C','D','E','F','G','H','I','J','K','L','M',
                         'N','O','P','Q','R','S','T','U','V','W','X','Y','Z'};
     uint64_t cnt = URand(min, max, thd_id);
     for (uint32_t i = 0; i < cnt; i++) 
-		str[i] = char_list[URand(0L, 60L, thd_id)];
+		str[i] = char_list[URand(0L, 59L, thd_id)];
     for (int i = cnt; i < max; i++)
 		str[i] = '\0';
 

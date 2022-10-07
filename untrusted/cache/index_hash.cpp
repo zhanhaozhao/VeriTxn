@@ -9,6 +9,7 @@
 
 RC IndexHash::init(uint64_t bucket_cnt, int part_cnt) {
 	_bucket_cnt = bucket_cnt;
+	_part_cnt = part_cnt;
 	_bucket_cnt_per_part = bucket_cnt / part_cnt;
 	_buckets = new BucketHeader * [part_cnt];
 	for (int i = 0; i < part_cnt; i++) {
@@ -129,7 +130,7 @@ void BucketHeader::insert_item(idx_key_t key,
 	}
 }
 
-void BucketHeader::read_item(idx_key_t key, itemid_t * &item, const char * tname) 
+void BucketHeader::read_item(idx_key_t key, itemid_t * &item, std::string tname)
 {
 	BucketNode * cur_node = first_node;
 	while (cur_node != NULL) {
@@ -156,7 +157,7 @@ void BucketHeader::decode(const DFlow & e) {
     std::vector <encoded_record> data = decode_vec(e);
     this->init();
     for (const auto& it:data) {
-        auto tmp = new BucketNode(std::stoi(it.first));
+        auto tmp = new BucketNode(std::stoull(it.first));
         tmp->decode(it.second);
         if (this->first_node == NULL) {
             this->first_node = tmp;
@@ -179,7 +180,7 @@ DFlow BucketNode::encode() const {
 
 void BucketNode::decode(const DFlow & e) {
     std::vector <encoded_record> data = decode_vec(e);
-    this->init(std::stoi(data[0].first));
+    this->init(std::stoull(data[0].first));
     this->items = new itemid_t;
     assert(data.size() == 2);
     auto * cur_row = new base_row_t;

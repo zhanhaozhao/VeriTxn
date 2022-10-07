@@ -36,7 +36,9 @@ void index_init_ecall(int part_cnt, void * table, std::string iname, uint64_t bu
 	IndexEnc * index = new IndexEnc();
 	table_t * tbl = (table_t *) table;
 
+    printf("%p\n", tbl);
 	index->init(part_cnt, tbl, bucket_cnt);
+	printf("%s\n", tbl->get_table_name().c_str());
 	tab_map->_tables[tbl->get_table_name()] = table;
 	tab_map->_indexes[iname] = index;
 }

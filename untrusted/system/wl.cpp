@@ -69,7 +69,9 @@ RC workload::init_schema(std::string schema_file) {
 			}
 			table_t * cur_tab = (table_t *) _mm_malloc(sizeof(table_t), CL_SIZE);
 			cur_tab->init(schema);
+			cur_tab->table_name = tname;
 			tables[tname] = cur_tab;
+            tables[tname]->table_name = tname;
 			global_table_map->_tables[tname] = cur_tab;
         } else if (!line.compare(0, 6, "INDEX=")) {
 			std::string iname;
@@ -102,9 +104,11 @@ RC workload::init_schema(std::string schema_file) {
 			global_table_map->_indexes[iname] = index;
 	#elif WORKLOAD == TPCC
 			assert(tables[tname] != NULL);
-			index->init(part_cnt, tables[tname], stoi( items[1] ) * part_cnt);
-            index->index_name = tname;
-            global_table_map->_indexes[tname] = index;
+			index->init(part_cnt, tables[tname], stoull( items[1] ) * part_cnt);
+            index->index_name = iname;
+            index_init_ecall(part_cnt, (void *) (tables[tname]), iname, stoull( items[1] ) * part_cnt);
+            printf("%s from %s\n", iname.c_str(), tname.c_str());
+            global_table_map->_indexes[iname] = index;
 	#endif
 #else
 			index->init(part_cnt, tables[tname]);
