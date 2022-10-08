@@ -135,7 +135,11 @@ BucketHeader_ENC* IndexEnc::load_bucket(void * index, int part_id, uint64_t bkt_
     auto cur = _cache[part_id][bkt_idx].load();
     if (cur == nullptr) {
         auto * res_bucket = new BucketHeader_ENC;
-        res_bucket->decode(get_bucket_ocall(index, part_id, bkt_idx));
+        std::string encoded = get_bucket_ocall(index, part_id, bkt_idx);
+//        if (bkt_idx == 1) {
+//            printf("The bucket origin = %s\n", encoded.c_str());
+//        }
+        res_bucket->decode(encoded);
         BucketHeader_ENC* tmp = nullptr;
         if (!_cache[part_id][bkt_idx].compare_exchange_strong(tmp, res_bucket)) {
             cur = _cache[part_id][bkt_idx].load();
@@ -144,9 +148,14 @@ BucketHeader_ENC* IndexEnc::load_bucket(void * index, int part_id, uint64_t bkt_
             if (_verify_hash[part_id][bkt_idx] == _default_verify_hash) {
                 _verify_hash[part_id][bkt_idx] = cur->get_hash();
             }
-            assert(_verify_hash[part_id][bkt_idx] == cur->get_hash());
+            auto sh = cur->encode();
+//            printf("The encoded value = %s\n", sh.c_str());
+            assert(_verify_hash[part_id][bkt_idx] == string_hash(sh));
         }
     }
+//    if (bkt_idx == 1) {
+//        printf("The bucket id = %s\n", cur->encode().c_str());
+//    }
     return cur;
 #endif
 }
@@ -183,6 +192,7 @@ RC IndexEnc::index_read(void * ocall_index, idx_key_t key, itemid_t * &item,
         return Abort;
     }
     cur_bkt->read_item(key, item);
+//    assert (item->location != nullptr);
     // 3. release the latch
 //	release_latch(cur_bkt);
     flush_bucket(part_id, bkt_idx, cur_bkt, false);
@@ -269,14 +279,18 @@ DFlow BucketHeader_ENC::encode() const {
 void BucketHeader_ENC::decode(const DFlow & e) {
     std::vector <encoded_record> data = decode_vec(e);
     this->init();
+    BucketNode_ENC* last = nullptr;
     for (const auto& it:data) {
         auto tmp = new BucketNode_ENC(stoull(it.first));
         tmp->decode(it.second);
-        if (this->first_node == NULL) {
+        if (last == NULL) {
             this->first_node = tmp;
+            last = tmp;
         } else {
-            this->first_node->next = tmp;
-            this->first_node = tmp;
+            last->next = tmp;
+            last = tmp;
+//            this->first_node->next = tmp;
+//            this->first_node = tmp;
         }
     }
 }
@@ -284,7 +298,7 @@ void BucketHeader_ENC::decode(const DFlow & e) {
 void test_encoder(const BucketHeader_ENC* x) {
 #ifdef TEST_C
     auto tmp = new BucketHeader_ENC();
-    string e = x->encode();
+    std::string e = x->encode();
     tmp->decode(e);
 //    cout << e << "  and " << tmp->encode() << endl;
     assert(e == tmp->encode());
@@ -294,7 +308,7 @@ void test_encoder(const BucketHeader_ENC* x) {
 void test_encoder_row(row_t* x) {
 #ifdef TEST_C
     auto tmp = new row_t();
-    string e = x->encode();
+    std::string e = x->encode();
     tmp->decode(e);
 //    cout << e << "  and " << tmp->encode() << endl;
     assert(e == tmp->encode());
@@ -306,7 +320,7 @@ DFlow BucketNode_ENC::encode() const {
     std::string res_items;
     itemid_t * it = items;
     data.emplace_back(std::make_pair(std::to_string(this->key), ""));
-    while (it->next != nullptr) {
+    while (it != nullptr) {
         auto tmp = (row_t*)(it->location);
         test_encoder_row(tmp);
         data.emplace_back(std::make_pair(std::to_string(tmp->get_part_id()), tmp->encode()));
@@ -319,7 +333,7 @@ void BucketNode_ENC::decode(const DFlow & e) {
     std::vector <encoded_record> data = decode_vec(e);
     this->init(std::stoull(data[0].first));
     this->items = new itemid_t;
-    assert(data.size() > 1);
+    this->items->init();
     int n = data.size();
     itemid_t* last = nullptr;
     for (int i = 1;i < n;i ++) {
@@ -332,6 +346,7 @@ void BucketNode_ENC::decode(const DFlow & e) {
         cur_item->next = nullptr;
         if (last == nullptr) {
             this->items = cur_item;
+            last = cur_item;
         } else {
             last->next = cur_item;
             last = cur_item;
@@ -342,7 +357,7 @@ void BucketNode_ENC::decode(const DFlow & e) {
 void test_encoder(const BucketNode_ENC* x) {
 #ifdef TEST_C
     auto tmp = new BucketNode_ENC(x->key);
-    string e = x->encode();
+    std::string e = x->encode();
     tmp->decode(e);
 //    cout << e << "  and " << tmp->encode() << endl;
     assert(e == tmp->encode());
