@@ -53,7 +53,13 @@ RC IndexHash::index_insert(idx_key_t key, itemid_t * item, int part_id) {
 	
 	// 2. update the latch list
 	cur_bkt->insert_item(key, item, part_id);
-	
+//    if (key == 1) {
+//        printf("After insert (%s) %s\n", ((base_row_t*)item->location)->encode().c_str(), cur_bkt->encode().c_str());
+//        printf("After insert (%s) (%s) (%s)\n", cur_bkt->encode().c_str(), cur_bkt->first_node->encode().c_str(),
+//               ((base_row_t*)cur_bkt->first_node->items->location)->encode().c_str());
+//        assert(false);
+//    }
+
 	// 3. release the latch
 	release_latch(cur_bkt);
 	return rc;
@@ -156,14 +162,18 @@ DFlow BucketHeader::encode() const {
 void BucketHeader::decode(const DFlow & e) {
     std::vector <encoded_record> data = decode_vec(e);
     this->init();
+    BucketNode* last = nullptr;
     for (const auto& it:data) {
-        auto tmp = new BucketNode(std::stoull(it.first));
+        auto tmp = new BucketNode(stoull(it.first));
         tmp->decode(it.second);
-        if (this->first_node == NULL) {
+        if (last == NULL) {
             this->first_node = tmp;
+            last = tmp;
         } else {
-            this->first_node->next = tmp;
-            this->first_node = tmp;
+            last->next = tmp;
+            last = tmp;
+//            this->first_node->next = tmp;
+//            this->first_node = tmp;
         }
     }
 }
@@ -172,9 +182,12 @@ DFlow BucketNode::encode() const {
     std::vector <encoded_record> data;
     std::string res_items;
     itemid_t * it = items;
-    data.emplace_back(make_pair(std::to_string(this->key), ""));
-    auto tmp = (base_row_t*)(it->location);
-    data.emplace_back(make_pair(std::to_string(tmp->get_part_id()), tmp->encode()));
+    data.emplace_back(std::make_pair(std::to_string(this->key), ""));
+    while (it != nullptr) {
+        auto tmp = (base_row_t*)(it->location);
+        data.emplace_back(std::make_pair(std::to_string(tmp->get_part_id()), tmp->encode()));
+        it = it -> next;
+    }
     return encode_vec(data);
 }
 
@@ -182,10 +195,23 @@ void BucketNode::decode(const DFlow & e) {
     std::vector <encoded_record> data = decode_vec(e);
     this->init(std::stoull(data[0].first));
     this->items = new itemid_t;
-    assert(data.size() == 2);
-    auto * cur_row = new base_row_t;
-    cur_row->decode(data[1].second);
-    this->items->location = (void*)cur_row;
-    this->items->valid = true;
-    this->items->type = DT_row;
+    this->items->init();
+    int n = data.size();
+    itemid_t* last = nullptr;
+    for (int i = 1;i < n;i ++) {
+        auto * cur_row = new base_row_t;
+        cur_row->decode(data[1].second);
+        auto * cur_item = new itemid_t;
+        cur_item->location = (void*)cur_row;
+        cur_item->valid = true;
+        cur_item->type = DT_row;
+        cur_item->next = nullptr;
+        if (last == nullptr) {
+            this->items = cur_item;
+            last = cur_item;
+        } else {
+            last->next = cur_item;
+            last = cur_item;
+        }
+    }
 }
