@@ -107,7 +107,7 @@ RC workload::init_schema(std::string schema_file) {
 			index->init(part_cnt, tables[tname], stoull( items[1] ) * part_cnt);
             index->index_name = iname;
             index_init_ecall(part_cnt, (void *) (tables[tname]), iname, stoull( items[1] ) * part_cnt);
-            printf("%s from %s\n", iname.c_str(), tname.c_str());
+//            printf("%s from %s\n", iname.c_str(), tname.c_str());
             global_table_map->_indexes[iname] = index;
 	#endif
 #else
