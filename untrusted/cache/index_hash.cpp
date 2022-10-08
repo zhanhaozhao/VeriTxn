@@ -8,8 +8,8 @@
 #include "table.h"
 
 RC IndexHash::init(uint64_t bucket_cnt, int part_cnt) {
-	_bucket_cnt = bucket_cnt;
-	_part_cnt = part_cnt;
+//	_bucket_cnt = bucket_cnt;
+//	_part_cnt = part_cnt;
 	_bucket_cnt_per_part = bucket_cnt / part_cnt;
 	_buckets = new BucketHeader * [part_cnt];
 	for (int i = 0; i < part_cnt; i++) {

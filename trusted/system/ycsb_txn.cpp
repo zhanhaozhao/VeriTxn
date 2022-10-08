@@ -36,7 +36,7 @@ RC ycsb_txn_man::run_txn(base_query * query) {
 		UInt32 iteration = 0;
 		while ( !finish_req ) {
 			if (iteration == 0) {
-				m_item = index_read(wl->the_index, req->key, part_id);
+				m_item = index_read(_wl->the_index->index_name, req->key, part_id);
 			} 
 #if INDEX_STRUCT == IDX_BTREE
 			else {

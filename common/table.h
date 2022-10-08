@@ -29,7 +29,7 @@ public:
 
 	Catalog * 		schema;
     uint64_t  		cur_tab_size;
-    char 			pad[CL_SIZE - sizeof(void *)*3];
+    char 			pad[CL_SIZE - sizeof(void *)*2];
     std::string 	table_name;
 };
 

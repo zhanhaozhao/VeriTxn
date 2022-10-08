@@ -89,7 +89,8 @@ RC IndexEnc::index_insert(idx_key_t key, itemid_t * item, int part_id) {
     RC rc = RCOK;
     uint64_t bkt_idx = hash(key);
     assert(bkt_idx < _bucket_cnt_per_part);
-    BucketHeader_ENC * cur_bkt = load_bucket(nullptr, part_id, bkt_idx);
+//    assert(false);
+    BucketHeader_ENC * cur_bkt = load_bucket(index_name, part_id, bkt_idx);
     // 1. get the ex latch
     get_latch(cur_bkt);
 
@@ -105,17 +106,18 @@ RC IndexEnc::index_insert(idx_key_t key, itemid_t * item, int part_id) {
     return rc;
 }
 
-RC IndexEnc::index_read(void* ocall_index, idx_key_t key, itemid_t * &item, int part_id) {
+RC IndexEnc::index_read(std::string iname, idx_key_t key, itemid_t * &item, int part_id) {
     uint64_t bkt_idx = hash(key);
     assert(bkt_idx < _bucket_cnt_per_part);
-    BucketHeader_ENC * cur_bkt = load_bucket(ocall_index, part_id, bkt_idx);
+    assert(iname == index_name);
+    BucketHeader_ENC * cur_bkt = load_bucket(index_name, part_id, bkt_idx);
     RC rc = RCOK;
     cur_bkt->read_item(key, item);
     flush_bucket(part_id, bkt_idx, cur_bkt, false);
     return rc;
 }
 
-BucketHeader_ENC* IndexEnc::load_bucket(void * index, int part_id, uint64_t bkt_idx) {
+BucketHeader_ENC* IndexEnc::load_bucket(std::string iname, int part_id, uint64_t bkt_idx) {
 #ifndef SGX_DISK
 //    auto hs = _buckets[part_id][bkt_idx].get_hash();
 //    if (_verify_hash[part_id][bkt_idx] == _default_verify_hash) {
@@ -135,7 +137,7 @@ BucketHeader_ENC* IndexEnc::load_bucket(void * index, int part_id, uint64_t bkt_
     auto cur = _cache[part_id][bkt_idx].load();
     if (cur == nullptr) {
         auto * res_bucket = new BucketHeader_ENC;
-        std::string encoded = get_bucket_ocall(index, part_id, bkt_idx);
+        std::string encoded = get_bucket_ocall(index_name, part_id, bkt_idx);
 //        if (bkt_idx == 1) {
 //            printf("The bucket origin = %s\n", encoded.c_str());
 //        }
@@ -186,11 +188,12 @@ void IndexEnc::flush_bucket(int part_id, uint64_t bkt_idx, BucketHeader_ENC* cur
 #endif
 }
 
-RC IndexEnc::index_read(void * ocall_index, idx_key_t key, itemid_t * &item,
+RC IndexEnc::index_read(std::string iname, idx_key_t key, itemid_t * &item,
                          int part_id, int thd_id) {
     uint64_t bkt_idx = hash(key);
     assert(bkt_idx < _bucket_cnt_per_part);
-    BucketHeader_ENC * cur_bkt = load_bucket(ocall_index, part_id, bkt_idx);
+    assert(iname == index_name);
+    BucketHeader_ENC * cur_bkt = load_bucket(index_name, part_id, bkt_idx);
     RC rc = RCOK;
     // 1. get the sh latch
 //	get_latch(cur_bkt);

@@ -14,7 +14,6 @@
 #include "index_btree.h"
 #include "index_hash.h"
 #include "index_enc.h"
-#include "ycsb.h"
 
 #include "api.h"
 
@@ -28,7 +27,7 @@ void txn_man::init(thread_t * h_thd, workload * h_wl, uint64_t thd_id) {
 	wr_cnt = 0;
 	insert_cnt = 0;
 	// accesses = (Access **) aligned_alloc(64, sizeof(Access *) * MAX_ROW_PER_TXN);
-	accesses = (Access **) malloc(sizeof(Access *) * (MAX_ROW_PER_TXN));
+	accesses = (Access **) malloc(sizeof(Access *) * MAX_ROW_PER_TXN);
 	for (int i = 0; i < MAX_ROW_PER_TXN; i++)
 		accesses[i] = NULL;
 	num_accesses_alloc = 0;
@@ -198,29 +197,34 @@ void txn_man::insert_row(row_t * row, table_t * table) {
 }
 
 itemid_t *
-txn_man::index_read(INDEX * index, idx_key_t key, int part_id) {
+txn_man::index_read(std::string iname, idx_key_t key, int part_id) {
 	uint64_t starttime = get_cur_time_ocall();
 	itemid_t * item;
 	// index --> en_index;
-	// assert(index);
-	// IndexEnc * index_enc = (IndexEnc *) tab_map->_indexes[index->index_name];
-	IndexEnc * index_enc = (IndexEnc *) tab_map->_indexes["MAIN_INDEX"];
-	index_enc->index_read(index, key, item, part_id, get_thd_id());
+	IndexEnc * index_enc = (IndexEnc *) tab_map->_indexes[iname];
+	if (index_enc == nullptr) {
+        assert(false);
+//        index_enc = new IndexEnc;
+//        index_enc->init(index->_bucket_cnt, int(index->_part_cnt));
+//        tab_map->_indexes[index->index_name] = index_enc;
+	}
+	index_enc->index_read(iname, key, item, part_id, get_thd_id());
 	// index->index_read(key, item, part_id, get_thd_id());
 	INC_TMP_STATS_ENC(get_thd_id(), time_index, get_cur_time_ocall() - starttime);
 	return item;
 }
 
 void 
-txn_man::index_read(INDEX * index, idx_key_t key, int part_id, itemid_t *& item) {
+txn_man::index_read(std::string iname, idx_key_t key, int part_id, itemid_t *& item) {
 	uint64_t starttime = get_cur_time_ocall();
-	IndexEnc * index_enc = (IndexEnc *) tab_map->_indexes[index->index_name];
+	IndexEnc * index_enc = (IndexEnc *) tab_map->_indexes[iname];
     if (index_enc == nullptr) {
-        index_enc = new IndexEnc;
-        index_enc->init(index->_bucket_cnt, int(index->_part_cnt));
-        tab_map->_indexes[index->index_name] = index_enc;
+        assert(false);
+//        index_enc = new IndexEnc;
+//        index_enc->init(index->_bucket_cnt, int(index->_part_cnt));
+//        tab_map->_indexes[index->index_name] = index_enc;
     }
-    index_enc->index_read(index, key, item, part_id, get_thd_id());
+    index_enc->index_read(iname, key, item, part_id, get_thd_id());
 	// index->index_read(key, item, part_id, get_thd_id());
 	INC_TMP_STATS_ENC(get_thd_id(), time_index, get_cur_time_ocall() - starttime);
 }
@@ -262,4 +266,12 @@ txn_man::release() {
 	for (int i = 0; i < num_accesses_alloc; i++)
 		free(accesses[i]);
 	free(accesses);
+}
+
+itemid_t* txn_man::index_read(INDEX* index, idx_key_t key, int part_id) {
+    return index_read(index->index_name, key, part_id);
+}
+
+void txn_man::index_read(INDEX* index, idx_key_t key, int part_id, itemid_t *& item) {
+    index_read(index->index_name, key, part_id, item);
 }

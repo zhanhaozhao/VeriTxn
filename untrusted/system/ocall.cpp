@@ -13,9 +13,8 @@ ts_t get_cur_time_ocall() {
 	return get_sys_clock();
 }
 
-std::string get_bucket_ocall(void * index, int part_id, int bkt_idx) {
-	auto cur = ((INDEX *) global_table_map->_indexes["MAIN_INDEX"])->load_bucket(part_id, bkt_idx);
-    // BucketHeader* cur = ((INDEX *) index)->load_bucket(part_id, bkt_idx);
+std::string get_bucket_ocall(std::string iname, int part_id, int bkt_idx) {
+    BucketHeader* cur = ((IndexHash*)global_table_map->_indexes[iname])->load_bucket(part_id, bkt_idx);
 	return cur->encode();
 }
 
