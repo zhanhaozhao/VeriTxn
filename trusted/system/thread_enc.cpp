@@ -41,6 +41,7 @@ void index_init_ecall(int part_cnt, void * table, std::string iname, uint64_t bu
 	printf("%s\n", tbl->get_table_name().c_str());
 	tab_map->_tables[tbl->get_table_name()] = table;
 	tab_map->_indexes[iname] = index;
+	index->index_name = iname;
 }
 
 void init_txn_in_enc(txn_man *& m_txn, thread_t * h_thd) {

@@ -56,8 +56,6 @@ public:
 							int part_id=-1, int thd_id=0);
     BucketHeader *	load_bucket(int part_id, int bkt_idx);
 	std::string	index_name;
-	uint64_t  _bucket_cnt;
-	uint64_t    _part_cnt;
 private:
 	void get_latch(BucketHeader * bucket);
 	void release_latch(BucketHeader * bucket);

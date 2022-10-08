@@ -92,8 +92,10 @@ public:
 	Access **		accesses;
 	int 			num_accesses_alloc;
 
-	itemid_t *		index_read(INDEX * index, idx_key_t key, int part_id);
-	void 			index_read(INDEX * index, idx_key_t key, int part_id, itemid_t *& item);
+    itemid_t *		index_read(INDEX* index, idx_key_t key, int part_id);
+	itemid_t *		index_read(std::string iname, idx_key_t key, int part_id);
+    void 			index_read(INDEX* index, idx_key_t key, int part_id, itemid_t *& item);
+	void 			index_read(std::string iname, idx_key_t key, int part_id, itemid_t *& item);
 	row_t * 		get_row(row_t * row, access_t type);
 protected:	
 	void 			insert_row(row_t * row, table_t * table);

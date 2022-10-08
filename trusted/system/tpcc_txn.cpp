@@ -382,7 +382,7 @@ RC tpcc_txn_man::run_new_order(tpcc_query * query) {
 		uint64_t stock_key = stockKey(ol_i_id, ol_supply_w_id);
 		INDEX * stock_index = _wl->i_stock;
 		itemid_t * stock_item;
-		index_read(stock_index, stock_key, wh_to_part(ol_supply_w_id), stock_item);
+		index_read(stock_index->index_name, stock_key, wh_to_part(ol_supply_w_id), stock_item);
 		assert(item != NULL);
 		row_t * r_stock = ((row_t *)stock_item->location);
 		row_t * r_stock_local = get_row(r_stock, WR);
