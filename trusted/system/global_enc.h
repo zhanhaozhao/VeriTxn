@@ -80,7 +80,8 @@
 //typedef std::pair<void*, size_t> DFlow;
 #define DFlow std::string
 //typedef std::string DFlow;
-
+class Logger_generate;
+extern Logger_generate log_generate;
 // /******************************************/
 // // Global Parameter
 // /******************************************/

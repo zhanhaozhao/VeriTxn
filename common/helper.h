@@ -31,6 +31,24 @@
 
 #define ASSERT(cond) assert(cond)
 
+/************************************************/
+// mem copy helper
+/************************************************/
+#define COPY_VAL(v,d,p) \
+	memcpy(&v,&d[p],sizeof(v)); \
+	p += sizeof(v);
+
+#define COPY_VAL_SIZE(v,d,p,s) \
+	memcpy(&v,&d[p],s); \
+	p += s;
+
+#define COPY_BUF(d,v,p) \
+	memcpy(&((char*)d)[p],(char*)&v,sizeof(v)); \
+	p += sizeof(v);
+
+#define COPY_BUF_SIZE(d,v,p,s) \
+	memcpy(&((char*)d)[p],(char*)&v,s); \
+	p += s;
 
 /************************************************/
 // STACK helper (push & pop)

@@ -36,4 +36,12 @@ std::string get_bucket_ocall(void * index, int part_id, int bkt_idx) {
   return std::string{ptr, strlen(ptr)};
 }
 
+void async_hash_value(std::string index_name, int part_id, uint64_t bkt_idx, uint64_t hash) {
+  oc_async_hash_value(index_name.c_str(), index_name.size(), part_id, bkt_idx, hash);
+}
+
+void send_logs(LogRecord** logs, int size) {
+  oc_send_logs(logs, size);
+}
+
 #endif // USE_SGX

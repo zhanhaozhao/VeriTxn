@@ -1,5 +1,5 @@
 #include "global_enc.h"
-
+#include "logger_enc.h"
 // #include "common/mem_alloc.h"
 // #include "common/stats.h"
 // #include "dl_detect.h"
@@ -26,7 +26,7 @@
 // #ifndef NOGRAPHITE
 // carbon_barrier_t enable_barrier;
 // #endif
-
+Logger_generate log_generate;
 // ts_t g_abort_penalty = ABORT_PENALTY;
 bool g_central_man_enc = CENTRAL_MAN;
 UInt32 g_ts_alloc_enc = TS_ALLOC;

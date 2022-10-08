@@ -4,10 +4,11 @@
 #include <time.h> 
 #include <sys/time.h>
 #include <mm_malloc.h>
-
+#include <vector>
+#include "common/helper.h"
 #include "common/config.h"
 #include "common/global_common.h"
-
+// #include "logger.h"
 // #ifndef NOGRAPHITE
 // #include "carbon_user.h"
 // #endif
@@ -28,7 +29,10 @@
 // class Stats;
 // class Manager;
 class table_map;
-
+class MessageQueue;
+class Transport;
+class Logger;
+class SimManager;
 // /******************************************/
 // // Global Data Structure 
 // /******************************************/
@@ -39,6 +43,13 @@ class table_map;
 // extern Query_queue * query_queue;
 // // extern Plock part_lock_man;
 // // extern OptCC occ_man;
+extern Transport tport_man;
+extern MessageQueue msg_queue;
+extern Logger logger;
+extern SimManager * simulation;
+
+extern UInt32 g_node_id;
+extern UInt32 g_node_cnt;
 
 extern bool volatile warmup_finish;
 extern bool volatile enable_thread_mem_pool;
@@ -88,5 +99,11 @@ extern bool g_wh_update;
 extern char * output_file;
 extern UInt32 g_max_items;
 extern UInt32 g_cust_per_dist;
+
+enum RemReqType {
+    ASYNC_HASH = 0,
+    INIT_DONE,
+    NO_MSG
+};
 
 #endif

@@ -3,6 +3,7 @@
 
 void print_usage() {
 	printf("[usage]:\n");
+	printf("\t-nidINT       ; NODE_ID\n");
 	printf("\t-pINT       ; PART_CNT\n");
 	printf("\t-vINT       ; VIRTUAL_PART_CNT\n");
 	printf("\t-tINT       ; THREAD_CNT\n");
@@ -32,7 +33,7 @@ void print_usage() {
 	printf("\t-RINT       ; REQ_PER_QUERY\n");
 	printf("\t-fINT       ; FIELD_PER_TUPLE\n");
 	printf("  [TPCC]:\n");
-	printf("\t-nINT       ; NUM_WH\n");
+	printf("\t-whINT       ; NUM_WH\n");
 	printf("\t-TpFLOAT    ; PERC_PAYMENT\n");
 	printf("\t-TuINT      ; WH_UPDATE\n");
 	printf("  [TEST]:\n");
@@ -79,8 +80,12 @@ void parser(int argc, char * argv[]) {
 			g_req_per_query = atoi( &argv[i][2] );
 		else if (argv[i][1] == 'f')
 			g_field_per_tuple = atoi( &argv[i][2] );
-		else if (argv[i][1] == 'n')
-			g_num_wh = atoi( &argv[i][2] );
+		else if (argv[i][1] == 'n' && argv[i][2] == 'i' && argv[i][3] == 'd')
+			g_node_id = atoi( &argv[i][4] );
+		else if (argv[i][1] == 'w' && argv[i][2] == 'h')
+      		g_num_wh = atoi( &argv[i][3] );
+		// else if (argv[i][1] == 'n')
+		// 	g_num_wh = atoi( &argv[i][2] );
 		else if (argv[i][1] == 'G') {
 			if (argv[i][2] == 'a')
 				g_abort_penalty = atoi( &argv[i][3] );

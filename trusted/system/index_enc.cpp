@@ -36,9 +36,10 @@ inline uint64_t string_hash(const std::string& s) {
 void test_encoder(const BucketHeader_ENC* x);
 void test_encoder(const BucketNode_ENC* x);
 
-RC IndexEnc::init(uint64_t bucket_cnt, int part_cnt) {
+RC IndexEnc::init(uint64_t bucket_cnt, int part_cnt, std::string index_name) {
     _bucket_cnt_per_part = bucket_cnt / part_cnt;
     _verify_hash = new u_int64_t * [part_cnt];
+    _name = index_name;
     _cache = new std::atomic<BucketHeader_ENC*>* [part_cnt];
 #ifndef SGX_DISK
     _buckets = new BucketHeader_ENC * [part_cnt];
@@ -64,8 +65,8 @@ RC IndexEnc::init(uint64_t bucket_cnt, int part_cnt) {
 }
 
 RC
-IndexEnc::init(int part_cnt, table_t * table, uint64_t bucket_cnt) {
-    init(bucket_cnt, part_cnt);
+IndexEnc::init(int part_cnt, table_t * table, uint64_t bucket_cnt, std::string index_name) {
+    init(bucket_cnt, part_cnt, index_name);
     return RCOK;
 }
 
@@ -114,6 +115,9 @@ RC IndexEnc::index_read(void* ocall_index, idx_key_t key, itemid_t * &item, int 
     flush_bucket(part_id, bkt_idx, cur_bkt, false);
     return rc;
 }
+void IndexEnc::update_verify_hash(int part_id, uint64_t bkt_idx, uint64_t hash) {
+    _verify_hash[part_id][bkt_idx] = hash;
+}
 
 BucketHeader_ENC* IndexEnc::load_bucket(void * index, int part_id, uint64_t bkt_idx) {
 #ifndef SGX_DISK
@@ -143,6 +147,7 @@ BucketHeader_ENC* IndexEnc::load_bucket(void * index, int part_id, uint64_t bkt_
             cur = res_bucket;
             if (_verify_hash[part_id][bkt_idx] == _default_verify_hash) {
                 _verify_hash[part_id][bkt_idx] = cur->get_hash();
+                async_hash_value(_name, part_id, bkt_idx, _verify_hash[part_id][bkt_idx]);
             }
             assert(_verify_hash[part_id][bkt_idx] == cur->get_hash());
         }

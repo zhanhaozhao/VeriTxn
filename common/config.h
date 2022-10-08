@@ -4,8 +4,11 @@
 /***********************************************/
 // Simulation + Hardware
 /***********************************************/
+#define NODE_CNT 					2
 #define THREAD_CNT					4
 #define PART_CNT					1 
+#define INPUT_CNT					1
+#define OUTPUT_CNT					1
 // each transaction only accesses 1 virtual partition. But the lock/ts manager and index are not aware of such partitioning. VIRTUAL_PART_CNT describes the request distribution and is only used to generate queries. For HSTORE, VIRTUAL_PART_CNT should be the same as PART_CNT.
 #define VIRTUAL_PART_CNT			1
 #define PAGE_SIZE					4096 
@@ -58,6 +61,7 @@
 #define CENTRAL_MANAGER 			false
 #define INDEX_STRUCT				IDX_HASH
 #define BTREE_ORDER 				16
+#define INDEX_NAME_LENGTH       	16
 
 // [DL_DETECT] 
 #define DL_LOOP_DETECT				1000 	// 100 us
@@ -215,6 +219,10 @@ extern enum TestCases					g_test_case;
 #define TS_HW						3
 #define TS_CLOCK					4
 
+#define MSG_SIZE_MAX				4096
+#define MSG_TIME_LIMIT				0
+#define TPORT_PORT					4000
+#define MAX_TPORT_NAME				128
 // turn on SGX
 #define USE_SGX 1
 

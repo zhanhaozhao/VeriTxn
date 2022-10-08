@@ -9,13 +9,14 @@
 #include "stdlib.h"
 #include "base_query.h"
 #include <random>
+#include "thread.h"
 
 // class workload;
 // class base_query;
 
-class thread_t {
+class thread_t : Thread {
 public:
-	uint64_t _thd_id;
+	// uint64_t _thd_id;
 	workload * _wl;
 	ts_t starttime;
 	base_query * m_query;
@@ -29,11 +30,13 @@ public:
 	uint64_t 	get_cur_cid();
 	void 		set_cur_cid(uint64_t cid);
 
-	void 		init(uint64_t thd_id, workload * workload);
+	void 		init(uint64_t thd_id, uint64_t node_id, workload * workload);
 	// the following function must be in the form void* (*)(void*)
 	// to run with pthread.
 	// conversion is done within the function.
 	RC 			run();
+	void 		setup();
+	void send_init_done_to_all_nodes();
 	void		generate_txn_for_run(base_query *& m_query);
 
 private:

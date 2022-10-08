@@ -7,7 +7,7 @@
 
 #include "sgx_error.h"
 
-#include "untrusted/system/global.h"
+// #include "untrusted/system/global.h"
 
 
 extern sgx_enclave_id_t enclave_id;
@@ -39,6 +39,10 @@ int run_txn_ecall(void * h_thd, uint64_t start_time) {
     return -1;
   }
   return ret;
+}
+
+void update_hash_value(std::string index_name, int part_id, uint64_t bkt_idx, uint64_t hash) {
+  ec_update_hash_value(enclave_id, part_id, bkt_idx, hash, index_name.c_str(), index_name.size());
 }
 
 #endif // USE_SGX

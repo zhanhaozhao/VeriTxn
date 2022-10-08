@@ -15,6 +15,7 @@
 #include "index_hash.h"
 #include "index_enc.h"
 #include "ycsb.h"
+#include "logger_enc.h"
 
 #include "api.h"
 
@@ -82,6 +83,10 @@ void txn_man::cleanup(RC rc) {
 	insert_cnt = 0;
 	return;
 #endif
+	int size = 0;
+	LogRecord** logs = log_generate.createRecords(this);
+	size = wr_cnt + 1;
+	send_logs(logs, size);
 	for (int rid = row_cnt - 1; rid >= 0; rid --) {
 		row_t * orig_r = accesses[rid]->orig_row;
 		access_t type = accesses[rid]->type;
@@ -107,6 +112,7 @@ void txn_man::cleanup(RC rc) {
 #if CC_ALG != TICTOC && CC_ALG != SILO
 		accesses[rid]->data = NULL;
 #endif
+		//TODO: 记录日志，调用记录日志
 	}
 
 	if (rc == Abort) {

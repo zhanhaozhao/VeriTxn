@@ -16,13 +16,15 @@
 #include "ycsb_query.h"
 #include "tpcc_query.h"
 #include "test.h"
-
+#include "message.h"
 // #include "global_enc.h"
 // #include "thread_enc.h"
 #include "api.h"
+#include "msg_queue.h"
 
-void thread_t::init(uint64_t thd_id, workload * workload) {
+void thread_t::init(uint64_t thd_id, uint64_t node_id, workload * workload) {
 	_thd_id = thd_id;
+	_node_id = node_id;
 	_wl = workload;
 	// srand48_r((_thd_id + 1) * get_sys_clock(), &buffer);
 	dre = std::default_random_engine((_thd_id + 1) * get_sys_clock());
@@ -41,32 +43,39 @@ void thread_t::set_host_cid(uint64_t cid) { _host_cid = cid; }
 uint64_t thread_t::get_cur_cid() { return _cur_cid; }
 void thread_t::set_cur_cid(uint64_t cid) {_cur_cid = cid; }
 
-RC thread_t::run() {
+void thread_t::setup() {
+	// Get a thread number
+	// #if !NOGRAPHITE
+	// 	_thd_id = CarbonGetTileId();
+	// #endif
+	// if (warmup_finish) {
+	mem_allocator.register_thread(_thd_id);
+	// }
 
-// Get a thread number
-// #if !NOGRAPHITE
-// 	_thd_id = CarbonGetTileId();
-// #endif
-	if (warmup_finish) {
-		mem_allocator.register_thread(_thd_id);
-	}
-
-	pthread_barrier_wait( &warmup_bar );
+	// pthread_barrier_wait( &warmup_bar );
 	stats.init(get_thd_id());
-	pthread_barrier_wait( &warmup_bar );
+	// pthread_barrier_wait( &warmup_bar );
 
 	set_affinity(get_thd_id());
 
 	myrand rdm;
 	rdm.init(get_thd_id());
-	RC rc = RCOK;
-
+	
+	if( get_thd_id() == 0) {
+		send_init_done_to_all_nodes();
+	}
+  	// _thd_txn_id = 0;
 	// run_txn_in_enc(this);
 	// txn_man * m_txn;
 	// rc = _wl->get_txn_man(m_txn, this);
 	// assert (rc == RCOK);
 	// glob_manager->set_txn_man(m_txn);
+}
 
+RC thread_t::run() {
+	tsetup();
+
+	RC rc = RCOK;
 	UInt64 txn_cnt = 0;
 
 	while (true) {
@@ -217,3 +226,12 @@ thread_t::get_next_ts() {
 // 	assert(false);
 // 	return RCOK;
 // }
+
+void thread_t::send_init_done_to_all_nodes() {
+	for(uint64_t i = 0; i < NODE_CNT; i++) {
+		if(i != g_node_id) {
+			printf("Send INIT_DONE to %ld\n",i);
+			msg_queue.enqueue(get_thd_id(),Message::create_message(INIT_DONE),i);       
+		}
+	}
+}

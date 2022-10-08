@@ -5,6 +5,7 @@
 #include "test_txn.h"
 #include "global_enc_struct.h"
 #include "api.h"
+#include "logger_enc.h"
 // #include "manager.h"
 #include "occ.h"
 #include "index_enc.h"
@@ -28,6 +29,10 @@ void global_init_ecall(void * stats) {
 #elif CC_ALG == OCC
 	occ_man.init();
 #endif
+	// printf("Initializing trusted log generator... ");
+	// fflush(stdout);
+	log_generate.init();
+	// printf("Done\n");
 
 }
 
@@ -38,7 +43,7 @@ void index_init_ecall(int part_cnt, void * table, std::string iname, uint64_t bu
 	
 	table_t * tbl = (table_t *) table;
 
-	index->init(part_cnt, tbl, bucket_cnt);
+	index->init(part_cnt, tbl, bucket_cnt, iname);
 	tab_map->_tables[tbl->get_table_name()] = table;
 	tab_map->_indexes[iname] = index;
 }
