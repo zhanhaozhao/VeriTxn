@@ -140,17 +140,24 @@ BucketHeader_ENC* IndexEnc::load_bucket(void * index, int part_id, uint64_t bkt_
 //            printf("The bucket origin = %s\n", encoded.c_str());
 //        }
         res_bucket->decode(encoded);
+        get_latch(res_bucket);
         BucketHeader_ENC* tmp = nullptr;
         if (!_cache[part_id][bkt_idx].compare_exchange_strong(tmp, res_bucket)) {
             cur = _cache[part_id][bkt_idx].load();
+            release_latch(res_bucket);
         } else {
             cur = res_bucket;
             if (_verify_hash[part_id][bkt_idx] == _default_verify_hash) {
-                _verify_hash[part_id][bkt_idx] = cur->get_hash();
+                _verify_hash[part_id][bkt_idx] = string_hash(encoded);
+            } else {
+//                assert(_verify_hash[part_id][bkt_idx] == string_hash(encoded));
             }
-            auto sh = cur->encode();
+            assert(_verify_hash[part_id][bkt_idx] == string_hash(encoded));
+            release_latch(res_bucket);
 //            printf("The encoded value = %s\n", sh.c_str());
-            assert(_verify_hash[part_id][bkt_idx] == string_hash(sh));
+//            if (_verify_hash[part_id][bkt_idx] != string_hash(sh)) {
+//                printf("The data strings are %s and %s\n", beginh.c_str(), sh.c_str());
+//            }
         }
     }
 //    if (bkt_idx == 1) {
