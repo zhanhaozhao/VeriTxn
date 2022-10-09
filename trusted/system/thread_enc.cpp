@@ -34,12 +34,19 @@ void global_init_ecall(void * stats) {
 void index_init_ecall(int part_cnt, void * table, std::string iname, uint64_t bucket_cnt) {
 	// IndexEnc * index = (IndexEnc *) aligned_alloc(64, sizeof(IndexEnc));
 	IndexEnc * index = new IndexEnc();
+    assert(table);
 	table_t * tbl = (table_t *) table;
 
-    printf("%p\n", tbl);
+    //printf("%p\n", tbl);
 	index->init(part_cnt, tbl, bucket_cnt);
-	printf("%s\n", tbl->get_table_name().c_str());
-	tab_map->_tables[tbl->get_table_name()] = table;
+	//printf("%s\n", tbl->get_table_name().c_str());
+//#ifdef YCSB
+//        auto ss = tbl->table_name.c_str();
+//        std::string ss = std::string(tbl->get_table_name());
+//        assert(ss == "MAIN_TABLE");
+//#endif
+    std::string tname = std::string(tbl->get_table_name());
+	tab_map->_tables[tname] = table;
 	tab_map->_indexes[iname] = index;
 	index->index_name = iname;
 }
@@ -70,8 +77,14 @@ void init_txn_in_enc(txn_man *& m_txn, thread_t * h_thd) {
 	glob_manager_enc->set_txn_man(m_txn);
 }
 
+#include "Enclave_t.h"
+
 int run_txn_ecall(void * thd, ts_t txn_ts) {
 	// pthread_mutex_lock(&mutex);
+	if (txn_ts % 100 == 0) {
+        oc_debug_print("running transaction!!!");
+        oc_debug_print(std::to_string(txn_ts).c_str());
+	}
 
 	thread_t * h_thd = (thread_t *) thd;
 

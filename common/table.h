@@ -13,7 +13,7 @@ class base_row_t;
 class table_t
 {
 public:
-    table_t(){table_name = "";}
+    table_t(){cur_tab_size = 0;}
 	void init(Catalog * catalog);
 	// row lookup should be done with index. But index does not have
 	// records for new rows. get_new_row returns the pointer to a 
@@ -25,11 +25,11 @@ public:
 
 	uint64_t get_table_size() { return cur_tab_size; };
 	Catalog * get_schema() { return schema; };
-	std::string get_table_name() { return table_name; };
+	const char* get_table_name() { return schema->table_name; };
 
 	Catalog * 		schema;
     uint64_t  		cur_tab_size;
-    char 			pad[CL_SIZE - sizeof(void *)*2];
+    char 			pad[CL_SIZE];
     std::string 	table_name;
 };
 

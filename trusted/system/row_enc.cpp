@@ -71,7 +71,7 @@ Catalog * row_t::get_schema() {
 	return get_table()->get_schema(); 
 }
 
-const std::string row_t::get_table_name() {
+const char* row_t::get_table_name() {
 	return get_table()->get_table_name(); 
 };
 uint64_t row_t::get_tuple_size() {
@@ -341,8 +341,12 @@ void row_t::decode(const std::string& e) {
     assert(data_items.size() == 5);
     const std::string &data_s = data_items[4].second;
     this->init(int(data_s.length()));
-    auto nam = data_items[0].second.c_str();
-    this->table = tab_map->get_table(nam);
+//    auto nam = data_items[0].second.c_str();
+#ifdef YCSB
+//	assert(data_items[0].second == "MAIN_TABLE");
+#endif
+    this->table = (table_t*) tab_map->_tables[data_items[0].second];
+	assert(this->table);
     memcpy(data, data_s.c_str(), data_s.length());
     for (size_t i=0;i<data_s.length();i+=3) {
         data[i] = data_s[i] - '0';

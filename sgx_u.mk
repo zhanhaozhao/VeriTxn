@@ -56,7 +56,7 @@ Common_C_Cpp_Flags := $(SGX_COMMON_CFLAGS) -fPIC -Wno-attributes -I.
 Common_C_Cpp_Flags += -Wall -Wextra -Winit-self -Wpointer-arith -Wreturn-type \
                     -Waddress -Wsequence-point -Wformat-security \
                     -Wmissing-include-dirs -Wfloat-equal -Wundef -Wshadow \
-                    -Wcast-align -Wcast-qual -Wconversion -Wredundant-decls
+                    -Wcast-align -Wcast-qual -Wconversion -Wredundant-decls -D_GLIBCXX_USE_CXX11_ABI=0
 Common_C_Flags := -Wjump-misses-init -Wstrict-prototypes \
 										-Wunsuffixed-float-constants
 SGX_RA_TLS_Extra_Flags := -DWOLFSSL_SGX 

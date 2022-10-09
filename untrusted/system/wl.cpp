@@ -67,11 +67,12 @@ RC workload::init_schema(std::string schema_file) {
                 schema->add_col((char *)name.c_str(), size, (char *)type.c_str());
 				col_count ++;
 			}
-			table_t * cur_tab = (table_t *) _mm_malloc(sizeof(table_t), CL_SIZE);
+			table_t * cur_tab = new table_t();//
+			        // (table_t *) _mm_malloc(sizeof(table_t), CL_SIZE);
 			cur_tab->init(schema);
-			cur_tab->table_name = tname;
+//			cur_tab->table_name = tname;
 			tables[tname] = cur_tab;
-            tables[tname]->table_name = tname;
+            assert(std::string(tables[tname]->get_table_name()) == tname);
 			global_table_map->_tables[tname] = cur_tab;
         } else if (!line.compare(0, 6, "INDEX=")) {
 			std::string iname;
@@ -99,13 +100,20 @@ RC workload::init_schema(std::string schema_file) {
 #if INDEX_STRUCT == IDX_HASH
 	#if WORKLOAD == YCSB
 			index->init(part_cnt, tables[tname], g_synth_table_size * 2);
-			index->index_name = iname;
+			int n = iname.length();
+            index->index_name = new char[n+1];
+			iname.copy(index->index_name, n);
+			index->index_name[n] = 0;
 			index_init_ecall(part_cnt, (void *) tables[tname], iname, g_synth_table_size * 2);
 			global_table_map->_indexes[iname] = index;
 	#elif WORKLOAD == TPCC
 			assert(tables[tname] != NULL);
 			index->init(part_cnt, tables[tname], stoull( items[1] ) * part_cnt);
-            index->index_name = iname;
+			int n = iname.length();
+            index->index_name = new char[n+1];
+			iname.copy(index->index_name, n);
+			index->index_name[n] = 0;
+            assert(std::string(index->index_name) == iname);
             index_init_ecall(part_cnt, (void *) (tables[tname]), iname, stoull( items[1] ) * part_cnt);
             printf("%s from %s\n", iname.c_str(), tname.c_str());
             global_table_map->_indexes[iname] = index;

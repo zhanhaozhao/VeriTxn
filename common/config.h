@@ -16,7 +16,7 @@
 // # of transactions to run for warmup
 #define WARMUP						0
 // YCSB or TPCC
-#define WORKLOAD 					TPCC
+#define WORKLOAD 					YCSB
 // print the transaction latency distribution
 #define PRT_LAT_DISTR				false
 #define STATS_ENABLE				true
@@ -109,7 +109,7 @@
 // max number of rows touched per transaction
 #define MAX_ROW_PER_TXN				64
 #define QUERY_INTVL 				1UL
-#define MAX_TXN_PER_PART 			10000
+#define MAX_TXN_PER_PART 			100
 #define FIRST_PART_LOCAL 			true
 #define MAX_TUPLE_SIZE				1024 // in bytes
 // ==== [YCSB] ====
@@ -215,7 +215,7 @@ extern enum TestCases					g_test_case;
 #define TS_HW						3
 #define TS_CLOCK					4
 
-// turn on SGX, comment the following line to disable SGX.
-// #define USE_SGX 1
+// turn on SGX
+#define USE_SGX 1
 
 #endif

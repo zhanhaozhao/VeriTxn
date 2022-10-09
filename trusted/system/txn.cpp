@@ -209,6 +209,7 @@ txn_man::index_read(std::string iname, idx_key_t key, int part_id) {
 //        tab_map->_indexes[index->index_name] = index_enc;
 	}
 	index_enc->index_read(iname, key, item, part_id, get_thd_id());
+    assert(((row_t*)item->location)->get_table());
 	// index->index_read(key, item, part_id, get_thd_id());
 	INC_TMP_STATS_ENC(get_thd_id(), time_index, get_cur_time_ocall() - starttime);
 	return item;
@@ -268,10 +269,11 @@ txn_man::release() {
 	free(accesses);
 }
 
+
 itemid_t* txn_man::index_read(INDEX* index, idx_key_t key, int part_id) {
-    return index_read(index->index_name, key, part_id);
+    return index_read(std::string(index->index_name), key, part_id);
 }
 
 void txn_man::index_read(INDEX* index, idx_key_t key, int part_id, itemid_t *& item) {
-    index_read(index->index_name, key, part_id, item);
+    index_read(std::string(index->index_name), key, part_id, item);
 }

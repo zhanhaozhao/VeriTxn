@@ -31,6 +31,7 @@ void index_init_ecall(int part_cnt, void * table,
 
 int run_txn_ecall(void * h_thd, uint64_t start_time) {
   int ret;
+  assert(h_thd);
   sgx_status_t status = ec_run_txn(enclave_id, &ret, h_thd, start_time);
   if (status != SGX_SUCCESS) {
     printf("run txn failed : error %d - %#x.\n", status,

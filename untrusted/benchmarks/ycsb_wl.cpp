@@ -158,4 +158,3 @@ void * ycsb_wl::init_table_slice() {
 // 	return RCOK;
 // }
 
-

@@ -63,8 +63,8 @@ SGX_COMMON_FLAGS += -Wall -Wextra -Wchar-subscripts -Wno-coverage-mismatch \
 SGX_Include_Paths := -I$(SGX_SDK)/include -I$(SGX_SDK)/include/tlibc \
 						 -I$(SGX_SDK)/include/libcxx
 
-Flags_Just_For_C := -Wno-implicit-function-declaration -std=c11
-Flags_Just_For_Cpp := -Wnon-virtual-dtor -std=c++11 -nostdinc++
+Flags_Just_For_C := -Wno-implicit-function-declaration -std=c11 -D_GLIBCXX_USE_CXX11_ABI=0
+Flags_Just_For_Cpp := -Wnon-virtual-dtor -std=c++11 -nostdinc++ -D_GLIBCXX_USE_CXX11_ABI=0
 Common_C_Cpp_Flags := $(SGX_COMMON_CFLAGS) $(SGX_COMMON_FLAGS) -nostdinc -fvisibility=hidden -fpie -fstack-protector -fno-builtin -fno-builtin-printf -I.
 Common_C_Flags := -Wjump-misses-init -Wstrict-prototypes \
 										-Wunsuffixed-float-constants

@@ -28,8 +28,9 @@ uint64_t oc_get_current_time() {
   return get_cur_time_ocall();
 }
 
-char* oc_get_bucket_ocall(void* index, int part_id, int bkt_idx) {
-  std::string bucket_raw = get_bucket_ocall(index, part_id, bkt_idx);
+char* oc_get_bucket_ocall(const char * iname, size_t len, int part_id, int bkt_idx) {
+  
+  std::string bucket_raw = get_bucket_ocall(std::string{iname, len}, part_id, bkt_idx);
   
   char* ret;
   {
