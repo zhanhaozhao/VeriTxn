@@ -48,7 +48,7 @@ public:
 
 	table_t * get_table();
 	Catalog * get_schema();
-	const std::string get_table_name();
+	const char* get_table_name();
 	uint64_t get_field_cnt();
 	uint64_t get_tuple_size();
 	uint64_t get_row_id() { return _row_id; };

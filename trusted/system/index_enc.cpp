@@ -343,7 +343,10 @@ void BucketNode_ENC::decode(const DFlow & e) {
     std::vector <encoded_record> data = decode_vec(e);
     this->init(std::stoull(data[0].first));
     this->items = new itemid_t;
-    this->items->init();
+    // this->items->init();
+    this->items->valid = false;
+	this->items->location = 0;
+	this->items->next = NULL;
     int n = data.size();
     itemid_t* last = nullptr;
     for (int i = 1;i < n;i ++) {
