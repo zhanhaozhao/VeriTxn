@@ -15,9 +15,14 @@ INSTALL_INCLUDE_DIR = $(INSTALL_PREFIX)/include
 
 .PHONY: all install clean mrproper
 
+SRC_DIRS = ./ ./common/ ./untrusted/system/ ./untrusted/benchmarks/ ./untrusted/cache/ ./trusted/system/ ./trusted/concurrency_control/
+CPPS = $(foreach dir, $(SRC_DIRS), $(wildcard $(dir)*.cpp))
+OBJS = $(CPPS:.cpp=.o)
+DEPS = $(CPPS:.cpp=.d)
+
 all:
 	$(MAKE) -ef sgx_t.mk all SGX_MODE=$(SGX_MODE) SGX_DEBUG=$(SGX_DEBUG) Enclave_Search_Dirs="$(Enclave_Search_Dirs)"
-	$(MAKE) -ef sgx_u.mk all SGX_MODE=$(SGX_MODE) SGX_DEBUG=$(SGX_DEBUG) Enclave_Search_Dirs="$(Enclave_Search_Dirs)" 
+	$(MAKE) -ef sgx_u.mk all SGX_MODE=$(SGX_MODE) SGX_DEBUG=$(SGX_DEBUG) Enclave_Search_Dirs="$(Enclave_Search_Dirs)"
 
 HEADERS := untrusted/worker.h
 
@@ -31,6 +36,7 @@ install:
 clean:
 	$(MAKE) -ef sgx_t.mk clean
 	$(MAKE) -ef sgx_u.mk clean
+	rm -f rundb ./trusted/*.o ./trusted/*.d ./untrusted/*.o ./untrusted/*.d ./common/*.o ./common/*.d $(OBJS) $(DEPS)
 
 mrproper: clean
 	rm -rf ./install
