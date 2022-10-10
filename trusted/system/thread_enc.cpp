@@ -78,14 +78,14 @@ void init_txn_in_enc(txn_man *& m_txn, thread_t * h_thd) {
 	glob_manager_enc->set_txn_man(m_txn);
 }
 
-#include "Enclave_t.h"
+//#include "Enclave_t.h"
 
 int run_txn_ecall(void * thd, ts_t txn_ts) {
 	// pthread_mutex_lock(&mutex);
-	if (txn_ts % 100 == 0) {
-        oc_debug_print("running transaction!!!");
-        oc_debug_print(std::to_string(txn_ts).c_str());
-	}
+//	if (txn_ts % 100 == 0) {
+////        oc_debug_print("running transaction!!!");
+//        oc_debug_print(std::to_string(txn_ts).c_str());
+//	}
 
 	thread_t * h_thd = (thread_t *) thd;
 

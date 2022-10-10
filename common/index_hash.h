@@ -12,7 +12,7 @@
 // each BucketNode contains items sharing the same key
 class BucketNode {
 public: 
-	BucketNode(idx_key_t key) {	init(key); };
+	BucketNode(idx_key_t key) {	init(key); next = nullptr; };
 	void init(idx_key_t key) {
 		this->key = key;
 		next = NULL;

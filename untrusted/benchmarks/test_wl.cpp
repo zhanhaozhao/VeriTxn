@@ -48,6 +48,7 @@ RC TestWorkload::init_table() {
 		m_item->type = DT_row;
 		m_item->location = new_row;
 		m_item->valid = true;
+		m_item->next = nullptr;
 		uint64_t idx_key = primary_key;
         rc = the_index->index_insert(idx_key, m_item, 0);
         assert(rc == RCOK);

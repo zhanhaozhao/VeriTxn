@@ -130,7 +130,7 @@ void txn_man::cleanup(RC rc) {
 row_t * txn_man::get_row(row_t * row, access_t type) {
 	if (CC_ALG == HSTORE)
 		return row;
-	uint64_t starttime = get_cur_time_ocall();
+//	uint64_t starttime = get_cur_time_ocall();
 	RC rc = RCOK;
 	if (accesses[row_cnt] == NULL) {
 		// Access * access = (Access *) aligned_alloc(64, sizeof(Access));
@@ -184,8 +184,8 @@ row_t * txn_man::get_row(row_t * row, access_t type) {
 	if (type == WR)
 		wr_cnt ++;
 
-	uint64_t timespan = get_cur_time_ocall() - starttime;
-	INC_TMP_STATS_ENC(get_thd_id(), time_man, timespan);
+//	uint64_t timespan = get_cur_time_ocall() - starttime;
+//	INC_TMP_STATS_ENC(get_thd_id(), time_man, timespan);
 	return accesses[row_cnt - 1]->data;
 }
 
@@ -198,7 +198,7 @@ void txn_man::insert_row(row_t * row, table_t * table) {
 
 itemid_t *
 txn_man::index_read(std::string iname, idx_key_t key, int part_id) {
-	uint64_t starttime = get_cur_time_ocall();
+//	uint64_t starttime = get_cur_time_ocall();
 	itemid_t * item;
 	// index --> en_index;
 	IndexEnc * index_enc = (IndexEnc *) tab_map->_indexes[iname];
@@ -211,13 +211,13 @@ txn_man::index_read(std::string iname, idx_key_t key, int part_id) {
 	index_enc->index_read(iname, key, item, part_id, get_thd_id());
     assert(((row_t*)item->location)->get_table());
 	// index->index_read(key, item, part_id, get_thd_id());
-	INC_TMP_STATS_ENC(get_thd_id(), time_index, get_cur_time_ocall() - starttime);
+//	INC_TMP_STATS_ENC(get_thd_id(), time_index, get_cur_time_ocall() - starttime);
 	return item;
 }
 
 void 
 txn_man::index_read(std::string iname, idx_key_t key, int part_id, itemid_t *& item) {
-	uint64_t starttime = get_cur_time_ocall();
+//	uint64_t starttime = get_cur_time_ocall();
 	IndexEnc * index_enc = (IndexEnc *) tab_map->_indexes[iname];
     if (index_enc == nullptr) {
         assert(false);
@@ -227,14 +227,14 @@ txn_man::index_read(std::string iname, idx_key_t key, int part_id, itemid_t *& i
     }
     index_enc->index_read(iname, key, item, part_id, get_thd_id());
 	// index->index_read(key, item, part_id, get_thd_id());
-	INC_TMP_STATS_ENC(get_thd_id(), time_index, get_cur_time_ocall() - starttime);
+//	INC_TMP_STATS_ENC(get_thd_id(), time_index, get_cur_time_ocall() - starttime);
 }
 
 RC txn_man::finish(RC rc) {
 #if CC_ALG == HSTORE
 	return RCOK;
 #endif
-	uint64_t starttime = get_cur_time_ocall();
+//	uint64_t starttime = get_cur_time_ocall();
 #if CC_ALG == OCC
 	if (rc == RCOK)
 		rc = occ_man.validate(this);
@@ -256,9 +256,9 @@ RC txn_man::finish(RC rc) {
 #else 
 	cleanup(rc);
 #endif
-	uint64_t timespan = get_cur_time_ocall() - starttime;
-	INC_TMP_STATS_ENC(get_thd_id(), time_man,  timespan);
-	INC_STATS_ENC(get_thd_id(), time_cleanup,  timespan);
+//	uint64_t timespan = get_cur_time_ocall() - starttime;
+//	INC_TMP_STATS_ENC(get_thd_id(), time_man,  timespan);
+//	INC_STATS_ENC(get_thd_id(), time_cleanup,  timespan);
 	return rc;
 }
 

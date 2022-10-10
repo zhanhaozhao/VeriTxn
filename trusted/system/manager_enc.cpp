@@ -49,7 +49,7 @@ ManagerEnc::get_ts(uint64_t thread_id) {
 	if (g_ts_batch_alloc_enc)
 		assert(g_ts_alloc_enc == TS_CAS);
 	uint64_t time;
-	uint64_t starttime = get_cur_time_ocall();
+//	uint64_t starttime = get_cur_time_ocall();
 	switch(g_ts_alloc_enc) {
 	case TS_MUTEX :
 		pthread_mutex_lock( &ts_mutex );
@@ -75,7 +75,7 @@ ManagerEnc::get_ts(uint64_t thread_id) {
 	default :
 		assert(false);
 	}
-	INC_STATS_ENC(thread_id, time_ts_alloc, get_cur_time_ocall() - starttime);
+//	INC_STATS_ENC(thread_id, time_ts_alloc, get_cur_time_ocall() - starttime);
 	return time;
 }
 
