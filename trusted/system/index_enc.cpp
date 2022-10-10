@@ -144,7 +144,7 @@ BucketHeader_ENC* IndexEnc::load_bucket(std::string iname, int part_id, uint64_t
     auto cur = _cache[part_id][bkt_idx].load();
     if (cur == nullptr) {
 #ifndef DECOUPLE
-        auto out_bkt = (((IndexHash*)inner_index_map->_indexes[iname])->load_bucket(part_id, bkt_idx));
+        auto out_bkt = &(((IndexHash*)inner_index_map->_indexes[iname])->_buckets[part_id][bkt_idx]);
         auto res_bucket = new BucketHeader_ENC;
         res_bucket->locked = false;
         BucketNode_ENC* last_node = nullptr;
@@ -155,14 +155,14 @@ BucketHeader_ENC* IndexEnc::load_bucket(std::string iname, int part_id, uint64_t
             for (auto pt = it->items; pt; pt = pt->next) {
                 auto old_row = (base_row_t*)pt->location;
                 auto new_row = new row_t;
-                int n = old_row->get_tuple_size();
+                int n = old_row->table->get_schema()->get_tuple_size();
                 new_row->data = new char [n+1];
                 memcpy(new_row->data, old_row->data, n+1);
                 new_row->table = old_row->table;
                 new_row->init_manager(new_row);
                 new_row->set_primary_key(old_row->get_primary_key());
                 auto new_item = new itemid_t;
-                new_item->init();
+                new_item->next = nullptr;
                 new_item->location = (void*)new_row;
                 new_item->valid = true;
                 new_item->type = DT_row;
