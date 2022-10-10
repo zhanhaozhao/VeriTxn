@@ -76,10 +76,10 @@ for exp in exps:
         output_dir = output_f + "/"
         output_f += strnow
 
-        f = open("config.h", 'r')
+        f = open("common/config.h", 'r')
         lines = f.readlines()
         f.close()
-        with open("config.h", 'w') as f_cfg:
+        with open("common/config.h", 'w') as f_cfg:
             for line in lines:
                 found_cfg = False
                 for c in cfgs:
@@ -90,9 +90,14 @@ for exp in exps:
                 if not found_cfg:
                     f_cfg.write(line)
 
-        cmd = "make clean; make deps; make -j32"
+        cmd = "make clean"
         print cmd
         os.system(cmd)
+
+        cmd = "make -j10"
+        print cmd
+        os.system(cmd)
+
         if not execute:
             exit()
 
@@ -126,13 +131,19 @@ for exp in exps:
                 # !copy App to remote nodes
                 for m, f in itertools.product(machines, files):
                     if cluster == 'vcloud':
-                        os.system('./scripts/kill.sh {}'.format(m))
-                        cmd = 'scp {}/{} {}:/{}'.format(PATH, f, m, uname)
+                        # os.system('./scripts/kill.sh {}'.format(m))
+                        cmd = 'scp -P {} {}/{} {}:/{}'.format(5000,PATH, f, m, uname)
                     print cmd
                     os.system(cmd)
                 # !execute experiment
                 print("Deploying: {}".format(output_f))
-                os.chdir('./scripts')
+
+                os.chdir('./script')
+
+                cmd = 'pwd'
+                print cmd
+                os.system(cmd)
+
                 if cluster == 'vcloud':
                     cmd = './vcloud_deploy.sh \'{}\' /{}/ {} {} {}'.format(' '.join(machines), uname, cfgs["NODE_CNT"], perfTime, uname2)
                 print cmd
@@ -143,7 +154,7 @@ for exp in exps:
                 # todo: need to seperate node(r) and node(r/w)
                 for m, n in zip(machines, range(len(machines))):
                     if cluster == 'vcloud':
-                        cmd = 'scp {}:/{}/dbresults.out results/{}/{}_{}.out'.format(m,uname,strnow,n,output_f)
+                        cmd = 'scp -P {} {}:/{}/dbresults{}.out results/{}/{}_{}.out'.format(5000,m,uname,n,strnow,n,output_f)
                         print cmd
                         os.system(cmd)
 
@@ -184,7 +195,7 @@ for exp in exps:
     ccnt = sorted(list(set(ccnt)))
 
     cmd = ''
-    os.chdir('./scripts')
+    os.chdir('./script')
     if exp == 'ycsb_skew':
         cmd = './result.sh -a ycsb_skew -n {} -c {} -s {} -t {}'.format(str(cn[0]), ','.join([str(x) for x in al]), ','.join([str(x) for x in sk]), strnow)
     elif exp == 'ycsb_writes':

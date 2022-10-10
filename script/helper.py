@@ -4,7 +4,7 @@ from collections import OrderedDict
 #from experiments import config_names
 import glob
 import pprint
-import latency_stats as ls
+# import latency_stats as ls
 import itertools
 
 CONFIG_PARAMS = [
@@ -1038,33 +1038,19 @@ def get_execfile_name(cfgs,fmt,network_hosts=[]):
 def get_outfile_name(cfgs,fmt,network_hosts=[]):
     output_f = ""
     nettest = False
-    if "NETWORK_TEST" in cfgs and cfgs["NETWORK_TEST"] == "true":
-        nettest = True
-    print(network_hosts)
-    if cfgs["NETWORK_TEST"] == "true":
-        for host in sorted(network_hosts):
-            parts = host.split(".")
-            if len(parts) == 4:
-                h = parts[3]
-            else:
-                h = host
-            output_f += "{}_".format(h)
-
-        output_f += "NETWORK_TEST_"
-    else:
-        #for key in sorted(cfgs.keys()):
-        for key in sorted(set(fmt)):
-            nkey = SHORTNAMES[key] if key in SHORTNAMES else key
-            if nkey == "":
-                output_f += "{}_".format(cfgs[key])
-            else:
-                if str(cfgs[key]).find("*") >= 0:
-                    output_f += "{}-{}_".format(nkey,str(cfgs[key])[:cfgs[key].find("*")])
+    #for key in sorted(cfgs.keys()):
+    for key in sorted(set(fmt)):
+        nkey = SHORTNAMES[key] if key in SHORTNAMES else key
+        if nkey == "":
+            output_f += "{}_".format(cfgs[key])
+        else:
+            if str(cfgs[key]).find("*") >= 0:
+                output_f += "{}-{}_".format(nkey,str(cfgs[key])[:cfgs[key].find("*")])
 #                    output_f += "{}-{}_".format(nkey,str(cfgs[key]).replace('*','-t-'))
 #                elif str(cfgs[key]).find("/") >= 0:
 #                    output_f += "{}-{}_".format(nkey,str(cfgs[key]).replace('/','-d-'))
-                else:
-                    output_f += "{}-{}_".format(nkey,cfgs[key])
+            else:
+                output_f += "{}-{}_".format(nkey,cfgs[key])
     return output_f
 
 def get_cfgs(fmt,e):
