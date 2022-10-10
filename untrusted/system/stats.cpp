@@ -140,11 +140,12 @@ void Stats::print() {
 		total_latency += _stats[tid]->latency;
 		total_time_query += _stats[tid]->time_query;
 		
-		printf("[tid=%ld] txn_cnt=%ld,abort_cnt=%ld\n", 
-			tid,
-			_stats[tid]->txn_cnt,
-			_stats[tid]->abort_cnt
-		);
+//		printf("[tid=%ld] txn_cnt=%ld,abort_cnt=%ld,thread_cnt=%u\n",
+//			tid,
+//			_stats[tid]->txn_cnt,
+//			_stats[tid]->abort_cnt,
+//               g_thread_cnt
+//		);
 	}
 	FILE * outf;
 	if (output_file != NULL) {
@@ -177,11 +178,12 @@ void Stats::print() {
 		);
 		fclose(outf);
 	}
-	printf("[summary] txn_cnt=%ld, abort_cnt=%ld"
+	printf("[summary] thread_cnt=%u txn_cnt=%ld, abort_cnt=%ld"
 		", run_time=%f, time_wait=%f, time_ts_alloc=%f"
 		", time_man=%f, time_index=%f, time_abort=%f, time_cleanup=%f, latency=%f"
 		", deadlock_cnt=%ld, cycle_detect=%ld, dl_detect_time=%f, dl_wait_time=%f"
-		", time_query=%f, debug1=%f, debug2=%f, debug3=%f, debug4=%f, debug5=%f\n", 
+		", time_query=%f, debug1=%f, debug2=%f, debug3=%f, debug4=%f, debug5=%f\n",
+		g_thread_cnt,
 		total_txn_cnt, 
 		total_abort_cnt,
 		total_run_time / BILLION,

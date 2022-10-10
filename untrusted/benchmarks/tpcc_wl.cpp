@@ -54,7 +54,7 @@ RC tpcc_wl::init_schema(const char * schema_file) {
 
 RC tpcc_wl::init_table() {
 	num_wh = g_num_wh;
-printf("TPCC Data Initialization Start!\n");
+//printf("TPCC Data Initialization Start!\n");
 /******** fill in data ************/
 // data filling process:
 //- item
@@ -75,7 +75,7 @@ printf("TPCC Data Initialization Start!\n");
 	for (uint32_t i = 0; i < g_num_wh - 1; i++) 
 		pthread_join(p_thds[i], NULL);
 
-	printf("TPCC Data Initialization Complete!\n");
+//	printf("TPCC Data Initialization Complete!\n");
 	return RCOK;
 }
 

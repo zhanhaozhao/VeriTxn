@@ -81,7 +81,7 @@ RC ycsb_wl::init_table() {
         }
     }
 ins_done:
-    printf("[YCSB] Table \"MAIN_TABLE\" initialized.\n");
+//    printf("[YCSB] Table \"MAIN_TABLE\" initialized.\n");
     return RCOK;
 
 }

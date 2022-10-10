@@ -104,7 +104,7 @@ RC workload::init_schema(std::string schema_file) {
             index->index_name = new char[n+1];
 			iname.copy(index->index_name, n);
 			index->index_name[n] = 0;
-			index_init_ecall(part_cnt, (void *) tables[tname], iname, (void*) index, g_synth_table_size * 2);
+			index_init_ecall(part_cnt, (void *) tables[tname], iname, (void*) index, (g_synth_table_size * 2) / BUCKET_FACTOR);
 			global_table_map->_indexes[iname] = index;
 	#elif WORKLOAD == TPCC
 			assert(tables[tname] != NULL);
@@ -114,7 +114,7 @@ RC workload::init_schema(std::string schema_file) {
 			iname.copy(index->index_name, n);
 			index->index_name[n] = 0;
             assert(std::string(index->index_name) == iname);
-            index_init_ecall(part_cnt, (void *) (tables[tname]), iname, (void*)index , stoull( items[1] ) * part_cnt);
+            index_init_ecall(part_cnt, (void *) (tables[tname]), iname, (void*)index , (stoull( items[1] ) * part_cnt) / BUCKET_FACTOR);
             printf("%s from %s\n", iname.c_str(), tname.c_str());
             global_table_map->_indexes[iname] = index;
 	#endif
