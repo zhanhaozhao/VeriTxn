@@ -20,9 +20,9 @@ void global_init_ecall(void * stats) {
 }
 
 void index_init_ecall(int part_cnt, void * table,
-  std::string iname, uint64_t bucket_cnt) {
+  std::string iname, void * index_ptr, uint64_t bucket_cnt) {
   sgx_status_t status = ec_index_init(enclave_id, part_cnt, table, iname.c_str(),
-    iname.size(), bucket_cnt);
+    iname.size(), index_ptr, bucket_cnt);
   if (status != SGX_SUCCESS) {
     printf("index init failed : error %d - %#x.\n", status,
       status);

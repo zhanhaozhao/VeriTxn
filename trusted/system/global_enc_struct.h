@@ -26,6 +26,7 @@ extern Plock part_lock_man;
 extern OptCC occ_man;
 
 extern table_map* tab_map;
+extern table_map* inner_index_map;
 
 // extern bool volatile warmup_finish;
 // extern bool volatile enable_thread_mem_pool;

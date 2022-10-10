@@ -10,9 +10,9 @@ void ec_global_init(void * stats) {
 }
 
 void ec_index_init(int part_cnt, void* table,
-  const char* iname, size_t len, uint64_t bucket_cnt) {
+  const char* iname, size_t len, void* index_ptr, uint64_t bucket_cnt) {
   
-  index_init_ecall(part_cnt, table, std::string{iname, len},
+  index_init_ecall(part_cnt, table, std::string{iname, len}, index_ptr,
     bucket_cnt);
 }
 

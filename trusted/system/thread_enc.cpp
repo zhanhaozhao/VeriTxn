@@ -31,7 +31,7 @@ void global_init_ecall(void * stats) {
 
 }
 
-void index_init_ecall(int part_cnt, void * table, std::string iname, uint64_t bucket_cnt) {
+void index_init_ecall(int part_cnt, void * table, std::string iname, void * index_ptr, uint64_t bucket_cnt) {
 	// IndexEnc * index = (IndexEnc *) aligned_alloc(64, sizeof(IndexEnc));
 	IndexEnc * index = new IndexEnc();
     assert(table);
@@ -48,6 +48,7 @@ void index_init_ecall(int part_cnt, void * table, std::string iname, uint64_t bu
     std::string tname = std::string(tbl->get_table_name());
 	tab_map->_tables[tname] = table;
 	tab_map->_indexes[iname] = index;
+	inner_index_map->_indexes[iname] = index_ptr;
 	index->index_name = iname;
 }
 

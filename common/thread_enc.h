@@ -12,7 +12,7 @@
 int runTest(void * txn);
 
 void global_init_ecall(void * stats);
-void index_init_ecall(int part_cnt, void * table, std::string iname, uint64_t bucket_cnt);
+void index_init_ecall(int part_cnt, void * table, std::string iname, void * index_ptr, uint64_t bucket_cnt);
 int run_txn_ecall(void * h_thd, uint64_t starttime);
 
 #endif

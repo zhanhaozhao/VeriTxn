@@ -117,6 +117,13 @@ RC IndexEnc::index_read(std::string iname, idx_key_t key, itemid_t * &item, int 
     return rc;
 }
 
+//#define DECOUPLE
+
+#ifndef DECOUPLE
+#include <index_hash.h>
+#include "base_row.h"
+#endif
+
 BucketHeader_ENC* IndexEnc::load_bucket(std::string iname, int part_id, uint64_t bkt_idx) {
 #ifndef SGX_DISK
 //    auto hs = _buckets[part_id][bkt_idx].get_hash();
@@ -136,6 +143,53 @@ BucketHeader_ENC* IndexEnc::load_bucket(std::string iname, int part_id, uint64_t
 //    return res_bucket;
     auto cur = _cache[part_id][bkt_idx].load();
     if (cur == nullptr) {
+#ifndef DECOUPLE
+        auto out_bkt = (((IndexHash*)inner_index_map->_indexes[iname])->load_bucket(part_id, bkt_idx));
+        auto res_bucket = new BucketHeader_ENC;
+        res_bucket->locked = false;
+        BucketNode_ENC* last_node = nullptr;
+        for (auto it = out_bkt->first_node; it; it = it->next) {
+            auto node = new BucketNode_ENC(it->key);
+            itemid_t* last_item = nullptr;
+            node->next = nullptr;
+            for (auto pt = it->items; pt; pt = pt->next) {
+                auto old_row = (base_row_t*)pt->location;
+                auto new_row = new row_t;
+                int n = old_row->get_tuple_size();
+                new_row->data = new char [n+1];
+                memcpy(new_row->data, old_row->data, n+1);
+                new_row->table = old_row->table;
+                new_row->init_manager(new_row);
+                new_row->set_primary_key(old_row->get_primary_key());
+                auto new_item = new itemid_t;
+                new_item->init();
+                new_item->location = (void*)new_row;
+                new_item->valid = true;
+                new_item->type = DT_row;
+                if (last_item == nullptr) {
+                    node->items = new_item;
+                } else {
+                    last_item->next = new_item;
+                }
+                last_item = new_item;
+            }
+            if (last_node == nullptr) {
+                res_bucket->first_node = node;
+            } else {
+                last_node->next = node;
+            }
+            last_node = node;
+        }
+        get_latch(res_bucket);
+        BucketHeader_ENC* tmp = nullptr;
+        if (!_cache[part_id][bkt_idx].compare_exchange_strong(tmp, res_bucket)) {
+            cur = _cache[part_id][bkt_idx].load();
+            release_latch(res_bucket);
+        } else {
+            cur = res_bucket;
+            release_latch(res_bucket);
+        }
+#else
         auto * res_bucket = new BucketHeader_ENC;
         std::string encoded = get_bucket_ocall(index_name, part_id, bkt_idx);
 //        if (bkt_idx == 1) {
@@ -167,6 +221,9 @@ BucketHeader_ENC* IndexEnc::load_bucket(std::string iname, int part_id, uint64_t
 //    }
     return cur;
 #endif
+    }
+#endif
+    return cur;
 }
 
 void IndexEnc::flush_bucket(int part_id, uint64_t bkt_idx, BucketHeader_ENC* cur, bool modified) {

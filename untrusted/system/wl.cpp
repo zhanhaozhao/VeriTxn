@@ -104,7 +104,7 @@ RC workload::init_schema(std::string schema_file) {
             index->index_name = new char[n+1];
 			iname.copy(index->index_name, n);
 			index->index_name[n] = 0;
-			index_init_ecall(part_cnt, (void *) tables[tname], iname, g_synth_table_size * 2);
+			index_init_ecall(part_cnt, (void *) tables[tname], iname, (void*) index, g_synth_table_size * 2);
 			global_table_map->_indexes[iname] = index;
 	#elif WORKLOAD == TPCC
 			assert(tables[tname] != NULL);
@@ -114,7 +114,7 @@ RC workload::init_schema(std::string schema_file) {
 			iname.copy(index->index_name, n);
 			index->index_name[n] = 0;
             assert(std::string(index->index_name) == iname);
-            index_init_ecall(part_cnt, (void *) (tables[tname]), iname, stoull( items[1] ) * part_cnt);
+            index_init_ecall(part_cnt, (void *) (tables[tname]), iname, (void*)index , stoull( items[1] ) * part_cnt);
             printf("%s from %s\n", iname.c_str(), tname.c_str());
             global_table_map->_indexes[iname] = index;
 	#endif
@@ -146,6 +146,7 @@ void workload::index_insert(INDEX * index, uint64_t key, base_row_t * row, int64
 	m_item->type = DT_row;
 	m_item->location = row;
 	m_item->valid = true;
+	m_item->next = nullptr;
 
     assert( index->index_insert(key, m_item, pid) == RCOK );
 }
