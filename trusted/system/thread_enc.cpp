@@ -146,6 +146,11 @@ int run_txn_ecall(void * thd, ts_t txn_ts) {
 }
 
 
+void update_hash_value(std::string index_name, int part_id, uint64_t bkt_idx, uint64_t hash) {
+  IndexEnc * index_enc = (IndexEnc *) tab_map->_indexes[index_name];
+  index_enc->update_verify_hash(part_id, bkt_idx, hash);
+}
+
 
 int runTest(void * txn)
 {

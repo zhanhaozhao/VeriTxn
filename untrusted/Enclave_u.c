@@ -56,8 +56,8 @@ typedef struct ms_oc_async_hash_value_t {
 } ms_oc_async_hash_value_t;
 
 typedef struct ms_oc_send_logs_t {
-	void* ms_logs;
-	int ms_size;
+	const char* ms_iname;
+	size_t ms_len;
 } ms_oc_send_logs_t;
 
 typedef struct ms_sgx_oc_cpuidex_t {
@@ -131,7 +131,7 @@ static sgx_status_t SGX_CDECL Enclave_oc_async_hash_value(void* pms)
 static sgx_status_t SGX_CDECL Enclave_oc_send_logs(void* pms)
 {
 	ms_oc_send_logs_t* ms = SGX_CAST(ms_oc_send_logs_t*, pms);
-	oc_send_logs(ms->ms_logs, ms->ms_size);
+	oc_send_logs(ms->ms_iname, ms->ms_len);
 
 	return SGX_SUCCESS;
 }

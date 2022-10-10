@@ -1,6 +1,7 @@
 #include "logger_enc.h"
 #include "row_enc.h"
 #include <fstream>
+#include "helper.h"
 
 
 LogRecord** Logger_generate::createRecords(txn_man* txn) {
@@ -32,4 +33,21 @@ LogRecord** Logger_generate::createRecords(txn_man* txn) {
   records[id]->rcd.key = 0;
 
   return records;
+}
+
+char* Logger_generate::log_to_buf(LogRecord** logs, int size, int *buf_size) {
+    char* buf = new char[2000];
+    int buf_p=0;
+    for (int i = 0; i < size; i++){
+        LogRecord * record = logs[i];
+        COPY_BUF(buf,record->rcd.checksum,buf_p);
+        COPY_BUF(buf,record->rcd.lsn,buf_p);
+        COPY_BUF(buf,record->rcd.type,buf_p);
+        COPY_BUF(buf,record->rcd.iud,buf_p);
+        COPY_BUF(buf,record->rcd.txn_id,buf_p);
+        COPY_BUF(buf,record->rcd.table_id,buf_p);
+        COPY_BUF(buf,record->rcd.key,buf_p);
+    }
+    *buf_size = buf_p;
+    return buf;
 }

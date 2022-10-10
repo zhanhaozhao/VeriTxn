@@ -2,7 +2,7 @@ PROJECT_ROOT ?= $(shell readlink -f .)
 
 
 CC=g++
-CFLAGS=-Wall -g -std=c++0x
+CFLAGS=-w -g -std=c++0x
 
 .SUFFIXES: .o .cpp .h
 
@@ -16,7 +16,7 @@ INCLUDE = -I. -I./common/ -I./untrusted/system/ -I./untrusted/benchmarks/ -I./un
 # LDFLAGS = -Wall -L. -L./libs -pthread -g -lrt -std=c++0x -O0 -ljemalloc
 
 CFLAGS += $(INCLUDE) -D NOGRAPHITE=1 -Werror -Wno-comment -O0
-LDFLAGS = -Wall -L. -pthread -g -lrt -std=c++0x -O0 -ljemalloc
+LDFLAGS = -Wall -L. -pthread -g -lrt -std=c++0x -O0 -lnanomsg
 # LDFLAGS = -Wall -L. -pthread -g -lrt -std=c++0x -O0 -ljemalloc -fsanitize=address -fno-omit-frame-pointer -static-libasan
 LDFLAGS += $(CFLAGS)
 

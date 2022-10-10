@@ -6,7 +6,7 @@
 #include <stdint.h>
 // #include "global.h"
 #include "config.h"
-
+#include <string.h>
 
 /************************************************/
 // atomic operations
@@ -49,7 +49,10 @@
 #define COPY_BUF_SIZE(d,v,p,s) \
 	memcpy(&((char*)d)[p],(char*)&v,s); \
 	p += s;
+	
+#define WRITE_VAL(f, v) f.write((char *)&v, sizeof(v));
 
+#define WRITE_VAL_SIZE(f, v, s) f.write(v, sizeof(char) * s);
 /************************************************/
 // STACK helper (push & pop)
 /************************************************/

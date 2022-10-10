@@ -83,10 +83,17 @@ void txn_man::cleanup(RC rc) {
 	insert_cnt = 0;
 	return;
 #endif
-	int size = 0;
+	int size = 0, buf_size = 0;
 	LogRecord** logs = log_generate.createRecords(this);
 	size = wr_cnt + 1;
-	send_logs(logs, size);
+	char* buf = log_generate.log_to_buf(logs, size, &buf_size);
+	std::string send_log(buf, buf_size);
+	send_logs(send_log, buf_size);
+	for (int i = 0; i < size; i++) {
+		free(logs[i]);
+	}
+	free(logs);
+	free(buf);
 	for (int rid = row_cnt - 1; rid >= 0; rid --) {
 		row_t * orig_r = accesses[rid]->orig_row;
 		access_t type = accesses[rid]->type;

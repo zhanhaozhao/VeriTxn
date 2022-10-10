@@ -27,6 +27,10 @@ void put_bucket_ocall(void * index, int part_id, int bkt_idx, const std::string 
 	
 }
 
+void async_hash_value(std::string index_name, int part_id, uint64_t bkt_idx, uint64_t hash) {
+  async_hash(index_name, part_id, bkt_idx, hash);
+}
+
 void async_hash(std::string index_name, int part_id, uint64_t bkt_idx, uint64_t hash){
 	Message* msg = Message::create_message(ASYNC_HASH);
 	if (g_node_id != 0) return;
@@ -39,8 +43,18 @@ void async_hash(std::string index_name, int part_id, uint64_t bkt_idx, uint64_t 
 	}
 }
 
-void untrust_send_logs(LogRecord** logs, int size) {
-	for (int i = 0; i < size; i ++) {
-		logger.enqueueRecord(logs[i]);
-	}
+void send_logs(std::string logs, int size) {
+	logger.buf_to_log(logs);
+	// 	LogRecord* clog = NULL;
+	// 	clog = (LogRecord*)logs[i];
+	// 	logger.enqueueRecord(logs[i]);
+	// }
+}
+
+void untrust_send_logs(std::string logs) {
+	logger.buf_to_log(logs);
+	// 	LogRecord* clog = NULL;
+	// 	clog = (LogRecord*)logs[i];
+	// 	logger.enqueueRecord(logs[i]);
+	// }
 }

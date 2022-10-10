@@ -71,7 +71,7 @@ int main(int argc, char* argv[])
 
 	printf("Initializing trusted log generator... ");
 	fflush(stdout);
-	logger.init();
+	logger.init("logfile.log");
 	printf("Done\n");
 
 	// if (NODE_CNT > 1) {

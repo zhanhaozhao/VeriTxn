@@ -39,7 +39,7 @@ void SGX_UBRIDGE(SGX_NOCONVENTION, oc_async_hash_value, (const char* iname, size
 #endif
 #ifndef OC_SEND_LOGS_DEFINED__
 #define OC_SEND_LOGS_DEFINED__
-void SGX_UBRIDGE(SGX_NOCONVENTION, oc_send_logs, (void* logs, int size));
+void SGX_UBRIDGE(SGX_NOCONVENTION, oc_send_logs, (const char* iname, size_t len));
 #endif
 #ifndef SGX_OC_CPUIDEX_DEFINED__
 #define SGX_OC_CPUIDEX_DEFINED__

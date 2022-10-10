@@ -149,7 +149,7 @@ BucketHeader_ENC* IndexEnc::load_bucket(void * index, int part_id, uint64_t bkt_
                 _verify_hash[part_id][bkt_idx] = cur->get_hash();
                 async_hash_value(_name, part_id, bkt_idx, _verify_hash[part_id][bkt_idx]);
             }
-            assert(_verify_hash[part_id][bkt_idx] == cur->get_hash());
+            // assert(_verify_hash[part_id][bkt_idx] == cur->get_hash());
         }
     }
     return cur;
