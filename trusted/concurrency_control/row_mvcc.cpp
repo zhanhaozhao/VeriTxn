@@ -47,7 +47,7 @@ void Row_mvcc::buffer_req(TsType type, txn_man * txn, bool served)
 				_requests[i].type = type;
 				_requests[i].ts = txn->get_ts();
 				_requests[i].txn = txn;
-				_requests[i].time = get_cur_time_ocall();
+//				_requests[i].time = get_cur_time_ocall();
 				return;
 			}
 		}

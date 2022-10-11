@@ -70,7 +70,7 @@ Catalog * base_row_t::get_schema() {
 	return get_table()->get_schema(); 
 }
 
-const char * base_row_t::get_table_name() { 
+const char* base_row_t::get_table_name() {
 	return get_table()->get_table_name(); 
 };
 uint64_t base_row_t::get_tuple_size() {
@@ -146,7 +146,12 @@ std::string base_row_t::encode() {
     data_items.emplace_back(make_pair("row_id:", std::to_string(_row_id)));
     auto siz = get_tuple_size();
     std::string data_str;
-    for (unsigned i=0;i<siz;i++) data_str.push_back(data[i]+1);
+    for (unsigned i=0;i<siz;i++) {
+        uint8_t val = data[i];  // 256.
+        data_str.push_back(val % 10 + '0');
+        data_str.push_back((val/10) % 10 + '0');
+        data_str.push_back((val/100) % 10 + '0');
+    }
     data_items.emplace_back(std::make_pair("data:", data_str));
     return encode_vec(data_items);
 }
@@ -156,12 +161,17 @@ void base_row_t::decode(const std::string& e) {
     assert(data_items.size() == 5);
     const std::string &data_s = data_items[4].second;
     this->init(int(data_s.length()));
-    auto nam = data_items[0].second.c_str();
-    this->table = global_table_map->get_table(nam);
+//    auto nam = data_items[0].second.c_str();
+    this->table = (table_t*)global_table_map->_tables[data_items[0].second];
+    assert(this->table);
     memcpy(data, data_s.c_str(), data_s.length());
-    for (size_t i=0;i<data_s.length();i++) data[i] --;
-    set_primary_key(int64_t(stoi(data_items[1].second)));
-    _part_id = (int64_t(stoi(data_items[2].second)));
-    _row_id = (int64_t(stoi(data_items[3].second)));
+    for (size_t i=0;i<data_s.length();i+=3) {
+        data[i] = data_s[i] - '0';
+        data[i] += (data_s[i+1] - '0') * 10;
+        data[i] += (data_s[i+2] - '0') * 100;
+    }
+    set_primary_key(int64_t(stoull(data_items[1].second)));
+    _part_id = (int64_t(stoull(data_items[2].second)));
+    _row_id = (int64_t(stoull(data_items[3].second)));
     init_manager(this);
 }

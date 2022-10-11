@@ -52,6 +52,8 @@ std::vector<std::pair<std::string, std::string> > decode_vec(const std::string &
             assert(e[i] == '}' || e[i] == '{');
         }
     }
+    if (depth != 0) {
+    }
     assert(depth == 0);
     assert(fi.empty());
     return vector;

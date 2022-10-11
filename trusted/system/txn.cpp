@@ -14,7 +14,6 @@
 #include "index_btree.h"
 #include "index_hash.h"
 #include "index_enc.h"
-#include "ycsb.h"
 #include "logger_enc.h"
 
 #include "api.h"
@@ -29,7 +28,7 @@ void txn_man::init(thread_t * h_thd, workload * h_wl, uint64_t thd_id) {
 	wr_cnt = 0;
 	insert_cnt = 0;
 	// accesses = (Access **) aligned_alloc(64, sizeof(Access *) * MAX_ROW_PER_TXN);
-	accesses = (Access **) malloc(sizeof(Access *) * (MAX_ROW_PER_TXN));
+	accesses = (Access **) malloc(sizeof(Access *) * MAX_ROW_PER_TXN);
 	for (int i = 0; i < MAX_ROW_PER_TXN; i++)
 		accesses[i] = NULL;
 	num_accesses_alloc = 0;
@@ -144,7 +143,7 @@ void txn_man::cleanup(RC rc) {
 row_t * txn_man::get_row(row_t * row, access_t type) {
 	if (CC_ALG == HSTORE)
 		return row;
-	uint64_t starttime = get_cur_time_ocall();
+//	uint64_t starttime = get_cur_time_ocall();
 	RC rc = RCOK;
 	if (accesses[row_cnt] == NULL) {
 		// Access * access = (Access *) aligned_alloc(64, sizeof(Access));
@@ -198,8 +197,8 @@ row_t * txn_man::get_row(row_t * row, access_t type) {
 	if (type == WR)
 		wr_cnt ++;
 
-	uint64_t timespan = get_cur_time_ocall() - starttime;
-	INC_TMP_STATS_ENC(get_thd_id(), time_man, timespan);
+//	uint64_t timespan = get_cur_time_ocall() - starttime;
+//	INC_TMP_STATS_ENC(get_thd_id(), time_man, timespan);
 	return accesses[row_cnt - 1]->data;
 }
 
@@ -211,33 +210,44 @@ void txn_man::insert_row(row_t * row, table_t * table) {
 }
 
 itemid_t *
-txn_man::index_read(INDEX * index, idx_key_t key, int part_id) {
-	uint64_t starttime = get_cur_time_ocall();
+txn_man::index_read(std::string iname, idx_key_t key, int part_id) {
+//	uint64_t starttime = get_cur_time_ocall();
 	itemid_t * item;
 	// index --> en_index;
-	// assert(index);
-	// IndexEnc * index_enc = (IndexEnc *) tab_map->_indexes[index->index_name];
-	IndexEnc * index_enc = (IndexEnc *) tab_map->_indexes["MAIN_INDEX"];
-	index_enc->index_read(index, key, item, part_id, get_thd_id());
+	IndexEnc * index_enc = (IndexEnc *) tab_map->_indexes[iname];
+	if (index_enc == nullptr) {
+        assert(false);
+//        index_enc = new IndexEnc;
+//        index_enc->init(index->_bucket_cnt, int(index->_part_cnt));
+//        tab_map->_indexes[index->index_name] = index_enc;
+	}
+	index_enc->index_read(iname, key, item, part_id, get_thd_id());
+    assert(((row_t*)item->location)->get_table());
 	// index->index_read(key, item, part_id, get_thd_id());
-	INC_TMP_STATS_ENC(get_thd_id(), time_index, get_cur_time_ocall() - starttime);
+//	INC_TMP_STATS_ENC(get_thd_id(), time_index, get_cur_time_ocall() - starttime);
 	return item;
 }
 
 void 
-txn_man::index_read(INDEX * index, idx_key_t key, int part_id, itemid_t *& item) {
-	uint64_t starttime = get_cur_time_ocall();
-	IndexEnc * index_enc = (IndexEnc *) tab_map->_indexes[index->index_name];
-	index_enc->index_read(index, key, item, part_id, get_thd_id());
+txn_man::index_read(std::string iname, idx_key_t key, int part_id, itemid_t *& item) {
+//	uint64_t starttime = get_cur_time_ocall();
+	IndexEnc * index_enc = (IndexEnc *) tab_map->_indexes[iname];
+    if (index_enc == nullptr) {
+        assert(false);
+//        index_enc = new IndexEnc;
+//        index_enc->init(index->_bucket_cnt, int(index->_part_cnt));
+//        tab_map->_indexes[index->index_name] = index_enc;
+    }
+    index_enc->index_read(iname, key, item, part_id, get_thd_id());
 	// index->index_read(key, item, part_id, get_thd_id());
-	INC_TMP_STATS_ENC(get_thd_id(), time_index, get_cur_time_ocall() - starttime);
+//	INC_TMP_STATS_ENC(get_thd_id(), time_index, get_cur_time_ocall() - starttime);
 }
 
 RC txn_man::finish(RC rc) {
 #if CC_ALG == HSTORE
 	return RCOK;
 #endif
-	uint64_t starttime = get_cur_time_ocall();
+//	uint64_t starttime = get_cur_time_ocall();
 #if CC_ALG == OCC
 	if (rc == RCOK)
 		rc = occ_man.validate(this);
@@ -259,9 +269,9 @@ RC txn_man::finish(RC rc) {
 #else 
 	cleanup(rc);
 #endif
-	uint64_t timespan = get_cur_time_ocall() - starttime;
-	INC_TMP_STATS_ENC(get_thd_id(), time_man,  timespan);
-	INC_STATS_ENC(get_thd_id(), time_cleanup,  timespan);
+//	uint64_t timespan = get_cur_time_ocall() - starttime;
+//	INC_TMP_STATS_ENC(get_thd_id(), time_man,  timespan);
+//	INC_STATS_ENC(get_thd_id(), time_cleanup,  timespan);
 	return rc;
 }
 
@@ -270,4 +280,13 @@ txn_man::release() {
 	for (int i = 0; i < num_accesses_alloc; i++)
 		free(accesses[i]);
 	free(accesses);
+}
+
+
+itemid_t* txn_man::index_read(INDEX* index, idx_key_t key, int part_id) {
+    return index_read(std::string(index->index_name), key, part_id);
+}
+
+void txn_man::index_read(INDEX* index, idx_key_t key, int part_id, itemid_t *& item) {
+    index_read(std::string(index->index_name), key, part_id, item);
 }

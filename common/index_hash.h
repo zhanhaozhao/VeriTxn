@@ -12,7 +12,7 @@
 // each BucketNode contains items sharing the same key
 class BucketNode {
 public: 
-	BucketNode(idx_key_t key) {	init(key); };
+	BucketNode(idx_key_t key) {	init(key); next = nullptr; };
 	void init(idx_key_t key) {
 		this->key = key;
 		next = NULL;
@@ -32,7 +32,7 @@ class BucketHeader {
 public:
 	void init();
 	void insert_item(idx_key_t key, itemid_t * item, int part_id);
-	void read_item(idx_key_t key, itemid_t * &item, const char * tname);
+	void read_item(idx_key_t key, itemid_t * &item, std::string tname);
     DFlow encode() const;
     void decode(const DFlow & e);
 	BucketNode * 	first_node;
@@ -55,7 +55,8 @@ public:
 	RC	 		index_read(idx_key_t key, itemid_t * &item,
 							int part_id=-1, int thd_id=0);
     BucketHeader *	load_bucket(int part_id, int bkt_idx);
-	std::string	index_name;
+	char*	index_name;
+    BucketHeader ** 	_buckets;
 private:
 	void get_latch(BucketHeader * bucket);
 	void release_latch(BucketHeader * bucket);
@@ -63,8 +64,6 @@ private:
 	// TODO implement more complex hash function
 	uint64_t hash(idx_key_t key) {	return key % _bucket_cnt_per_part; }
 	
-	BucketHeader ** 	_buckets;
-	uint64_t	 		_bucket_cnt;
 	uint64_t 			_bucket_cnt_per_part;
 };
 

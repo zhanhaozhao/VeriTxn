@@ -90,7 +90,8 @@ RC IndexEnc::index_insert(idx_key_t key, itemid_t * item, int part_id) {
     RC rc = RCOK;
     uint64_t bkt_idx = hash(key);
     assert(bkt_idx < _bucket_cnt_per_part);
-    BucketHeader_ENC * cur_bkt = load_bucket(nullptr, part_id, bkt_idx);
+//    assert(false);
+    BucketHeader_ENC * cur_bkt = load_bucket(index_name, part_id, bkt_idx);
     // 1. get the ex latch
     get_latch(cur_bkt);
 
@@ -106,10 +107,11 @@ RC IndexEnc::index_insert(idx_key_t key, itemid_t * item, int part_id) {
     return rc;
 }
 
-RC IndexEnc::index_read(void* ocall_index, idx_key_t key, itemid_t * &item, int part_id) {
+RC IndexEnc::index_read(std::string iname, idx_key_t key, itemid_t * &item, int part_id) {
     uint64_t bkt_idx = hash(key);
     assert(bkt_idx < _bucket_cnt_per_part);
-    BucketHeader_ENC * cur_bkt = load_bucket(ocall_index, part_id, bkt_idx);
+    assert(iname == index_name);
+    BucketHeader_ENC * cur_bkt = load_bucket(index_name, part_id, bkt_idx);
     RC rc = RCOK;
     cur_bkt->read_item(key, item);
     flush_bucket(part_id, bkt_idx, cur_bkt, false);
@@ -119,7 +121,14 @@ void IndexEnc::update_verify_hash(int part_id, uint64_t bkt_idx, uint64_t hash) 
     _verify_hash[part_id][bkt_idx] = hash;
 }
 
-BucketHeader_ENC* IndexEnc::load_bucket(void * index, int part_id, uint64_t bkt_idx) {
+//#define DECOUPLE
+
+#ifndef DECOUPLE
+#include <index_hash.h>
+#include "base_row.h"
+#endif
+
+BucketHeader_ENC* IndexEnc::load_bucket(std::string iname, int part_id, uint64_t bkt_idx) {
 #ifndef SGX_DISK
 //    auto hs = _buckets[part_id][bkt_idx].get_hash();
 //    if (_verify_hash[part_id][bkt_idx] == _default_verify_hash) {
@@ -138,22 +147,88 @@ BucketHeader_ENC* IndexEnc::load_bucket(void * index, int part_id, uint64_t bkt_
 //    return res_bucket;
     auto cur = _cache[part_id][bkt_idx].load();
     if (cur == nullptr) {
-        auto * res_bucket = new BucketHeader_ENC;
-        res_bucket->decode(get_bucket_ocall(index, part_id, bkt_idx));
+#ifndef DECOUPLE
+        auto out_bkt = &(((IndexHash*)inner_index_map->_indexes[iname])->_buckets[part_id][bkt_idx]);
+        auto res_bucket = new BucketHeader_ENC;
+        res_bucket->locked = false;
+        BucketNode_ENC* last_node = nullptr;
+        for (auto it = out_bkt->first_node; it; it = it->next) {
+            auto node = new BucketNode_ENC(it->key);
+            itemid_t* last_item = nullptr;
+            node->next = nullptr;
+            for (auto pt = it->items; pt; pt = pt->next) {
+                auto old_row = (base_row_t*)pt->location;
+                auto new_row = new row_t;
+                int n = old_row->table->get_schema()->get_tuple_size();
+                new_row->data = new char [n+1];
+                memcpy(new_row->data, old_row->data, n+1);
+                new_row->table = old_row->table;
+                new_row->init_manager(new_row);
+                new_row->set_primary_key(old_row->get_primary_key());
+                auto new_item = new itemid_t;
+                new_item->next = nullptr;
+                new_item->location = (void*)new_row;
+                new_item->valid = true;
+                new_item->type = DT_row;
+                if (last_item == nullptr) {
+                    node->items = new_item;
+                } else {
+                    last_item->next = new_item;
+                }
+                last_item = new_item;
+            }
+            if (last_node == nullptr) {
+                res_bucket->first_node = node;
+            } else {
+                last_node->next = node;
+            }
+            last_node = node;
+        }
+        get_latch(res_bucket);
         BucketHeader_ENC* tmp = nullptr;
         if (!_cache[part_id][bkt_idx].compare_exchange_strong(tmp, res_bucket)) {
             cur = _cache[part_id][bkt_idx].load();
+            release_latch(res_bucket);
+        } else {
+            cur = res_bucket;
+            release_latch(res_bucket);
+        }
+#else
+        auto * res_bucket = new BucketHeader_ENC;
+        std::string encoded = get_bucket_ocall(index_name, part_id, bkt_idx);
+//        if (bkt_idx == 1) {
+//            printf("The bucket origin = %s\n", encoded.c_str());
+//        }
+        res_bucket->decode(encoded);
+        get_latch(res_bucket);
+        BucketHeader_ENC* tmp = nullptr;
+        if (!_cache[part_id][bkt_idx].compare_exchange_strong(tmp, res_bucket)) {
+            cur = _cache[part_id][bkt_idx].load();
+            release_latch(res_bucket);
         } else {
             cur = res_bucket;
             if (_verify_hash[part_id][bkt_idx] == _default_verify_hash) {
-                _verify_hash[part_id][bkt_idx] = cur->get_hash();
+                _verify_hash[part_id][bkt_idx] = string_hash(encoded);
                 async_hash_value(_name, part_id, bkt_idx, _verify_hash[part_id][bkt_idx]);
+            } else {
+//                assert(_verify_hash[part_id][bkt_idx] == string_hash(encoded));
             }
-            // assert(_verify_hash[part_id][bkt_idx] == cur->get_hash());
+            assert(_verify_hash[part_id][bkt_idx] == string_hash(encoded));
+            release_latch(res_bucket);
+//            printf("The encoded value = %s\n", sh.c_str());
+//            if (_verify_hash[part_id][bkt_idx] != string_hash(sh)) {
+//                printf("The data strings are %s and %s\n", beginh.c_str(), sh.c_str());
+//            }
         }
     }
+//    if (bkt_idx == 1) {
+//        printf("The bucket id = %s\n", cur->encode().c_str());
+//    }
     return cur;
 #endif
+    }
+#endif
+    return cur;
 }
 
 void IndexEnc::flush_bucket(int part_id, uint64_t bkt_idx, BucketHeader_ENC* cur, bool modified) {
@@ -175,11 +250,12 @@ void IndexEnc::flush_bucket(int part_id, uint64_t bkt_idx, BucketHeader_ENC* cur
 #endif
 }
 
-RC IndexEnc::index_read(void * ocall_index, idx_key_t key, itemid_t * &item,
+RC IndexEnc::index_read(std::string iname, idx_key_t key, itemid_t * &item,
                          int part_id, int thd_id) {
     uint64_t bkt_idx = hash(key);
     assert(bkt_idx < _bucket_cnt_per_part);
-    BucketHeader_ENC * cur_bkt = load_bucket(ocall_index, part_id, bkt_idx);
+    assert(iname == index_name);
+    BucketHeader_ENC * cur_bkt = load_bucket(index_name, part_id, bkt_idx);
     RC rc = RCOK;
     // 1. get the sh latch
 //	get_latch(cur_bkt);
@@ -188,6 +264,7 @@ RC IndexEnc::index_read(void * ocall_index, idx_key_t key, itemid_t * &item,
         return Abort;
     }
     cur_bkt->read_item(key, item);
+//    assert (item->location != nullptr);
     // 3. release the latch
 //	release_latch(cur_bkt);
     flush_bucket(part_id, bkt_idx, cur_bkt, false);
@@ -246,6 +323,10 @@ void BucketHeader_ENC::read_item(idx_key_t key, itemid_t * &item) const {
             break;
         cur_node = cur_node->next;
     }
+//    if (cur_node == nullptr) {
+//        item = nullptr;
+//        return;
+//    }
     // , "Key does not exist!"
     assert(cur_node->key == key);
     
@@ -270,14 +351,18 @@ DFlow BucketHeader_ENC::encode() const {
 void BucketHeader_ENC::decode(const DFlow & e) {
     std::vector <encoded_record> data = decode_vec(e);
     this->init();
+    BucketNode_ENC* last = nullptr;
     for (const auto& it:data) {
-        auto tmp = new BucketNode_ENC(stoi(it.first));
+        auto tmp = new BucketNode_ENC(stoull(it.first));
         tmp->decode(it.second);
-        if (this->first_node == NULL) {
+        if (last == NULL) {
             this->first_node = tmp;
+            last = tmp;
         } else {
-            this->first_node->next = tmp;
-            this->first_node = tmp;
+            last->next = tmp;
+            last = tmp;
+//            this->first_node->next = tmp;
+//            this->first_node = tmp;
         }
     }
 }
@@ -285,7 +370,7 @@ void BucketHeader_ENC::decode(const DFlow & e) {
 void test_encoder(const BucketHeader_ENC* x) {
 #ifdef TEST_C
     auto tmp = new BucketHeader_ENC();
-    string e = x->encode();
+    std::string e = x->encode();
     tmp->decode(e);
 //    cout << e << "  and " << tmp->encode() << endl;
     assert(e == tmp->encode());
@@ -295,7 +380,7 @@ void test_encoder(const BucketHeader_ENC* x) {
 void test_encoder_row(row_t* x) {
 #ifdef TEST_C
     auto tmp = new row_t();
-    string e = x->encode();
+    std::string e = x->encode();
     tmp->decode(e);
 //    cout << e << "  and " << tmp->encode() << endl;
     assert(e == tmp->encode());
@@ -307,28 +392,47 @@ DFlow BucketNode_ENC::encode() const {
     std::string res_items;
     itemid_t * it = items;
     data.emplace_back(std::make_pair(std::to_string(this->key), ""));
-    auto tmp = (row_t*)(it->location);
-    test_encoder_row(tmp);
-    data.emplace_back(std::make_pair(std::to_string(tmp->get_part_id()), tmp->encode()));
+    while (it != nullptr) {
+        auto tmp = (row_t*)(it->location);
+        test_encoder_row(tmp);
+        data.emplace_back(std::make_pair(std::to_string(tmp->get_part_id()), tmp->encode()));
+        it = it -> next;
+    }
     return encode_vec(data);
 }
 
 void BucketNode_ENC::decode(const DFlow & e) {
     std::vector <encoded_record> data = decode_vec(e);
-    this->init(std::stoi(data[0].first));
+    this->init(std::stoull(data[0].first));
     this->items = new itemid_t;
-    assert(data.size() == 2);
-    auto * cur_row = new row_t;
-    cur_row->decode(data[1].second);
-    this->items->location = (void*)cur_row;
-    this->items->valid = true;
-    this->items->type = DT_row;
+    // this->items->init();
+    this->items->valid = false;
+	this->items->location = 0;
+	this->items->next = NULL;
+    int n = data.size();
+    itemid_t* last = nullptr;
+    for (int i = 1;i < n;i ++) {
+        auto * cur_row = new row_t;
+        cur_row->decode(data[1].second);
+        auto * cur_item = new itemid_t;
+        cur_item->location = (void*)cur_row;
+        cur_item->valid = true;
+        cur_item->type = DT_row;
+        cur_item->next = nullptr;
+        if (last == nullptr) {
+            this->items = cur_item;
+            last = cur_item;
+        } else {
+            last->next = cur_item;
+            last = cur_item;
+        }
+    }
 }
 
 void test_encoder(const BucketNode_ENC* x) {
 #ifdef TEST_C
     auto tmp = new BucketNode_ENC(x->key);
-    string e = x->encode();
+    std::string e = x->encode();
     tmp->decode(e);
 //    cout << e << "  and " << tmp->encode() << endl;
     assert(e == tmp->encode());

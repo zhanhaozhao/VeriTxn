@@ -105,7 +105,7 @@ int
 DL_detect::detect_cycle(uint64_t txnid) {
 	if (g_no_dl_enc)
 		return 0;
-	uint64_t starttime = get_cur_time_ocall();
+//	uint64_t starttime = get_cur_time_ocall();
 	INC_GLOB_STATS_ENC(cycle_detect, 1);
 	bool deadlock = false;
 
@@ -141,8 +141,8 @@ DL_detect::detect_cycle(uint64_t txnid) {
 	free(detect_data->visited);
 	free(detect_data->recStack);
 	free(detect_data);
-	uint64_t timespan = get_cur_time_ocall() - starttime;
-	INC_GLOB_STATS_ENC(dl_detect_time, timespan);
+//	uint64_t timespan = get_cur_time_ocall() - starttime;
+//	INC_GLOB_STATS_ENC(dl_detect_time, timespan);
 	if (deadlock) return 1;
 	else return 0;
 }

@@ -1,13 +1,14 @@
 #include "global.h"
 #include "common/helper.h"
 #include "table.h"
+
+#include <utility>
 #include "catalog.h"
 #include "base_row.h"
 #include "mem_alloc.h"
 
-void table_t::init(Catalog * schema) {
-	this->table_name = schema->table_name;
-	this->schema = schema;
+void table_t::init(Catalog * catalog) {
+    this->schema = catalog;
 	assert(this->schema->field_cnt);
 }
 

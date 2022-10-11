@@ -58,8 +58,8 @@ RC tpcc_txn_man::run_payment(tpcc_query * query) {
 	// TODO for variable length variable (string). Should store the size of 
 	// the variable.
 	key = query->w_id;
-	INDEX * index = _wl->i_warehouse; 
-	item = index_read(index, key, wh_to_part(w_id));
+//	INDEX * index = _wl->i_warehouse;
+	item = index_read("WAREHOUSE_IDX", key, wh_to_part(w_id));
 	assert(item != NULL);
 	row_t * r_wh = ((row_t *)item->location);
 	row_t * r_wh_local;
@@ -86,7 +86,7 @@ RC tpcc_txn_man::run_payment(tpcc_query * query) {
 		WHERE d_w_id=:w_id AND d_id=:d_id;
 	+=====================================================*/
 	key = distKey(query->d_id, query->d_w_id);
-	item = index_read(_wl->i_district, key, wh_to_part(w_id));
+	item = index_read("DISTRICT_IDX", key, wh_to_part(w_id));
 	assert(item != NULL);
 	row_t * r_dist = ((row_t *)item->location);
 	row_t * r_dist_local = get_row(r_dist, WR);
@@ -129,8 +129,8 @@ RC tpcc_txn_man::run_payment(tpcc_query * query) {
 		uint64_t key = custNPKey(query->c_last, query->c_d_id, query->c_w_id);
 		// XXX: the list is not sorted. But let's assume it's sorted... 
 		// The performance won't be much different.
-		INDEX * index = _wl->i_customer_last;
-		item = index_read(index, key, wh_to_part(c_w_id));
+//		INDEX * index = _wl->i_customer_last;
+		item = index_read("CUSTOMER_LAST_IDX", key, wh_to_part(c_w_id));
 		assert(item != NULL);
 		
 		int cnt = 0;
@@ -167,8 +167,8 @@ RC tpcc_txn_man::run_payment(tpcc_query * query) {
 			WHERE c_w_id=:c_w_id AND c_d_id=:c_d_id AND c_id=:c_id;
 		+======================================================================*/
 		key = custKey(query->c_id, query->c_d_id, query->c_w_id);
-		INDEX * index = _wl->i_customer_id;
-		item = index_read(index, key, wh_to_part(c_w_id));
+//		INDEX * index = _wl->i_customer_id;
+		item = index_read("CUSTOMER_ID_IDX", key, wh_to_part(c_w_id));
 		assert(item != NULL);
 		r_cust = (row_t *) item->location;
 	}
@@ -248,7 +248,7 @@ RC tpcc_txn_man::run_new_order(tpcc_query * query) {
 	RC rc = RCOK;
 	uint64_t key;
 	itemid_t * item;
-	INDEX * index;
+//	INDEX * index;
 	
 	bool remote = query->remote;
 	uint64_t w_id = query->w_id;
@@ -262,8 +262,8 @@ RC tpcc_txn_man::run_new_order(tpcc_query * query) {
 		WHERE w_id = :w_id AND c_w_id = w_id AND c_d_id = :d_id AND c_id = :c_id;
 	+========================================================================*/
 	key = w_id;
-	index = _wl->i_warehouse; 
-	item = index_read(index, key, wh_to_part(w_id));
+//	index = _wl->i_warehouse;
+	item = index_read("WAREHOUSE_IDX", key, wh_to_part(w_id));
 	assert(item != NULL);
 	row_t * r_wh = ((row_t *)item->location);
 	row_t * r_wh_local = get_row(r_wh, RD);
@@ -275,8 +275,8 @@ RC tpcc_txn_man::run_new_order(tpcc_query * query) {
 	double w_tax;
 	r_wh_local->get_value(W_TAX, w_tax); 
 	key = custKey(c_id, d_id, w_id);
-	index = _wl->i_customer_id;
-	item = index_read(index, key, wh_to_part(w_id));
+//	index = _wl->i_customer_id;
+	item = index_read("CUSTOMER_ID_IDX", key, wh_to_part(w_id));
 	assert(item != NULL);
 	row_t * r_cust = (row_t *) item->location;
 	row_t * r_cust_local = get_row(r_cust, RD);
@@ -298,7 +298,7 @@ RC tpcc_txn_man::run_new_order(tpcc_query * query) {
 		WH ERE d _id = :d_id AN D d _w _id = :w _id ;
 	+===================================================*/
 	key = distKey(d_id, w_id);
-	item = index_read(_wl->i_district, key, wh_to_part(w_id));
+	item = index_read("DISTRICT_IDX", key, wh_to_part(w_id));
 	assert(item != NULL);
 	row_t * r_dist = ((row_t *)item->location);
 	row_t * r_dist_local = get_row(r_dist, WR);
@@ -350,7 +350,7 @@ RC tpcc_txn_man::run_new_order(tpcc_query * query) {
 			WHERE i_id = :ol_i_id;
 		+===========================================*/
 		key = ol_i_id;
-		item = index_read(_wl->i_item, key, 0);
+		item = index_read("ITEM_IDX", key, 0);
 		assert(item != NULL);
 		row_t * r_item = ((row_t *)item->location);
 
@@ -380,9 +380,9 @@ RC tpcc_txn_man::run_new_order(tpcc_query * query) {
 		+===============================================*/
 
 		uint64_t stock_key = stockKey(ol_i_id, ol_supply_w_id);
-		INDEX * stock_index = _wl->i_stock;
+//		INDEX * stock_index = _wl->p *r_wh_local;
 		itemid_t * stock_item;
-		index_read(stock_index, stock_key, wh_to_part(ol_supply_w_id), stock_item);
+		index_read("STOCK_IDX", stock_key, wh_to_part(ol_supply_w_id), stock_item);
 		assert(item != NULL);
 		row_t * r_stock = ((row_t *)stock_item->location);
 		row_t * r_stock_local = get_row(r_stock, WR);
@@ -441,7 +441,7 @@ RC tpcc_txn_man::run_new_order(tpcc_query * query) {
 //		r_ol->set_value(OL_SUPPLY_W_ID, &ol_supply_w_id);
 //		r_ol->set_value(OL_QUANTITY, &ol_quantity);
 //		r_ol->set_value(OL_AMOUNT, &ol_amount);
-#endif		
+#endif
 //		insert_row(r_ol, _wl->t_orderline);
 	}
 	assert( rc == RCOK );
@@ -466,7 +466,7 @@ tpcc_txn_man::run_order_status(tpcc_query * query) {
 		// EXEC SQL CLOSE c_name;
 
 		uint64_t key = custNPKey(query->c_last, query->c_d_id, query->c_w_id);
-		// XXX: the list is not sorted. But let's assume it's sorted... 
+		// XXX: the list is not sorted. But let's assume it's sorted...
 		// The performance won't be much different.
 		INDEX * index = _wl->i_customer_last;
 		uint64_t thd_id = get_thd_id();
@@ -512,7 +512,7 @@ tpcc_txn_man::run_order_status(tpcc_query * query) {
 	row_t * r_order = (row_t *) item->location;
 	row_t * r_order_local = get_row(r_order, RD);
 	if (r_order_local == NULL) {
-		assert(false); 
+		assert(false);
 		return finish(Abort);
 	}
 
@@ -597,7 +597,7 @@ tpcc_txn_man::run_delivery(tpcc_query * query) {
 		row_t * r_orderline = (row_t *)item->location;
 		r_orderling->get_value(OL_O_ID, no_o_id);
 		// TODO the orderline row should be removed from the table and indexes.
-		
+
 		index = _wl->i_order;
 		key = orderPrimaryKey(query->w_id, d_id, no_o_id);
 		itemid_t * item = index_read(index, key, wh_to_part(query->w_id));
@@ -618,7 +618,7 @@ tpcc_txn_man::run_delivery(tpcc_query * query) {
 			r_orderline->get_value(OL_AMOUNT, ol_amount);
 			sum_ol_amount += ol_amount;
 		}
-		
+
 		key = custKey(o_c_id, d_id, query->w_id);
 		itemid_t * item = index_read(_wl->i_customer_id, key, wh_to_part(query->w_id));
 		row_t * r_cust = (row_t *)item->location;

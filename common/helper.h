@@ -99,7 +99,7 @@ enum Data_type {DT_table, DT_page, DT_row };
 // data item type. 
 class itemid_t {
 public:
-	itemid_t() { };
+	itemid_t() { next = nullptr; location = nullptr; valid = false; };
 	itemid_t(Data_type type, void * loc) {
         this->type = type;
         this->location = loc;

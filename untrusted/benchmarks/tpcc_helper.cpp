@@ -4,9 +4,9 @@
 
 // drand48_data ** tpcc_buffer;
 
-std::vector<std::default_random_engine> tpccdre;
+std::vector<std::default_random_engine> tpccdre(g_thread_cnt, std::default_random_engine(0));
 // extern std::vector<std::uniform_real_distribution<double> > tpccurd;
-std::vector<std::uniform_int_distribution<uint64_t> > tpccuid;
+std::vector<std::uniform_int_distribution<uint64_t> > tpccuid(g_thread_cnt, std::uniform_int_distribution<uint64_t>(0, 1));
 
 // uint64_t distKey(uint64_t d_id, uint64_t d_w_id)  {
 // 	return d_w_id * DIST_PER_WARE + d_id; 
@@ -97,12 +97,12 @@ uint64_t NURand(uint64_t A, uint64_t x, uint64_t y, uint64_t thd_id) {
 uint64_t MakeAlphaString(int min, int max, char* str, uint64_t thd_id) {
     char char_list[] = {'1','2','3','4','5','6','7','8','9','a','b','c',
                         'd','e','f','g','h','i','j','k','l','m','n','o',
-                        'p','q','r','s','t','u','v','w','x','y','z','A',
+                        'p','q','r','s','t','u','v','w','x','y','A',
                         'B','C','D','E','F','G','H','I','J','K','L','M',
                         'N','O','P','Q','R','S','T','U','V','W','X','Y','Z'};
     uint64_t cnt = URand(min, max, thd_id);
     for (uint32_t i = 0; i < cnt; i++) 
-		str[i] = char_list[URand(0L, 60L, thd_id)];
+		str[i] = char_list[URand(0L, 59L, thd_id)];
     for (int i = cnt; i < max; i++)
 		str[i] = '\0';
 

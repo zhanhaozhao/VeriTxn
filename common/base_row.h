@@ -5,6 +5,7 @@
 // #include "global.h"
 // #include "global_common.h"
 #include "table.h"
+#include "table_map.h"
 
 #define DECL_SET_VALUE_BASE(type) \
 	void set_value(int col_id, type value);
@@ -47,7 +48,7 @@ public:
 
 	table_t * get_table();
 	Catalog * get_schema();
-	const char * get_table_name();
+	const char* get_table_name();
 	uint64_t get_field_cnt();
 	uint64_t get_tuple_size();
 	uint64_t get_row_id() { return _row_id; };

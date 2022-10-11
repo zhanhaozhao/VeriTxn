@@ -12,7 +12,7 @@
 
 class BucketNode_ENC {
 public:
-    BucketNode_ENC(idx_key_t key) {	init(key); };
+    BucketNode_ENC(idx_key_t key) {	init(key); next = nullptr; items = nullptr;};
     void init(idx_key_t key) {
         this->key = key;
         next = nullptr;
@@ -51,9 +51,10 @@ public:
     void        update_verify_hash(int part_id, uint64_t bkt_idx, uint64_t hash);
     RC 			index_insert(idx_key_t key, itemid_t * item, int part_id=-1);
     // the following call returns a single item
-    RC	 		index_read(void * ocall_index, idx_key_t key, itemid_t * &item, int part_id=-1);
-    RC	 		index_read(void * ocall_index, idx_key_t key, itemid_t * &item,
+    RC	 		index_read(std::string iname, idx_key_t key, itemid_t * &item, int part_id=-1);
+    RC	 		index_read(std::string iname, idx_key_t key, itemid_t * &item,
                              int part_id=-1, int thd_id=0);
+    std::string         index_name;
 private:
     void get_latch(BucketHeader_ENC * bucket);
     void release_latch(BucketHeader_ENC * bucket);
@@ -70,7 +71,7 @@ private:
     BucketHeader_ENC**      _buckets;
 #endif
 
-    BucketHeader_ENC *load_bucket(void * index, int part_id, uint64_t bkt_idx);
+    BucketHeader_ENC *load_bucket(std::string iname, int part_id, uint64_t bkt_idx);
     void flush_bucket(int part_id, uint64_t bkt_idx, BucketHeader_ENC *cur, bool modified);
 //    static DFlow load_disk(int part_id, uint64_t bkt_idx);
 //    static void flush_disk(int part_id, uint64_t bkt_idx, const DFlow & e);

@@ -27,9 +27,9 @@ ts_t get_cur_time_ocall() {
 }
 
 // here used strlen. ensure the untrusted side cstring terminate with '\0'
-std::string get_bucket_ocall(void * index, int part_id, int bkt_idx) {
+std::string get_bucket_ocall(std::string iname, int part_id, int bkt_idx) {
   char* ptr = nullptr;
-  sgx_status_t status = oc_get_bucket_ocall(&ptr, index, part_id, bkt_idx);
+  sgx_status_t status = oc_get_bucket_ocall(&ptr, iname.c_str(), iname.size(), part_id, bkt_idx);
   if (status != SGX_SUCCESS) {
     oc_debug_print("get bucket ocall failed\n");
   }
