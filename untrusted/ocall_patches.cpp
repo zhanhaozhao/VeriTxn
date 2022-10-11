@@ -1,6 +1,6 @@
 #include "common/config.h"
 
-#ifdef USE_SGX
+#if USE_SGX == 1
 #include "common/api.h"
 
 #include <memory>

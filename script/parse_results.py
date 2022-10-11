@@ -7,7 +7,7 @@ def get_summary(sfile):
     with open(sfile, 'r') as f:
         for line in f:
             if 'summary' in line:
-                results = re.split(',', line.rstrip('\n')[10:])
+                results = re.split(', ', line.rstrip('\n')[10:])
                 for r in results:
                     (name, val) = re.split('=', r)
                     val = float(val)
@@ -22,12 +22,11 @@ for arg in sys.argv[1:]:
 names = summary.keys()
 
 a, b, c = 0, 0, 0
-if 'tput' in summary:
-    a = sum(summary['tput'])
-if 'total_txn_abort_cnt' in summary and 'total_txn_commit_cnt' in summary and summary['total_txn_commit_cnt'][0] + summary['total_txn_abort_cnt'][0] != 0:
-    b = summary['total_txn_abort_cnt'][0] / (summary['total_txn_commit_cnt'][0] + summary['total_txn_abort_cnt'][0])
-if 'remote_txn_commit_cnt' in summary and 'remote_txn_abort_cnt' in summary and 'total_txn_commit_cnt' in summary and 'total_txn_abort_cnt' in summary and summary['total_txn_commit_cnt'][0] + summary['total_txn_abort_cnt'][0] != 0:
-    c = (summary['remote_txn_commit_cnt'][0] + summary['remote_txn_abort_cnt'][0]) / (
-            summary['total_txn_commit_cnt'][0] + summary['total_txn_abort_cnt'][0])
-
-print a, b, c
+if 'total_txn_cnt' in summary :
+    # a = sum(summary['txn_cnt']) / sum(summary['run_time'])
+    a = sum(summary['total_txn_cnt'])
+if 'total_abort_cnt' in summary and 'total_txn_cnt' in summary and summary['total_txn_cnt'][0] + summary['total_abort_cnt'][0] != 0:
+    b = summary['total_abort_cnt'][0] / (summary['total_txn_cnt'][0] + summary['total_abort_cnt'][0])
+if 'run_time' in summary:
+    c = sum(summary['run_time'])
+print a/c, a, b 

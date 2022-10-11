@@ -56,10 +56,10 @@ def ycsb_skew():
     algos=['NO_WAIT']
     base_table_size=1048576*10
     write_perc = [0.5]
-    load = [1000]
+    load = [10000]
     tcnt = [4]
-    # skew = [0.0,0.25,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.9]
-    skew = [0.0]
+    skew = [0.0,0.25,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.9]
+    # skew = [0.0,0.25,0.5,0.]
     fmt = ["WORKLOAD","NODE_CNT","CC_ALG","SYNTH_TABLE_SIZE","WRITE_PERC","READ_PERC","MAX_TXN_IN_FLIGHT","ZIPF_THETA","THREAD_CNT"]
     exp = [[wl,n,algo,base_table_size*n,wr_perc,1-wr_perc,ld,sk,thr] for thr,wr_perc,ld,n,sk,algo in itertools.product(tcnt,write_perc,load,nnodes,skew,algos)]
     return fmt,exp

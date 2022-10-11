@@ -32,13 +32,13 @@ void async_hash_value(std::string index_name, int part_id, uint64_t bkt_idx, uin
 }
 
 void async_hash(std::string index_name, int part_id, uint64_t bkt_idx, uint64_t hash){
-	Message* msg = Message::create_message(ASYNC_HASH);
 	if (g_node_id != 0) return;
-	AsyncHashMessage* asymsg = (AsyncHashMessage*) msg;
-	asymsg->init(index_name, part_id, bkt_idx, hash);
 	for (int i = 1; i < NODE_CNT; i++) {
 		assert(g_node_id == 0);
 		//! here we set that the node with id 0 must be the rw operation node. 
+		Message* msg = Message::create_message(ASYNC_HASH);
+		AsyncHashMessage* asymsg = (AsyncHashMessage*) msg;
+		asymsg->init(index_name, part_id, bkt_idx, hash);
 		msg_queue.enqueue(0, asymsg, i);
 	}
 }

@@ -177,7 +177,7 @@ void Stats::print() {
 		);
 		fclose(outf);
 	}
-	printf("[summary] txn_cnt=%ld, abort_cnt=%ld"
+	printf("[summary] total_txn_cnt=%ld, total_abort_cnt=%ld"
 		", run_time=%f, time_wait=%f, time_ts_alloc=%f"
 		", time_man=%f, time_index=%f, time_abort=%f, time_cleanup=%f, latency=%f"
 		", deadlock_cnt=%ld, cycle_detect=%ld, dl_detect_time=%f, dl_wait_time=%f"

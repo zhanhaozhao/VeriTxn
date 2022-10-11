@@ -6,7 +6,7 @@
 
 #include "common/config.h"
 
-#ifdef USE_SGX
+#if USE_SGX == 1
 
 void generate_txn_ocall(thread_t * h_thd, base_query *& m_query) {
   void* ret = nullptr;

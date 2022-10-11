@@ -14,8 +14,9 @@
    limitations under the License.
 */
 #include "transport.h"
-
+#include <sys/socket.h>
 #include <stdio.h>
+#include "common/config.h"
 #include <string>
 #include "pthread.h"
 #include <iostream>
@@ -67,9 +68,8 @@ std::string Transport::get_path() {
 	return path;
 
 }
-
+#if USE_NANOMSG==1
 Socket * Transport::get_socket() {
-  
     Socket * socket = (Socket*) malloc(sizeof(Socket));
     new(socket) Socket();
     int timeo = 1000; // timeout in ms
@@ -81,6 +81,33 @@ Socket * Transport::get_socket() {
     socket->sock.setsockopt(NN_SOL_SOCKET,NN_TCP_NODELAY,&opt,sizeof(opt));
     return socket;
 }
+#else
+int Transport::get_socket() {
+    struct sockaddr_in socket = new struct sockaddr_in;
+    int timeo = 1000; // timeout in ms
+    int stimeo = 1000; // timeout in ms
+    int opt = 0;
+    int listenfd = socket(AF_INET, SOCK_STREAM, 0);
+    if(listenfd == -1){
+        std::cout<<"create listen socket error"<<std::endl;
+        return -1;
+    }
+    socket->sin_family = AF_INET;
+    socket->sin_addr.s_addr = htonl(INADDR_ANY);
+    socket->sin_port = htons(13000);
+    if(bind(listenfd, (struct sockaddr*) socket, sizeof(*socket))){
+        std::cout<<"bind listen socket error"<<std::endl;
+        return -1;
+    }
+    //启动监听
+    if(listen(listenfd, SOMAXCONN) == -1){
+        std::cout<<"listen error"<<std::endl;
+        return -1;
+    }
+    return listenfd;
+
+}
+#endif
 
 uint64_t Transport::get_port_id(uint64_t src_node_id, uint64_t dest_node_id) {
   uint64_t port_id = TPORT_PORT;
@@ -102,15 +129,15 @@ uint64_t Transport::get_port_id(uint64_t src_node_id, uint64_t dest_node_id,
 Socket * Transport::bind(uint64_t port_id) {
   Socket * socket = get_socket();
   char socket_name[MAX_TPORT_NAME];
-#if TPORT_TYPE == IPC
-  sprintf(socket_name,"ipc://node_%ld.ipc",port_id);
-#else
-/*#if ENVIRONMENT_EC2
-  sprintf(socket_name,"tcp://eth0:%ld",port_id);
-#else*/
+// #if TPORT_TYPE == IPC
+//   sprintf(socket_name,"ipc://node_%ld.ipc",port_id);
+// #else
+// /*#if ENVIRONMENT_EC2
+//   sprintf(socket_name,"tcp://eth0:%ld",port_id);
+// #else*/
   sprintf(socket_name,"tcp://%s:%ld",ifaddr[g_node_id],port_id);
 //#endif
-#endif
+// #endif
   printf("Sock Binding to %s %d\n",socket_name,g_node_id);
   int rc = socket->sock.bind(socket_name);
   if(rc < 0) {
@@ -123,15 +150,15 @@ Socket * Transport::bind(uint64_t port_id) {
 Socket * Transport::connect(uint64_t dest_id,uint64_t port_id) {
   Socket * socket = get_socket();
   char socket_name[MAX_TPORT_NAME];
-#if TPORT_TYPE == IPC
-  sprintf(socket_name,"ipc://node_%ld.ipc",port_id);
-#else
-/*#if ENVIRONMENT_EC2
-  sprintf(socket_name,"tcp://eth0;%s:%ld",ifaddr[dest_id],port_id);
-#else*/
+// #if TPORT_TYPE == IPC
+//   sprintf(socket_name,"ipc://node_%ld.ipc",port_id);
+// #else
+// /*#if ENVIRONMENT_EC2
+//   sprintf(socket_name,"tcp://eth0;%s:%ld",ifaddr[dest_id],port_id);
+// #else*/
   sprintf(socket_name,"tcp://%s;%s:%ld",ifaddr[g_node_id],ifaddr[dest_id],port_id);
 //#endif
-#endif
+// #endif
   printf("Sock Connecting to %s %d -> %ld\n",socket_name,g_node_id,dest_id);
 
 

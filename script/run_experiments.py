@@ -25,6 +25,7 @@ execute = True
 remote = False
 cluster = None
 skip = False
+sgx = True
 
 exps=[]
 arg_cluster = False
@@ -62,6 +63,8 @@ for arg in sys.argv[1:]:
     elif arg_cluster:
         cluster = arg
         arg_cluster = False
+    elif arg == '-ns':
+        sgx = False
     else:
         exps.append(arg)
 
@@ -71,7 +74,11 @@ for exp in exps:
     for e in experiments:
         cfgs = get_cfgs(fmt,e)
         if remote:
-            cfgs["TPORT_TYPE"], cfgs["TPORT_PORT"] = "tcp", 4000
+            cfgs["TPORT_TYPE"], cfgs["TPORT_PORT"] = "tcp", 6000
+        if sgx:
+            cfgs["USE_SGX"] = 1
+        else:
+            cfgs["USE_SGX"] = 0
         output_f = get_outfile_name(cfgs, fmt)
         output_dir = output_f + "/"
         output_f += strnow
@@ -89,7 +96,13 @@ for exp in exps:
                         break
                 if not found_cfg:
                     f_cfg.write(line)
-
+        if sgx:
+            cmd = "cp Makefile.new Makefile"
+        else:
+            cmd = "cp Makefile.old Makefile"
+        print cmd
+        os.system(cmd)
+        
         cmd = "make clean"
         print cmd
         os.system(cmd)
