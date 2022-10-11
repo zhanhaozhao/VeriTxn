@@ -49,9 +49,7 @@ def test_run(job, fimeName, test = ''):
 	if test == 'conflict':
 		app_flags = "-Ac -t4"
 	
-	#os.system("./rundb %s > temp.out 2>&1" % app_flags)
-	#cmd = "./rundb %s > temp.out 2>&1" % app_flags
-	cmd = "./rundb %s" % (app_flags)
+	cmd = "./App %s" % (app_flags)
 	start = datetime.datetime.now()
 	cmd = cmd +  fimeName
 	process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
@@ -74,7 +72,7 @@ def test_run(job, fimeName, test = ''):
 	# 	return
 	# print ("FAILED execution. cmd = %s" % cmd)
 
-testRound = 10
+testRound = 1
 
 def run_all_test(jobs) :
 	for (jobname, job) in jobs.items():
@@ -124,6 +122,15 @@ def run_rw_exp():
 	run_all_test(jobs)
 
 # # run TPCC tests
+def run_tpcc_exp():
+	global jobs
+	jobs = {}
+	for th in [1, 2, 4, 8, 16]:
+		for alg in algs:
+			insert_job(alg, 'TPCC', thread_num=th)
+	print(jobs)
+	run_all_test(jobs)
+
 # jobs = {}
 # for alg in algs:
 # 	insert_job(alg, 'TPCC')
@@ -133,6 +140,7 @@ run_rw_exp()
 run_bktsiz_exp()
 run_thread_exp()
 run_theta_exp()
+run_tpcc_exp()
 
 os.system('cp config-std.h ./common/config.h')
 os.system('make clean > temp.out 2>&1')

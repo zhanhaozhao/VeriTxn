@@ -69,7 +69,10 @@ RC workload::init_schema(std::string schema_file) {
 			}
 			table_t * cur_tab = (table_t *) _mm_malloc(sizeof(table_t), CL_SIZE);
 			cur_tab->init(schema);
-			cur_tab->table_name = tname;
+			int n = tname.length();
+            cur_tab->table_name = new char[n+1];
+            tname.copy(cur_tab->table_name, n);
+            cur_tab->table_name[n] = 0;
 			tables[tname] = cur_tab;
             assert(std::string(tables[tname]->get_table_name()) == tname);
 			global_table_map->_tables[tname] = cur_tab;
@@ -114,7 +117,7 @@ RC workload::init_schema(std::string schema_file) {
 			index->index_name[n] = 0;
             assert(std::string(index->index_name) == iname);
             index_init_ecall(part_cnt, (void *) (tables[tname]), iname, (void*)index , (stoull( items[1] ) * part_cnt) / BUCKET_FACTOR);
-            printf("%s from %s\n", iname.c_str(), tname.c_str());
+//            printf("%s from %s\n", iname.c_str(), tname.c_str());
             global_table_map->_indexes[iname] = index;
 	#endif
 #else

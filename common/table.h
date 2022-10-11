@@ -30,7 +30,7 @@ public:
 	Catalog * 		schema;
     uint64_t  		cur_tab_size;
     char 			pad[CL_SIZE];
-    std::string 	table_name;
+    char* 	table_name;
 };
 
 #endif

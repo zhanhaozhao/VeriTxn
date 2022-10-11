@@ -23,9 +23,9 @@ RC tpcc_wl::init() {
 #else
 	path += "TPCC_full_schema.txt";
 #endif
-	std::cout << "reading schema file: " << path << std::endl;
+//	std::cout << "reading schema file: " << path << std::endl;
 	init_schema( path.c_str() );
-	std::cout << "TPCC schema initialized" << std::endl;
+//	std::cout << "TPCC schema initialized" << std::endl;
 	init_table();
 	next_tid = 0;
 	return RCOK;
