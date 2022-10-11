@@ -67,10 +67,9 @@ RC workload::init_schema(std::string schema_file) {
                 schema->add_col((char *)name.c_str(), size, (char *)type.c_str());
 				col_count ++;
 			}
-			table_t * cur_tab = new table_t();//
-			        // (table_t *) _mm_malloc(sizeof(table_t), CL_SIZE);
+			table_t * cur_tab = (table_t *) _mm_malloc(sizeof(table_t), CL_SIZE);
 			cur_tab->init(schema);
-//			cur_tab->table_name = tname;
+			cur_tab->table_name = tname;
 			tables[tname] = cur_tab;
             assert(std::string(tables[tname]->get_table_name()) == tname);
 			global_table_map->_tables[tname] = cur_tab;

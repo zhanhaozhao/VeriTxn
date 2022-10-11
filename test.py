@@ -14,8 +14,8 @@ def replace(filename, pattern, replacement):
 jobs = {}
 dbms_cfg = ["config-std.h", "common/config.h"]
 algs = ['NO_WAIT']
-def insert_job(alg, workload, thread_num=16, theta=0.6, bkt_fac = 1, read_perc=0.8):
-	jobs[alg + '_' + workload + '_' + str(thread_num) + '_' + str(theta) + '_' + str(bkt_fac)] = {
+def insert_job(alg="NO_WAIT", workload="YCSB", thread_num=16, theta=0.6, bkt_fac = 1, read_perc=0.8):
+	jobs[workload + '_th_num=' + str(thread_num) + '_theta=' + str(theta) + '_bkt_fac=' + str(bkt_fac) + "_readP=" + str(read_perc)] = {
 		"WORKLOAD"			: workload,
 		"CORE_CNT"			: 8,
 		"CC_ALG"			: alg,
@@ -74,7 +74,7 @@ def test_run(job, fimeName, test = ''):
 	# 	return
 	# print ("FAILED execution. cmd = %s" % cmd)
 
-testRound = 1
+testRound = 10
 
 def run_all_test(jobs) :
 	for (jobname, job) in jobs.items():
@@ -107,9 +107,19 @@ def run_theta_exp():
 def run_bktsiz_exp():
 	global jobs
 	jobs = {}
-	for th in [1, 2, 4, 8, 16]:
+	for th in [1, 4, 16, 64, 256, 1024]:
 		for alg in algs:
 			insert_job(alg, 'YCSB', bkt_fac=th)
+	print(jobs)
+	run_all_test(jobs)
+
+
+def run_rw_exp():
+	global jobs
+	jobs = {}
+	for th in [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]:
+		for alg in algs:
+			insert_job(alg, 'YCSB', read_perc=th)
 	print(jobs)
 	run_all_test(jobs)
 
@@ -119,8 +129,9 @@ def run_bktsiz_exp():
 # 	insert_job(alg, 'TPCC')
 # run_all_test(jobs)
 
-# run_bktsiz_exp()
-#run_thread_exp()
+run_rw_exp()
+run_bktsiz_exp()
+run_thread_exp()
 run_theta_exp()
 
 os.system('cp config-std.h ./common/config.h')
