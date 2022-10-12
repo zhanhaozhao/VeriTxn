@@ -17,7 +17,7 @@ os.chdir('..')
 PATH=os.getcwd()
 
 result_dir = PATH + "/results/" + strnow + '/'
-perf_dir = result_dir + 'perf/'
+perf_dir = result_dir
 
 cfgs = configs
 
@@ -99,13 +99,44 @@ for exp in exps:
                         break
                 if not found_cfg:
                     f_cfg.write(line)
+
+        # !make clean
+        if remote_make:
+            if cluster == 'vcloud':
+                uname = vcloud_uname
+                uname2 = username
+                cfg_fname = "vcloud_ifconfig.txt"
+
+                machines = vcloud_machines[:(cfgs["NODE_CNT"])]
+                with open("ifconfig.txt", 'w') as f_ifcfg:
+                    for m in machines:
+                        f_ifcfg.write(m + "\n")
+            
+                for m in machines:
+                    cmd = 'scp -P {} {}/{} {}:/{}'.format(5000,PATH, "Makefile.enc", m, uname)
+                print cmd
+                os.system(cmd)
+
+                cmd = 'sh script/vcloud_makeclean.sh \'{}\' /{}/ {} {} {}'.format(' '.join(machines), uname, cfgs["NODE_CNT"], perfTime, uname2)
+                print cmd
+                os.system(cmd)
+
+                for m in machines:
+                    cmd = 'scp -P {} {}/{} {}:/{}'.format(5000,PATH, "Makefile.no-sgx", m, uname)
+                print cmd
+                os.system(cmd)
+
+                cmd = 'sh script/vcloud_makeclean.sh \'{}\' /{}/ {} {} {}'.format(' '.join(machines), uname, cfgs["NODE_CNT"], perfTime, uname2)
+                print cmd
+                os.system(cmd)
+
         if sgx:
-            cmd = "cp Makefile.new Makefile"
+            cmd = "cp Makefile.enc Makefile"
         else:
             cmd = "cp Makefile.no-sgx Makefile"
         print cmd
         os.system(cmd)
-        
+
         if remote_make:
             if execute:
                 cmd = "mkdir -p {}".format(perf_dir)
@@ -115,67 +146,52 @@ for exp in exps:
                 print cmd
                 os.system(cmd)
 
-                if remote:
+                # !copy Makefile to remote nodes
+                if cfgs["WORKLOAD"] == "TPCC":
+                    files = ["Makefile", "ifconfig.txt", "./untrusted/benchmarks/TPCC_short_schema.txt", "./benchmarks/TPCC_full_schema.txt"]
+                elif cfgs["WORKLOAD"] == "YCSB":
+                    files = ["Makefile", "ifconfig.txt", "./untrusted/benchmarks/YCSB_schema.txt"]
+                for m, f in itertools.product(machines, files):
                     if cluster == 'vcloud':
-                        machines_ = vcloud_machines
-                        uname = vcloud_uname
-                        uname2 = username
-                        cfg_fname = "vcloud_ifconfig.txt"
-                    else:
-                        assert(False)
+                        # os.system('./scripts/kill.sh {}'.format(m))
+                        cmd = 'scp -P {} {}/{} {}:/{}'.format(5000,PATH, f, m, uname)
+                    print cmd
+                    os.system(cmd)
 
-                    machines = machines_[:(cfgs["NODE_CNT"])]
-                    with open("ifconfig.txt", 'w') as f_ifcfg:
-                        for m in machines:
-                            f_ifcfg.write(m + "\n")
+                config_path = PATH + "/common"
+                for m in machines:
+                    if cluster == 'vcloud':
+                        # os.system('./scripts/kill.sh {}'.format(m))
+                        cmd = 'scp -P {} {}/{} {}:/{}'.format(5000,config_path, "config.h", m, uname + "/common")
+                    print cmd
+                    os.system(cmd)
+                # !execute experiment
+                print("Deploying: {}".format(output_f))
 
+                os.chdir('./script')
 
-                    # !copy Makefile to remote nodes
-                    if cfgs["WORKLOAD"] == "TPCC":
-                        files = ["Makefile", "ifconfig.txt", "./untrusted/benchmarks/TPCC_short_schema.txt", "./benchmarks/TPCC_full_schema.txt"]
-                    elif cfgs["WORKLOAD"] == "YCSB":
-                        files = ["Makefile", "ifconfig.txt", "./untrusted/benchmarks/YCSB_schema.txt"]
-                    for m, f in itertools.product(machines, files):
-                        if cluster == 'vcloud':
-                            # os.system('./scripts/kill.sh {}'.format(m))
-                            cmd = 'scp -P {} {}/{} {}:/{}'.format(5000,PATH, f, m, uname)
+                cmd = 'pwd'
+                print cmd
+                os.system(cmd)
+
+                if cluster == 'vcloud':
+                    cmd = './vcloud_make.sh \'{}\' /{}/ {} {} {}'.format(' '.join(machines), uname, cfgs["NODE_CNT"], perfTime, uname2)
+                print cmd
+                os.system(cmd)
+
+                if cluster == 'vcloud':
+                    cmd = './vcloud_deploy.sh \'{}\' /{}/ {} {} {}'.format(' '.join(machines), uname, cfgs["NODE_CNT"], perfTime, uname2)
+                print cmd
+                fromtimelist.append(str(int(time.time())) + "000")
+                os.system(cmd)
+                totimelist.append(str(int(time.time())) + "000")
+                os.chdir('..')
+                # todo: need to seperate node(r) and node(r/w)
+                for m, n in zip(machines, range(len(machines))):
+                    if cluster == 'vcloud':
+                        cmd = 'scp -P {} {}:/{}/dbresults{}.out results/{}/{}_{}.out'.format(5000,m,uname,n,strnow,n,output_f)
                         print cmd
                         os.system(cmd)
-
-                    config_path = PATH + "/common"
-                    for m in machines:
-                        if cluster == 'vcloud':
-                            # os.system('./scripts/kill.sh {}'.format(m))
-                            cmd = 'scp -P {} {}/{} {}:/{}'.format(5000,config_path, "config.h", m, uname + "/common")
-                        print cmd
-                        os.system(cmd)
-                    # !execute experiment
-                    print("Deploying: {}".format(output_f))
-
-                    os.chdir('./script')
-
-                    cmd = 'pwd'
-                    print cmd
-                    os.system(cmd)
-
-                    if cluster == 'vcloud':
-                        cmd = './vcloud_make.sh \'{}\' /{}/ {} {} {}'.format(' '.join(machines), uname, cfgs["NODE_CNT"], perfTime, uname2)
-                    print cmd
-                    os.system(cmd)
-                    
-                    if cluster == 'vcloud':
-                        cmd = './vcloud_deploy.sh \'{}\' /{}/ {} {} {}'.format(' '.join(machines), uname, cfgs["NODE_CNT"], perfTime, uname2)
-                    print cmd
-                    fromtimelist.append(str(int(time.time())) + "000")
-                    os.system(cmd)
-                    totimelist.append(str(int(time.time())) + "000")
-                    os.chdir('..')
-                    # todo: need to seperate node(r) and node(r/w)
-                    for m, n in zip(machines, range(len(machines))):
-                        if cluster == 'vcloud':
-                            cmd = 'scp -P {} {}:/{}/dbresults{}.out results/{}/{}_{}.out'.format(5000,m,uname,n,strnow,n,output_f)
-                            print cmd
-                            os.system(cmd)
         else:
             cmd = "make clean"
             print cmd

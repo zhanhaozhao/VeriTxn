@@ -1,4 +1,4 @@
-set -x
+# set -x
 
 PHASE=5
 
@@ -100,7 +100,7 @@ FileName() {
         f=$(ls ${RESULT_PATH} | grep -v .cfg | grep [0-9]_${cc}_ | grep _N-${arg}_ | grep ^${i}_)
     elif [[ "${TEST_TYPE}" == 'ycsb_writes' ]]
     then
-        f=$(ls ${RESULT_PATH} | grep -v .cfg | grep ${cc} | grep _WR-${arg}_ | grep ^${i}_)
+        f=$(ls ${RESULT_PATH} | grep -v .cfg | grep ${cc} | grep _WRITE_PERC-${arg}_ | grep ^${i}_)
     elif [[ "${TEST_TYPE}" == 'tpcc_scaling' ]]
     then
         f=$(ls ${RESULT_PATH} | grep -v .cfg | grep [0-9]_${cc}_ | grep _N-${arg}_ | grep ^${i}_)
@@ -133,7 +133,7 @@ LATFILE=lat
 LTFILE=lt
 rm -rf ${LATFILE} ${LTFILE}
 touch ${LATFILE} ${LTFILE}
-echo "根据测试，确定第一个循环体类型"
+# echo "根据测试，确定第一个循环体类型"
 ArgsType
 #根据测试，确定第一个循环体类型
 for cc in ${CC[@]}
@@ -153,7 +153,7 @@ do
     rm -rf ${DIS_FILE}
     touch ${DIS_FILE}
     touch ${DIS_FILE}
-    echo "根据测试，确定第2个循环体类型"
+    # echo "根据测试，确定第2个循环体类型"
     #根据测试，确定第2个循环体类型
     ArgsType
     #根据测试，确定第2个循环体类型
@@ -164,14 +164,14 @@ do
         echo -n ${arg}" " >> ${IDLEFILE}
         echo -n ${arg}" " >> ${DIS_FILE}
         AS=''
-        echo "根据测试，确定TMPN"
+        # echo "根据测试，确定TMPN"
         #根据测试，确定TMPN
         TmpFileNum
         #根据测试，确定TMPN
         let TMPN--
         for i in $(seq 0 $TMPN)
         do
-            echo "根据测试，确定文件名"
+            # echo "根据测试，确定文件名"
             #根据测试，确定文件名
             FileName
             #根据测试，确定文件名            
@@ -180,8 +180,8 @@ do
         done
         tmpresult=$(python parse_results.py $AS)
         echo ${tmpresult} >> ${TMPFILE}
-        dis_tmpresult=$(python pl/parse_latency_dis.py $AS)
-        echo ${dis_tmpresult} >> ${DIS_FILE}
+        # dis_tmpresult=$(python pl/parse_latency_dis.py $AS)
+        # echo ${dis_tmpresult} >> ${DIS_FILE}
         # python parse_latency.py $AS >> ${CCLATFILE}
         # python parse_cpu_idle.py $AS >> ${IDLEFILE}
         tput=$(echo ${tmpresult} | awk '{print $1}')
