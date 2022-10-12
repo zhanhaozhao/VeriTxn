@@ -1,7 +1,7 @@
 SGX_SDK ?= /opt/intel/sgxsdk
 SGX_MODE ?= HW
 SGX_ARCH ?= x64
-SGX_DEBUG ?= 1
+SGX_DEBUG ?= 0
 
 PROJECT_ROOT_DIR := $(shell readlink -f ..)
 # Enclave_Search_Dirs ?= $(shell \

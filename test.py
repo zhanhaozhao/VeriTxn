@@ -18,7 +18,7 @@ jobs = OrderedDict()
 dbms_cfg = ["config-std.h", "common/config.h"]
 algs = ['NO_WAIT']
 def insert_job(alg="NO_WAIT", workload="YCSB", thread_num=4, theta=0.6, bkt_fac = 1, read_perc=0.8, use_sgx=True):
-	jobs[workload + '_th_num=' + str(thread_num) + '_theta=' + str(theta) + '_bkt_fac=' + str(bkt_fac) + "_readP=" + str(read_perc)] = {
+	jobs[workload + '_th_num=' + str(thread_num) + '_theta=' + str(theta) + '_bkt_fac=' + str(bkt_fac) + "_readP=" + str(read_perc) + "SGX=" + str(use_sgx)] = {
 		"WORKLOAD"			: workload,
 		"CORE_CNT"			: thread_num,
 		"CC_ALG"			: alg,
@@ -110,18 +110,28 @@ def run_thread_exp():
 	global jobs
 	jobs = OrderedDict()
 	# for th in [3, 6, 7]:
-	for th in [6, 7]:
+	for th in [1, 2, 3, 4, 5, 6, 7, 8]:
 		for alg in algs:
-			insert_job(alg, 'YCSB', thread_num=th)
+			insert_job(alg, 'YCSB', thread_num=th, read_perc=0, theta=0.9)
 	# print(jobs)
 	run_all_test(jobs, "thread_ycsb.csv")
+
+def run_tpc_exp():
+	global jobs
+	jobs = OrderedDict()
+	# for th in [3, 6, 7]:
+	for th in [ 5, 6, 7, 8]:
+		for alg in algs:
+			insert_job(alg, 'TPCC', thread_num=th, read_perc=0, theta=0.9)
+	# print(jobs)
+	run_all_test(jobs, "thread_tpc.csv")
 
 def run_theta_exp():
 	global jobs
 	jobs = OrderedDict()
-	for th in [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]:
+	for th in [0, 0.5, 0.8, 0.9, 0.95, 0.99]:
 		for alg in algs:
-			insert_job(alg, 'YCSB', theta=th)
+			insert_job(alg, 'YCSB', theta=th, read_perc=0, thread_num=8)
 	# print(jobs)
 	run_all_test(jobs, "theta_ycsb.csv")
 
@@ -140,9 +150,9 @@ def run_rw_exp():
 	jobs = OrderedDict()
 	for th in [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]:
 		for alg in algs:
-			insert_job(alg, 'YCSB', read_perc=th)
+			insert_job(alg, 'YCSB', read_perc=th, thread_num=8, theta=0.9)
 	# print(jobs)
-	run_all_test(jobs, "rw_rate.csv")
+	run_all_test(jobs, "rw_ycsb.csv")
 
 # # run TPCC tests
 # jobs = {}
@@ -150,12 +160,23 @@ def run_rw_exp():
 # 	insert_job(alg, 'TPCC')
 # run_all_test(jobs)
 
+def run_common_test():
+	global jobs
+	jobs = OrderedDict()
+	# for th in [3, 6, 7]:
+	insert_job("NO_WAIT", 'YCSB', thread_num=1, read_perc=0.5, theta=0.6, use_sgx=True)
+#	insert_job("NO_WAIT", 'YCSB', thread_num=4, read_perc=0.5, theta=0.6, use_sgx=True)
+	# print(jobs)
+	run_all_test(jobs, "comparison.csv")
+
+run_common_test()
 # run_rw_exp()
 # run_bktsiz_exp()
-run_thread_exp()
+#run_thread_exp()
+#run_tpc_exp()
 # run_theta_exp()
 
-os.system('cp config-std.h ./common/config.h')
+# os.system('cp config-std.h ./common/config.h')
 os.system("cp Makefile.sgx Makefile")
-os.system('make clean > temp.out 2>&1')
-os.system('rm temp.out')
+# os.system('make clean > temp.out 2>&1')
+# os.system('rm temp.out')

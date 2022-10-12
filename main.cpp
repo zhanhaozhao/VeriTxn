@@ -40,7 +40,8 @@ int main(int argc, char* argv[])
   int updated = 0;
   memset(t, 0, sizeof(sgx_launch_token_t));
   sgx_status_t enclave_status = sgx_create_enclave(ENCLAVE_FILENAME,
-    SGX_DEBUG_FLAG, &t, &updated, &enclave_id, NULL);
+//    SGX_DEBUG_FLAG, &t, &updated, &enclave_id, NULL);
+    0, &t, &updated, &enclave_id, NULL);
   if (enclave_status != SGX_SUCCESS) {
     printf("Failed to create Enclave : error %d - %#x.\n", enclave_status,
       enclave_status);

@@ -50,6 +50,12 @@ void index_init_ecall(int part_cnt, void * table, std::string iname, void * inde
 	tab_map->_indexes[iname] = index;
 	inner_index_map->_indexes[iname] = index_ptr;
 	index->index_name = iname;
+#ifdef PRE_LOAD
+    for (int i=0;i<part_cnt;i++)
+        for (uint64_t j=0;j<bucket_cnt;j++) {
+            index->load_bucket(iname, i, j);
+        }
+#endif
 }
 
 void init_txn_in_enc(txn_man *& m_txn, thread_t * h_thd) {
