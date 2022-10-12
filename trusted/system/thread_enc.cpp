@@ -9,6 +9,7 @@
 // #include "manager.h"
 #include "occ.h"
 #include "index_enc.h"
+#include "mem_helper_enc.h"
 
 // pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -106,7 +107,11 @@ int run_txn_ecall(void * thd, ts_t txn_ts) {
 	}
 	assert (m_txn);
 
-	generate_txn_ocall(h_thd, h_thd->m_query);
+	// generate_txn_ocall(h_thd, h_thd->m_query);
+	// uint64_t t1 = get_cur_time_ocall();
+	// uint64_t t2 = get_cur_time_ocall();
+	// INC_TMP_STATS_ENC(0, time_index, t2-t1);
+	
 
 	base_query * m_query = h_thd->m_query;
 	assert (m_query);
@@ -162,8 +167,8 @@ int run_txn_ecall(void * thd, ts_t txn_ts) {
 
 
 void update_hash_value(std::string index_name, int part_id, uint64_t bkt_idx, uint64_t hash) {
-  IndexEnc * index_enc = (IndexEnc *) tab_map->_indexes[index_name];
-  index_enc->update_verify_hash(part_id, bkt_idx, hash);
+	IndexEnc * index_enc = (IndexEnc *) tab_map->_indexes[index_name];
+  	index_enc->update_verify_hash(part_id, bkt_idx, hash);
 }
 
 

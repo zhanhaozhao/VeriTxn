@@ -23,6 +23,7 @@ int ycsb_wl::next_tid;
 RC ycsb_wl::init() {
 	workload::init();
 	next_tid = 0;
+	printf("begin to init [YCSB] Table.\n");
 	std::string path = "./untrusted/benchmarks/YCSB_schema.txt";
 	init_schema( path );
 	
@@ -112,15 +113,21 @@ void * ycsb_wl::init_table_slice() {
 
 	mem_allocator.register_thread(tid);
 	RC rc;
+	uint64_t key_cnt = 0;
 	assert(g_synth_table_size % g_init_parallelism == 0);
 	assert(tid < g_init_parallelism);
 	while ((UInt32)ATOM_FETCH_ADD(next_tid, 0) < g_init_parallelism) {}
 	assert((UInt32)ATOM_FETCH_ADD(next_tid, 0) == g_init_parallelism);
 	uint64_t slice_size = g_synth_table_size / g_init_parallelism;
+	printf("init %d data.", g_synth_table_size);
 	for (uint64_t key = slice_size * tid; 
 			key < slice_size * (tid + 1); 
 			key ++
 	) {
+		++key_cnt;
+		if(key_cnt % 500000 == 0) {
+			printf("Thd %d inserted %ld keys\n",tid,key_cnt);
+		}
 		base_row_t * new_row = NULL;
 		uint64_t row_id;
 		int part_id = key_to_part(key);
@@ -148,6 +155,7 @@ void * ycsb_wl::init_table_slice() {
 		rc = the_index->index_insert(idx_key, m_item, part_id);
 		assert(rc == RCOK);
 	}
+	printf("Thd %d inserted %ld keys\n",tid,key_cnt);
 	return NULL;
 }
 

@@ -292,6 +292,11 @@ for exp in exps:
         tpcc_ld.append(e[-1])
     tpcc_ld = sorted(list(set(tpcc_ld)))
 
+    tcnt = []
+    for e in experiments:
+        tcnt.append(e[-1])
+    tcnt = sorted(list(set(tcnt)))
+
     ccnt = []
     for e in experiments:
         ccnt.append(e[-1])
@@ -299,9 +304,9 @@ for exp in exps:
 
     cmd = ''
     os.chdir('./script')
-    if exp == 'ycsb_skew':
+    if 'ycsb_skew' in exp:
         cmd = './result.sh -a ycsb_skew -n {} -c {} -s {} -t {}'.format(str(cn[0]), ','.join([str(x) for x in al]), ','.join([str(x) for x in sk]), strnow)
-    elif exp == 'ycsb_writes':
+    elif 'ycsb_writes' in exp:
         cmd='./result.sh -a ycsb_writes -n {} -c {} --wr {} -t {}'.format(cn[0], ','.join([str(x) for x in al]), ','.join([str(x) for x in wr]), strnow)
     elif 'ycsb_scaling' in exp:
         cmd='./result.sh -a ycsb_scaling -n {} -c {} -t {} --ft {} --tt {}'.format(','.join([str(x) for x in cn]), ','.join([str(x) for x in al]), strnow, ','.join(fromtimelist), ','.join(totimelist))
@@ -311,6 +316,8 @@ for exp in exps:
         cmd='./result.sh -a ycsb_stress -n {} -c {} -s {} -l {} -t {}'.format(str(cn[0]), ','.join([str(x) for x in al]), str(sk[0]), ','.join([str(x) for x in ld]), strnow)
     elif 'tpcc_stress' in exp:
         cmd='./result.sh -a tpcc_stress -n {} -c {} -l {} -t {}'.format(str(cn[0]), ','.join([str(x) for x in al]), ','.join([str(x) for x in tpcc_ld]), strnow)
+    elif 'tpcc_thread' in exp:
+        cmd='./result.sh -a tpcc_thread -n {} -c {} -T {} -t {}'.format(str(cn[0]), ','.join([str(x) for x in al]), ','.join([str(x) for x in tcnt]), strnow)
     elif 'tpcc_cstress' in exp:
         cmd='./result.sh -a tpcc_stress_ctx -n {} -c {} -l {} -C {} -t {} --ft {} --tt {}'.format(str(cn[0]), ','.join([str(x) for x in al]), ','.join([str(x) for x in ld]), ','.join([str(x) for x in ccnt]), strnow, ','.join(fromtimelist), ','.join(totimelist))
     print cmd

@@ -8,6 +8,8 @@
 // class INDEX;
 // class tpcc_query;
 
+
+
 class tpcc_wl : public workload {
 public:
 	RC init();
@@ -59,6 +61,10 @@ private:
 	static void * threadInitWarehouse(void * This);
 };
 
-
+struct thr_args{
+	tpcc_wl * wl;
+	UInt32 id;
+	UInt32 tot;
+};
 
 #endif

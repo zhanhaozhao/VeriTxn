@@ -35,5 +35,7 @@ if 'run_time' in summary:
     e = summary['run_time'][0]
 if 'latency' in summary:
     f = summary['latency'][0]
-    g = summary['latency'][1]
+    len = len(summary['latency'])
+    if len>1:
+        g = summary['latency'][1]
 print d/e, a/c, b, f, g

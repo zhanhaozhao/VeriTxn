@@ -82,6 +82,8 @@ void txn_man::cleanup(RC rc) {
 	insert_cnt = 0;
 	return;
 #endif
+
+#if USE_LOG == 1
 	int size = 0, buf_size = 0;
 	LogRecord** logs = log_generate.createRecords(this);
 	size = wr_cnt + 1;
@@ -93,6 +95,7 @@ void txn_man::cleanup(RC rc) {
 	}
 	free(logs);
 	free(buf);
+#endif
 	for (int rid = row_cnt - 1; rid >= 0; rid --) {
 		row_t * orig_r = accesses[rid]->orig_row;
 		access_t type = accesses[rid]->type;
@@ -244,6 +247,9 @@ txn_man::index_read(std::string iname, idx_key_t key, int part_id, itemid_t *& i
 }
 
 RC txn_man::finish(RC rc) {
+	// uint64_t t1 = get_cur_time_ocall();
+	// uint64_t t2 = get_cur_time_ocall();
+	// INC_TMP_STATS_ENC(0, time_index, t2-t1);
 #if CC_ALG == HSTORE
 	return RCOK;
 #endif
