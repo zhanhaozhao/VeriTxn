@@ -33,6 +33,7 @@ class MessageQueue;
 class Transport;
 class Logger;
 class SimManager;
+class Logqueue;
 // /******************************************/
 // // Global Data Structure 
 // /******************************************/
@@ -47,6 +48,9 @@ extern Transport tport_man;
 extern MessageQueue msg_queue;
 extern Logger logger;
 extern SimManager * simulation;
+#if LOG_QUEUE_TYPE == LOG_CIRCUL_BUFF
+extern Logqueue **log_queues;
+#endif
 
 extern UInt32 g_node_id;
 extern UInt32 g_node_cnt;

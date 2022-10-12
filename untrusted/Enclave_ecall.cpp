@@ -29,6 +29,16 @@ void index_init_ecall(int part_cnt, void * table,
   }
 }
 
+void index_load_ecall(int part_cnt, void * table,
+  std::string iname, void * index_ptr, uint64_t bucket_cnt) {
+  sgx_status_t status = ec_index_load(enclave_id, part_cnt, table, iname.c_str(),
+    iname.size(), index_ptr, bucket_cnt);
+  if (status != SGX_SUCCESS) {
+    printf("index init failed : error %d - %#x.\n", status,
+      status);
+  }
+}
+
 int run_txn_ecall(void * h_thd, uint64_t start_time) {
   int ret;
   assert(h_thd);

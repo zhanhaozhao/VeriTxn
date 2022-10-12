@@ -72,6 +72,7 @@ RC InputThread::server_recv_loop() {
 	std::vector<Message*> * msgs;
 
 	while (true) {
+		if (USE_ASYNC_HASH != 1) return FINISH;
 		heartbeat();
 		starttime = get_sys_clock();
 
@@ -124,6 +125,7 @@ RC OutputThread::run() {
 	setup();
 	printf("Running OutputThread %ld\n",_thd_id);
 	while (true) {
+		if (USE_ASYNC_HASH != 1) return FINISH;
 		heartbeat();
 		messager->run();
 		if (_wl->sim_done) {

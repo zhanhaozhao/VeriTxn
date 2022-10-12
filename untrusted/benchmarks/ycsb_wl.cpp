@@ -9,6 +9,7 @@
 #include "base_row.h"
 #include "index_hash.h"
 #include "index_btree.h"
+#include "thread_enc.h"
 // #include "catalog.h"
 // #include "manager.h"
 // #include "row_lock.h"
@@ -29,6 +30,8 @@ RC ycsb_wl::init() {
 	
 	init_table_parallel();
 //	init_table();
+	int part_cnt = (CENTRAL_INDEX)? 1 : g_part_cnt;
+	index_load_ecall(part_cnt, (void *) (the_table), "MAIN_INDEX", (void*)the_index , g_synth_table_size * 2);
 	return RCOK;
 }
 

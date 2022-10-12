@@ -4,7 +4,7 @@
 /***********************************************/
 // Simulation + Hardware
 /***********************************************/
-#define NODE_CNT 2
+#define NODE_CNT 1
 #define THREAD_CNT 4
 #define PART_CNT NODE_CNT
 #define INPUT_CNT					1
@@ -118,7 +118,7 @@
 #define MAX_TUPLE_SIZE				1024 // in bytes
 // ==== [YCSB] ====
 #define INIT_PARALLELISM 8
-#define SYNTH_TABLE_SIZE 20971520
+#define SYNTH_TABLE_SIZE 1048576
 #define ZIPF_THETA 0.9
 #define READ_PERC 0.5
 #define WRITE_PERC 0.5
@@ -126,7 +126,7 @@
 #define SCAN_LEN					20
 #define PART_PER_TXN 2
 #define PERC_MULTI_PART				1
-#define REQ_PER_QUERY 1
+#define REQ_PER_QUERY 30
 #define FIELD_PER_TUPLE				10
 // ==== [TPCC] ====
 // For large warehouse count, the tables do not fit in memory
@@ -224,9 +224,21 @@ extern enum TestCases					g_test_case;
 #define TPORT_PORT 6000
 #define MAX_TPORT_NAME				128
 // turn on SGX
-#define USE_SGX 0
+#define USE_SGX 1
 #define TPORT_TYPE tcp
 #define USE_NANOMSG 1
+#define USE_ASYNC_HASH 0
+#define USE_LOG 1
+
+// Log queue type
+#define LOG_CIRCUL_BUFF 1
+#define LOG_STRING_QUEUE 2
+
+#define LOG_QUEUE_TYPE LOG_STRING_QUEUE
+
+#if LOG_QUEUE_TYPE == LOG_CIRCUL_BUFF
+#define MAX_LOG_QUEUE_RECORDS 10000
+#endif
 
 #define USE_AZURE 0
 #endif

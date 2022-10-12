@@ -1,2 +1,9 @@
 *.o
 *.d
+results*
+dbresult*
+App
+TPCC_*
+YCSB_*
+logfile*
+ifconfig*

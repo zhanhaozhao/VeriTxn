@@ -58,6 +58,16 @@ void index_init_ecall(int part_cnt, void * table, std::string iname, void * inde
 	index->index_name = iname;
 }
 
+void index_load_ecall(int part_cnt, void * table, std::string iname, void * index_ptr, uint64_t bucket_cnt) {
+	IndexEnc * index = (IndexEnc *)tab_map->_indexes[iname];
+    for (int i = 0; i < part_cnt; i++) {
+        for (int j = 0; j < bucket_cnt / part_cnt; j++) {
+            index->load_bucket(iname, i, j);
+        }
+    }
+}
+
+
 void init_txn_in_enc(txn_man *& m_txn, thread_t * h_thd) {
 	switch (WORKLOAD) {
 		case YCSB :

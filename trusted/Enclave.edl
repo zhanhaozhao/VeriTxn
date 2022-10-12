@@ -6,6 +6,8 @@ enclave {
     public void ec_global_init([user_check] void * stats);
     public void ec_index_init(int part_cnt, [user_check] void* table,
       [in, size=len] const char* iname, size_t len, [user_check] void* index_ptr, uint64_t bucket_cnt);
+    public void ec_index_load(int part_cnt, [user_check] void* table,
+      [in, size=len] const char* iname, size_t len, [user_check] void* index_ptr, uint64_t bucket_cnt);
     public int ec_run_txn([user_check] void* h_thd, uint64_t start_time);
     public void ec_update_hash_value(int part_id, uint64_t bkt_idx, uint64_t hash, [in, size=len] const char* iname, size_t len);
   };

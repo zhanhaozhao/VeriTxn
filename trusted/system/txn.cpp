@@ -248,8 +248,17 @@ txn_man::index_read(std::string iname, idx_key_t key, int part_id, itemid_t *& i
 
 RC txn_man::finish(RC rc) {
 	// uint64_t t1 = get_cur_time_ocall();
+
+	// for (int i = 0; i < 10; i ++) {
+	// 	// char* buf = (char*)malloc(1000);
+	// 	char* buf = new char[1000];
+	// 	// free(buf);
+	// 	delete buf;
+	// }
 	// uint64_t t2 = get_cur_time_ocall();
+	// uint64_t t3 = get_cur_time_ocall();
 	// INC_TMP_STATS_ENC(0, time_index, t2-t1);
+	// INC_TMP_STATS_ENC(0, time_man, t3-t2);
 #if CC_ALG == HSTORE
 	return RCOK;
 #endif

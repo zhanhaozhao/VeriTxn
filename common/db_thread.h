@@ -20,6 +20,9 @@ public:
 	workload * _wl;
 	ts_t starttime;
 	base_query * m_query;
+	#if LOG_QUEUE_TYPE == LOG_CIRCUL_BUFF
+	Logqueue * enc_log_queue;
+	#endif
 
 	// uint64_t 	get_thd_id();
 	uint64_t	get_thd_id() { return _thd_id; }

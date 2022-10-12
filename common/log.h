@@ -44,7 +44,6 @@ class LogRecord {
 public:
   //LogRecord();
   LogRecType getType() { return rcd.type; }
-  void copyRecord( LogRecord * record);
   // TODO: compute a reasonable checksum
   uint64_t computeChecksum() {
     return (uint64_t)rcd.txn_id;
@@ -54,5 +53,21 @@ private:
   bool isValid;
 
 };
+#if LOG_QUEUE_TYPE == LOG_CIRCUL_BUFF
+class Logqueue {
+public:
+  void init() {
+    head = 0;
+    tail = 0;
+  }
+  void enqueue(LogRecord** records, int size);
+  LogRecord* dequeue();
+private:
+  LogRecord _records[MAX_LOG_QUEUE_RECORDS];
+  int head;
+  int tail;
+};
+#endif
+
 #endif
 

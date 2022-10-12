@@ -61,6 +61,8 @@ RC IndexEnc::init(uint64_t bucket_cnt, int part_cnt, std::string index_name) {
             _verify_hash[i][n] = _default_verify_hash;
         }
     }
+
+
     return RCOK;
 }
 
@@ -148,6 +150,8 @@ BucketHeader_ENC* IndexEnc::load_bucket(std::string iname, int part_id, uint64_t
     auto cur = _cache[part_id][bkt_idx].load();
     if (cur == nullptr) {
 #ifndef DECOUPLE
+        // uint64_t t1 = get_cur_time_ocall();
+        
         auto out_bkt = &(((IndexHash*)inner_index_map->_indexes[iname])->_buckets[part_id][bkt_idx]);
         auto res_bucket = new BucketHeader_ENC;
         res_bucket->locked = false;
@@ -193,6 +197,10 @@ BucketHeader_ENC* IndexEnc::load_bucket(std::string iname, int part_id, uint64_t
             cur = res_bucket;
             release_latch(res_bucket);
         }
+        // uint64_t t2 = get_cur_time_ocall();
+        // uint64_t t3 = get_cur_time_ocall();
+        // INC_TMP_STATS_ENC(0, time_index, t2-t1);
+        // INC_TMP_STATS_ENC(0, time_man, 1);
 #else
         auto * res_bucket = new BucketHeader_ENC;
         std::string encoded = get_bucket_ocall(index_name, part_id, bkt_idx);

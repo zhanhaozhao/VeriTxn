@@ -22,6 +22,9 @@ Logger logger;
 SimManager * simulation;
 UInt32 g_node_id = 0;
 UInt32 g_node_cnt = NODE_CNT;
+#if LOG_QUEUE_TYPE == LOG_CIRCUL_BUFF
+Logqueue **log_queues;
+#endif
 
 // // Plock part_lock_man;
 // // OptCC occ_man;

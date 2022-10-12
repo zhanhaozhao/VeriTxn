@@ -1,4 +1,5 @@
 #include "common/thread_enc.h"
+#include <cstdlib>
 #include "untrusted/system/global.h"
 #include "untrusted/system/global_struct.h"
 #include "common/ycsb.h"
@@ -49,7 +50,8 @@ int main(int argc, char* argv[])
   memset(t, 0, sizeof(sgx_launch_token_t));
   printf("Initializing Enclave.\n"); 
   sgx_status_t enclave_status = sgx_create_enclave(ENCLAVE_FILENAME,
-    SGX_DEBUG_FLAG, &t, &updated, &enclave_id, NULL);
+    // SGX_DEBUG_FLAG, &t, &updated, &enclave_id, NULL);
+    0, &t, &updated, &enclave_id, NULL);
   if (enclave_status != SGX_SUCCESS) {
     printf("Failed to create Enclave : error %d - %#x.\n", enclave_status,
       enclave_status);
@@ -73,6 +75,13 @@ int main(int argc, char* argv[])
 	printf("Initializing trusted log generator... ");
 	fflush(stdout);
 	logger.init("logfile.log");
+	#if LOG_QUEUE_TYPE == LOG_CIRCUL_BUFF
+	log_queues = (Logqueue**) _mm_malloc(sizeof(Logqueue*), g_thread_cnt);
+	new Logqueue[g_thread_cnt];
+	for (int i = 0; i < g_thread_cnt; i++) {
+		log_queues[i] = (Logqueue*) malloc(sizeof(Logqueue));
+	}
+	#endif
 	printf("Done\n");
 
 	// if (NODE_CNT > 1) {
