@@ -101,7 +101,7 @@ int run_txn_ecall(void * thd, ts_t txn_ts) {
 	}
 	assert (m_txn);
 
-	generate_txn_ocall(h_thd, h_thd->m_query);
+//	generate_txn_ocall(h_thd, h_thd->m_query);
 
 	base_query * m_query = h_thd->m_query;
 	assert (m_query);

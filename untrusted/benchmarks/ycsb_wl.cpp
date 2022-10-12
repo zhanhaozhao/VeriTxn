@@ -112,7 +112,7 @@ void * ycsb_wl::init_table_slice() {
 
 	mem_allocator.register_thread(tid);
 	RC rc;
-	assert(g_synth_table_size % g_init_parallelism == 0);
+//	assert(g_synth_table_size % g_init_parallelism == 0);
 	assert(tid < g_init_parallelism);
 	while ((UInt32)ATOM_FETCH_ADD(next_tid, 0) < g_init_parallelism) {}
 	assert((UInt32)ATOM_FETCH_ADD(next_tid, 0) == g_init_parallelism);

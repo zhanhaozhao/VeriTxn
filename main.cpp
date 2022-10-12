@@ -45,7 +45,7 @@ int main(int argc, char* argv[])
     printf("Failed to create Enclave : error %d - %#x.\n", enclave_status,
       enclave_status);
     return 1;
-  } else printf("Enclave launched with id: %ld.\n", enclave_id); 
+  } //else printf("Enclave launched with id: %ld.\n", enclave_id);
 #endif // USE_SGX
 
 	parser(argc, argv);

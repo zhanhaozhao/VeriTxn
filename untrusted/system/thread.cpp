@@ -72,7 +72,9 @@ RC thread_t::run() {
 	while (true) {
 		starttime = get_sys_clock();
 
-		 rc = (RC) run_txn_ecall(this, this->get_next_ts());
+        generate_txn_for_run(this->m_query);
+
+        rc = (RC) run_txn_ecall(this, this->get_next_ts());
 
 		if (rc == Abort) {
 			uint64_t penalty = 0;
