@@ -164,8 +164,8 @@ def run_common_test():
 	global jobs
 	jobs = OrderedDict()
 	# for th in [3, 6, 7]:
+	insert_job("NO_WAIT", 'YCSB', thread_num=1, read_perc=0.5, theta=0.6, use_sgx=False)
 	insert_job("NO_WAIT", 'YCSB', thread_num=1, read_perc=0.5, theta=0.6, use_sgx=True)
-#	insert_job("NO_WAIT", 'YCSB', thread_num=4, read_perc=0.5, theta=0.6, use_sgx=True)
 	# print(jobs)
 	run_all_test(jobs, "comparison.csv")
 

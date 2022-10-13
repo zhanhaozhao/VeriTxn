@@ -12,7 +12,7 @@
 #define CL_SIZE						64
 // CPU_FREQ is used to get accurate timing info 
 #define CPU_FREQ 					2 	// in GHz/s
-#define BUCKET_FACTOR                  16  // divide the default bucket size in DBx1000.
+#define BUCKET_FACTOR                  1  // divide the default bucket size in DBx1000.
 #define PRE_LOAD                    1
 
 
