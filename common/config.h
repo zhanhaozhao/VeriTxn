@@ -4,7 +4,7 @@
 /***********************************************/
 // Simulation + Hardware
 /***********************************************/
-#define THREAD_CNT					1
+#define THREAD_CNT 5
 #define PART_CNT					1
 // each transaction only accesses 1 virtual partition. But the lock/ts manager and index are not aware of such partitioning. VIRTUAL_PART_CNT describes the request distribution and is only used to generate queries. For HSTORE, VIRTUAL_PART_CNT should be the same as PART_CNT.
 #define VIRTUAL_PART_CNT			1
@@ -12,14 +12,14 @@
 #define CL_SIZE						64
 // CPU_FREQ is used to get accurate timing info 
 #define CPU_FREQ 					2 	// in GHz/s
-#define BUCKET_FACTOR                  1  // divide the default bucket size in DBx1000.
+#define BUCKET_FACTOR 1
 #define PRE_LOAD                    1
 
 
 // # of transactions to run for warmup
 #define WARMUP						0
 // YCSB or TPCC
-#define WORKLOAD 					YCSB
+#define WORKLOAD YCSB
 // print the transaction latency distribution
 #define PRT_LAT_DISTR				false
 #define STATS_ENABLE				true
@@ -42,7 +42,7 @@
 /***********************************************/
 // WAIT_DIE, NO_WAIT, DL_DETECT, TIMESTAMP, MVCC, HEKATON, HSTORE, OCC, VLL, TICTOC, SILO
 // TODO TIMESTAMP does not work at this moment
-#define CC_ALG 						NO_WAIT
+#define CC_ALG NO_WAIT
 #define ISOLATION_LEVEL 			SERIALIZABLE
 
 // all transactions acquire tuples according to the primary key order.
@@ -116,11 +116,11 @@
 #define FIRST_PART_LOCAL 			true
 #define MAX_TUPLE_SIZE				1024 // in bytes
 // ==== [YCSB] ====
-#define INIT_PARALLELISM			40
+#define INIT_PARALLELISM			16
 #define SYNTH_TABLE_SIZE 			(1024 * 1024)
-#define ZIPF_THETA 					0.6
-#define READ_PERC 					0.5
-#define WRITE_PERC 					0.5
+#define ZIPF_THETA 0.9
+#define READ_PERC 0
+#define WRITE_PERC 1
 #define SCAN_PERC 					0
 #define SCAN_LEN					20
 #define PART_PER_TXN 				1
@@ -219,6 +219,6 @@ extern enum TestCases					g_test_case;
 #define TS_CLOCK					4
 
 // turn on SGX
-#define USE_SGX 1
+
 
 #endif

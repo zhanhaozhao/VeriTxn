@@ -119,8 +119,13 @@ void * ycsb_wl::init_table_slice() {
 	while ((UInt32)ATOM_FETCH_ADD(next_tid, 0) < g_init_parallelism) {}
 	assert((UInt32)ATOM_FETCH_ADD(next_tid, 0) == g_init_parallelism);
 	uint64_t slice_size = g_synth_table_size / g_init_parallelism;
+//    printf("up to %lu %u\n", slice_size * (tid + 1), tid);
+    uint64_t max_key = slice_size * (tid + 1);
+    if ((tid+1) == g_init_parallelism) {
+        max_key = g_synth_table_size;
+    }
 	for (uint64_t key = slice_size * tid; 
-			key < slice_size * (tid + 1); 
+			key < max_key;
 			key ++
 	) {
 		base_row_t * new_row = NULL;

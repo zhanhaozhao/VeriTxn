@@ -111,12 +111,16 @@ def run_all_test(jobs, filename) :
 def run_thread_exp():
 	global jobs
 	jobs = OrderedDict()
-	# for th in [3, 6, 7]:
-	for th in [1, 2, 3, 4, 5, 6, 7, 8]:
+	for th in [5]:
+#	for th in [1, 2, 3, 4, 5, 6, 7, 8]:
 		for alg in algs:
-			insert_job(alg, 'YCSB', thread_num=th, read_perc=0, theta=0.9)
-	# print(jobs)
+			insert_job(alg, 'YCSB', thread_num=th, read_perc=0, theta=0.9, use_sgx=False)
 	run_all_test(jobs, "thread_ycsb.csv")
+	# jobs = OrderedDict()
+	# for th in [1, 2, 3, 4, 5, 6, 7, 8]:
+	# 	for alg in algs:
+	# 		insert_job(alg, 'YCSB', thread_num=th, read_perc=0, theta=0.9, use_sgx=True)
+	# run_all_test(jobs, "thread_ycsb_sgx.csv")
 
 def run_tpc_exp():
 	global jobs
@@ -171,14 +175,14 @@ def run_common_test():
 	# print(jobs)
 	run_all_test(jobs, "comparison.csv")
 
-run_common_test()
-# run_rw_exp()
+#run_common_test()
+#run_rw_exp()
 # run_bktsiz_exp()
-#run_thread_exp()
-#run_tpc_exp()
+run_thread_exp()
+# run_tpc_exp()
 # run_theta_exp()
 
-os.system('cp config-std.h ./common/config.h')
-os.system("cp Makefile.sgx Makefile")
-os.system('make clean > temp.out 2>&1')
-os.system('rm temp.out')
+# os.system('cp config-std.h ./common/config.h')
+# os.system("cp Makefile.sgx Makefile")
+# os.system('make clean > temp.out 2>&1')
+# os.system('rm temp.out')

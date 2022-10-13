@@ -161,32 +161,41 @@ void Stats::print() {
         );
 		fclose(outf);
 	}
-	printf("[summary] txn_cnt=%ld, abort_cnt=%ld"
-           ", run_time=%f, time_wait=%f, time_ts_alloc=%f"
-           ", time_man=%f, time_index=%f, time_abort=%f, time_cleanup=%f, latency=%f"
-           ", deadlock_cnt=%ld, cycle_detect=%ld, dl_detect_time=%f, dl_wait_time=%f"
-           ", time_query=%f, debug1=%f, debug2=%f, debug3=%f, debug4=%f, debug5=%f\n",
-           total_txn_cnt,
-           total_abort_cnt,
-           total_run_time / BILLION,
-           total_time_wait / BILLION,
-           total_time_ts_alloc / BILLION,
-           (total_time_man - total_time_wait) / BILLION,
-           total_time_index / BILLION,
-           total_time_abort / BILLION,
-           total_time_cleanup / BILLION,
-           total_latency / BILLION / total_txn_cnt,
-           deadlock,
-           cycle_detect,
-           dl_detect_time / BILLION,
-           dl_wait_time / BILLION,
-           total_time_query / BILLION,
-           total_debug1, // / BILLION,
-           total_debug2, // / BILLION,
-           total_debug3, // / BILLION,
-           total_debug4, // / BILLION,
-           total_debug5 / BILLION
+    printf("%u, %ld, %ld"
+    ", %f, %f"
+    "\n",
+            g_thread_cnt,
+            total_txn_cnt,
+            total_abort_cnt,
+            total_run_time / BILLION,
+            total_latency / BILLION / total_txn_cnt
     );
+//	printf("[summary] txn_cnt=%ld, abort_cnt=%ld"
+//           ", run_time=%f, time_wait=%f, time_ts_alloc=%f"
+//           ", time_man=%f, time_index=%f, time_abort=%f, time_cleanup=%f, latency=%f"
+//           ", deadlock_cnt=%ld, cycle_detect=%ld, dl_detect_time=%f, dl_wait_time=%f"
+//           ", time_query=%f, debug1=%f, debug2=%f, debug3=%f, debug4=%f, debug5=%f\n",
+//           total_txn_cnt,
+//           total_abort_cnt,
+//           total_run_time / BILLION,
+//           total_time_wait / BILLION,
+//           total_time_ts_alloc / BILLION,
+//           (total_time_man - total_time_wait) / BILLION,
+//           total_time_index / BILLION,
+//           total_time_abort / BILLION,
+//           total_time_cleanup / BILLION,
+//           total_latency / BILLION / total_txn_cnt,
+//           deadlock,
+//           cycle_detect,
+//           dl_detect_time / BILLION,
+//           dl_wait_time / BILLION,
+//           total_time_query / BILLION,
+//           total_debug1, // / BILLION,
+//           total_debug2, // / BILLION,
+//           total_debug3, // / BILLION,
+//           total_debug4, // / BILLION,
+//           total_debug5 / BILLION
+//    );
 	if (g_prt_lat_distr)
 		print_lat_distr();
 }
