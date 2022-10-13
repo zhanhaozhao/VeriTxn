@@ -56,6 +56,12 @@ void index_init_ecall(int part_cnt, void * table, std::string iname, void * inde
 	tab_map->_indexes[iname] = index;
 	inner_index_map->_indexes[iname] = index_ptr;
 	index->index_name = iname;
+#ifdef PRE_LOAD
+    for (int i=0;i<part_cnt;i++)
+        for (uint64_t j=0;j<bucket_cnt;j++) {
+            index->load_bucket(iname, i, j);
+        }
+#endif
 }
 
 void index_load_ecall(int part_cnt, void * table, std::string iname, void * index_ptr, uint64_t bucket_cnt) {
@@ -116,12 +122,6 @@ int run_txn_ecall(void * thd, ts_t txn_ts) {
 		m_txn = glob_manager_enc->get_txn_man(thd_id);
 	}
 	assert (m_txn);
-
-	// generate_txn_ocall(h_thd, h_thd->m_query);
-	// uint64_t t1 = get_cur_time_ocall();
-	// uint64_t t2 = get_cur_time_ocall();
-	// INC_TMP_STATS_ENC(0, time_index, t2-t1);
-	
 
 	base_query * m_query = h_thd->m_query;
 	assert (m_query);

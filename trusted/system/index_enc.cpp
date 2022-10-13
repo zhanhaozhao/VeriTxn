@@ -188,14 +188,15 @@ BucketHeader_ENC* IndexEnc::load_bucket(std::string iname, int part_id, uint64_t
             }
             last_node = node;
         }
-        get_latch(res_bucket);
+//        get_latch(res_bucket);
         BucketHeader_ENC* tmp = nullptr;
         if (!_cache[part_id][bkt_idx].compare_exchange_strong(tmp, res_bucket)) {
             cur = _cache[part_id][bkt_idx].load();
-            release_latch(res_bucket);
+//            release_latch(res_bucket);
+            delete res_bucket;
         } else {
             cur = res_bucket;
-            release_latch(res_bucket);
+//            release_latch(res_bucket);
         }
         // uint64_t t2 = get_cur_time_ocall();
         // uint64_t t3 = get_cur_time_ocall();

@@ -23,9 +23,9 @@ RC tpcc_wl::init() {
 #else
 	path += "TPCC_full_schema.txt";
 #endif
-	std::cout << "reading schema file: " << path << std::endl;
+//	std::cout << "reading schema file: " << path << std::endl;
 	init_schema( path.c_str() );
-	std::cout << "TPCC schema initialized" << std::endl;
+//	std::cout << "TPCC schema initialized" << std::endl;
 	init_table();
 	next_tid = 0;
 	return RCOK;
@@ -54,7 +54,7 @@ RC tpcc_wl::init_schema(const char * schema_file) {
 
 RC tpcc_wl::init_table() {
 	num_wh = g_num_wh;
-	printf("TPCC Data Initialization Start!\n");
+//printf("TPCC Data Initialization Start!\n");
 /******** fill in data ************/
 // data filling process:
 //- item
@@ -81,13 +81,7 @@ RC tpcc_wl::init_table() {
 	for (uint32_t i = 0; i < g_init_parallelism - 1; i++) 
 		pthread_join(p_thds[i], NULL);
 
-	// for (uint32_t i = 0; i < g_num_wh - 1; i++) 
-	// 	pthread_create(&p_thds[i], NULL, threadInitWarehouse, this);
-	// threadInitWarehouse(this);
-	// for (uint32_t i = 0; i < g_num_wh - 1; i++) 
-	// 	pthread_join(p_thds[i], NULL);
-
-	printf("TPCC Data Initialization Complete!\n");
+//	printf("TPCC Data Initialization Complete!\n");
 	return RCOK;
 }
 

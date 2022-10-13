@@ -52,7 +52,7 @@ void base_row_t::init_manager(base_row_t * row) {
 #elif CC_ALG == OCC
     // manager = (Row_occ *) mem_allocator.alloc(sizeof(Row_occ), _part_id);
 #elif CC_ALG == TICTOC
-	manager = (Row_tictoc *) _mm_malloc(sizeof(Row_tictoc), 64);
+//	manager = (Row_tictoc *) _mm_malloc(sizeof(Row_tictoc), 64);
 #elif CC_ALG == SILO
 	manager = (Row_silo *) _mm_malloc(sizeof(Row_silo), 64);
 #endif

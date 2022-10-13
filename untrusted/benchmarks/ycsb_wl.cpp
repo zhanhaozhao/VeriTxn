@@ -1,4 +1,5 @@
 #include <sched.h>
+#include <thread_enc.h>
 #include "global.h"
 #include "global_struct.h"
 // #include "common/helper.h"
@@ -85,7 +86,7 @@ RC ycsb_wl::init_table() {
         }
     }
 ins_done:
-    printf("[YCSB] Table \"MAIN_TABLE\" initialized.\n");
+//    printf("[YCSB] Table \"MAIN_TABLE\" initialized.\n");
     return RCOK;
 
 }
@@ -107,6 +108,7 @@ void ycsb_wl::init_table_parallel() {
 	}
 	enable_thread_mem_pool = false;
 	mem_allocator.unregister();
+    index_init_ecall(1, (void *) tables["MAIN_TABLE"], "MAIN_INDEX", (void*) the_index, (g_synth_table_size * 2) / BUCKET_FACTOR);
 }
 
 void * ycsb_wl::init_table_slice() {

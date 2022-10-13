@@ -50,13 +50,12 @@ int main(int argc, char* argv[])
   memset(t, 0, sizeof(sgx_launch_token_t));
   printf("Initializing Enclave.\n"); 
   sgx_status_t enclave_status = sgx_create_enclave(ENCLAVE_FILENAME,
-    // SGX_DEBUG_FLAG, &t, &updated, &enclave_id, NULL);
-    0, &t, &updated, &enclave_id, NULL);
+
   if (enclave_status != SGX_SUCCESS) {
     printf("Failed to create Enclave : error %d - %#x.\n", enclave_status,
       enclave_status);
     return 1;
-  } else printf("Enclave launched with id: %ld.\n", enclave_id); 
+  } //else printf("Enclave launched with id: %ld.\n", enclave_id);
 #endif // USE_SGX
 
 	parser(argc, argv);
@@ -70,7 +69,7 @@ int main(int argc, char* argv[])
 	global_init_ecall(&stats); // call enclave
 	// if (g_cc_alg == DL_DETECT) 
 	// 	dl_detector.init();
-	printf("mem_allocator initialized!\n");
+//	printf("mem_allocator initialized!\n");
 
 	printf("Initializing trusted log generator... ");
 	fflush(stdout);
@@ -116,7 +115,7 @@ int main(int argc, char* argv[])
 			assert(false);
 	}
 	m_wl->init();
-	printf("workload initialized!\n");
+//	printf("workload initialized!\n");
 
 	uint64_t thd_cnt = g_thread_cnt;
 	uint64_t rthd_cnt = NODE_CNT > 1 ? INPUT_CNT : 0;
@@ -167,10 +166,10 @@ int main(int argc, char* argv[])
 	// run_thread((void *)(m_thds[thd_cnt - 1]));
 	for (uint32_t i = 0; i < thd_cnt; i++) 
 		pthread_join(p_thds[i], NULL);
-	int64_t endtime = get_server_clock();
+//	int64_t endtime = get_server_clock();
 	
 	if (WORKLOAD != TEST) {
-		printf("PASS! SimTime = %ld\n", endtime - starttime);
+//		printf("PASS! SimTime = %ld\n", endtime - starttime);
 		if (STATS_ENABLE)
 			stats.print();
 	} else {
