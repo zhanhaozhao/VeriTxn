@@ -106,7 +106,7 @@ RC workload::init_schema(std::string schema_file) {
             index->index_name = new char[n+1];
 			iname.copy(index->index_name, n);
 			index->index_name[n] = 0;
-//			index_init_ecall(part_cnt, (void *) tables[tname], iname, (void*) index, (g_synth_table_size * 2) / BUCKET_FACTOR);
+			index_init_ecall(part_cnt, (void *) tables[tname], iname, (void*) index, (g_synth_table_size * 2) / BUCKET_FACTOR);
 			global_table_map->_indexes[iname] = index;
 	#elif WORKLOAD == TPCC
 			assert(tables[tname] != NULL);

@@ -108,7 +108,7 @@ void ycsb_wl::init_table_parallel() {
 	}
 	enable_thread_mem_pool = false;
 	mem_allocator.unregister();
-    index_init_ecall(1, (void *) tables["MAIN_TABLE"], "MAIN_INDEX", (void*) the_index, (g_synth_table_size * 2) / BUCKET_FACTOR);
+    // index_init_ecall(1, (void *) tables["MAIN_TABLE"], "MAIN_INDEX", (void*) the_index, (g_synth_table_size * 2) / BUCKET_FACTOR);
 }
 
 void * ycsb_wl::init_table_slice() {

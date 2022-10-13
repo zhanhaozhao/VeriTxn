@@ -33,15 +33,15 @@ void Stats_thd::clear() {
 	time_query = 0;
 }
 
-void Stats_tmp::init() {
-	clear();
-}
+// void Stats_tmp::init() {
+// 	clear();
+// }
 
-void Stats_tmp::clear() {	
-	time_man = 0;
-	time_index = 0;
-	time_wait = 0;
-}
+// void Stats_tmp::clear() {	
+// 	time_man = 0;
+// 	time_index = 0;
+// 	time_wait = 0;
+// }
 
 void Stats::init() {
 	if (!STATS_ENABLE) 

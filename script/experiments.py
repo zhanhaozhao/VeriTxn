@@ -51,17 +51,19 @@ def ycsb_scaling():
 
 def ycsb_skew():
     wl = 'YCSB'
-    nnodes = [2]
+    nnodes = [4]
     #algos=['WOOKONG','WAIT_DIE','MVCC','MAAT','TIMESTAMP','OCC']
     algos=['NO_WAIT']
     # base_table_size=1048576*10
     base_table_size=1048576
     write_perc = [0.5]
     load = [10000]
-    tcnt = [4]
-    # skew = [0.0,0.25,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.9]
+    tcnt = [1]
+    skew = [0.0,0.25,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.9]
     # skew = [0.1,0.3,0.5,0.7,0.9,1.1,1.3,1.5,1.7,1.9]
-    skew = [0.99]
+    # skew = [0.1,0.3,0.5,0.7,0.9]
+    # skew = [0.1]
+    # skew = [0.6]
     fmt = ["WORKLOAD","NODE_CNT","CC_ALG","SYNTH_TABLE_SIZE","WRITE_PERC","READ_PERC","MAX_TXN_IN_FLIGHT","ZIPF_THETA","THREAD_CNT"]
     exp = [[wl,n,algo,base_table_size*n,wr_perc,1-wr_perc,ld,sk,thr] for thr,wr_perc,ld,n,sk,algo in itertools.product(tcnt,write_perc,load,nnodes,skew,algos)]
     return fmt,exp
@@ -72,6 +74,7 @@ def ycsb_writes():
     algos=['NO_WAIT']
     base_table_size=1048576
     write_perc = [0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0]
+    # write_perc = [0.4,0.5,0.6,0.7]
     load = [10000]
     tcnt = [4]
     skew = [0.5]
@@ -89,10 +92,10 @@ def tpcc_thread():
     npercpay=[0.5]
     # npercpay=[0.0]
     # wh=128
-    wh=16
+    wh=64
     load = [10000]
-    # tcnt = [2,4,6,8,10,12,14,16]
-    tcnt = [8]
+    # tcnt = [2,4,6,8,10,12,14]
+    tcnt = [2]
     fmt = ["WORKLOAD","NODE_CNT","CC_ALG","PERC_PAYMENT","NUM_WH","MAX_TXN_IN_FLIGHT","THREAD_CNT"]
     exp = [[wl,n,cc,pp,wh*n,tif,thr] for thr,tif,pp,n,cc in itertools.product(tcnt,load,npercpay,nnodes,nalgos)]
 
@@ -173,7 +176,7 @@ configs = {
     "INIT_PARALLELISM" : 8,
     "ZIPF_THETA":0.3,
     "DATA_PERC": 100,
-    "REQ_PER_QUERY": 1,
+    "REQ_PER_QUERY": 64,
     "SYNTH_TABLE_SIZE":"65536",
 #TPCC
     "NUM_WH": 'PART_CNT',

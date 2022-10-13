@@ -50,7 +50,7 @@ int main(int argc, char* argv[])
   memset(t, 0, sizeof(sgx_launch_token_t));
   printf("Initializing Enclave.\n"); 
   sgx_status_t enclave_status = sgx_create_enclave(ENCLAVE_FILENAME,
-
+    0, &t, &updated, &enclave_id, NULL);
   if (enclave_status != SGX_SUCCESS) {
     printf("Failed to create Enclave : error %d - %#x.\n", enclave_status,
       enclave_status);
@@ -126,14 +126,8 @@ int main(int argc, char* argv[])
 	output_thds = new OutputThread[sthd_cnt];
 	log_thds = new LogThread[1];
 
-	// pthread_t p_thds[all_thd_cnt - 1];
 	pthread_t p_thds[all_thd_cnt];
-	// m_thds = new thread_t * [thd_cnt];
 	m_thds = new thread_t[thd_cnt];
-	// for (uint32_t i = 0; i < thd_cnt; i++)
-	// 	m_thds[i] = (thread_t *) _mm_malloc(sizeof(thread_t), 64);
-	// query_queue should be the last one to be initialized!!!
-	// because it collects txn latency
 	query_queue = (Query_queue *) _mm_malloc(sizeof(Query_queue), 64);
 	if (WORKLOAD != TEST)
 		query_queue->init(m_wl);

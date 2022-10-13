@@ -2,9 +2,9 @@
   <ProdID>0</ProdID>
   <ISVSVN>0</ISVSVN>
   <StackMaxSize>0x1200000</StackMaxSize>
-  <HeapInitSize>0x100000000</HeapInitSize>
+  <HeapInitSize>0x500000000</HeapInitSize>
   <HeapMaxSize>0x1000000000</HeapMaxSize>
   <TCSNum>20</TCSNum>
   <TCSPolicy>0</TCSPolicy>
-  <DisableDebug>1</DisableDebug>
+  <DisableDebug>0</DisableDebug>
 </EnclaveConfiguration>

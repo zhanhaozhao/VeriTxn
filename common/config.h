@@ -5,7 +5,7 @@
 // Simulation + Hardware
 /***********************************************/
 #define NODE_CNT 1
-#define THREAD_CNT 4
+#define THREAD_CNT 1
 #define PART_CNT NODE_CNT
 #define INPUT_CNT					1
 #define OUTPUT_CNT					1
@@ -16,7 +16,7 @@
 // CPU_FREQ is used to get accurate timing info 
 #define CPU_FREQ 					2 	// in GHz/s
 #define BUCKET_FACTOR                  1  // divide the default bucket size in DBx1000.
-#define PRE_LOAD                    1
+// #define PRE_LOAD                    0
 
 
 // # of transactions to run for warmup
@@ -122,14 +122,14 @@
 // ==== [YCSB] ====
 #define INIT_PARALLELISM 8
 #define SYNTH_TABLE_SIZE 1048576
-#define ZIPF_THETA 0.9
+#define ZIPF_THETA 0.6
 #define READ_PERC 0.5
 #define WRITE_PERC 0.5
 #define SCAN_PERC 					0
 #define SCAN_LEN					20
 #define PART_PER_TXN 2
 #define PERC_MULTI_PART				1
-#define REQ_PER_QUERY 30
+#define REQ_PER_QUERY 64
 #define FIELD_PER_TUPLE				10
 // ==== [TPCC] ====
 // For large warehouse count, the tables do not fit in memory
@@ -230,7 +230,7 @@ extern enum TestCases					g_test_case;
 #define USE_SGX 1
 #define TPORT_TYPE tcp
 #define USE_NANOMSG 1
-#define USE_ASYNC_HASH 0
+#define USE_ASYNC_HASH 1
 #define USE_LOG 1
 
 // Log queue type

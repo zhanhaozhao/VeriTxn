@@ -38,8 +38,9 @@ public:
 	// to run with pthread.
 	// conversion is done within the function.
 	RC 			run();
+	RC			run_enc();
 	void 		setup();
-	void send_init_done_to_all_nodes();
+	void 		send_init_done_to_all_nodes();
 	void		generate_txn_for_run(base_query *& m_query);
 
 private:

@@ -22,7 +22,7 @@ for HOSTNAME in ${HOSTS}; do
     count=`expr $count + 1`
 done
 
-sleep 60
+sleep 10
 while [ $count -gt 0 ]
 do
     wait $pids

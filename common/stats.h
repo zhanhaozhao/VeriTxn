@@ -35,8 +35,15 @@ public:
 
 class Stats_tmp {
 public:
-	void init();
-	void clear();
+	void init() {
+		clear();
+	}
+
+	void clear() {	
+		time_man = 0;
+		time_index = 0;
+		time_wait = 0;
+	}
 	double time_man;
 	double time_index;
 	double time_wait;
