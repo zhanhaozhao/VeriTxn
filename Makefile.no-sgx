@@ -39,6 +39,6 @@ rundb : $(OBJS)
 
 .PHONY: clean
 clean:
-	rm -f rundb ./trusted/*.o ./trusted/*.d ./untrusted/*.o ./untrusted/*.d ./common/*.o ./common/*.d $(OBJS)
+	rm -f rundb ./trusted/*.o ./trusted/*.d ./untrusted/*.o ./untrusted/*.d ./common/*.o ./common/*.d $(OBJS) $(DEPS)
 
 # $(DEPS)

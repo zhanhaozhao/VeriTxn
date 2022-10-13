@@ -49,7 +49,7 @@ def test_compile(job):
 
 	os.system("make clean> temp.out 2>&1")
 	# print("clean finished!!!!")
-	# time.sleep(1)
+	time.sleep(0.5)
 	# exit(0)
 	ret = os.system("make -j8> temp.out")
 	# print("make finished!!!!")
@@ -104,6 +104,8 @@ def run_all_test(jobs, filename) :
 		for ii in range(testRound):
 			test_compile(job)
 			test_run(job, ">> %s" % filename)
+			os.system("make clean> temp.out 2>&1")
+
 
 # run YCSB tests
 def run_thread_exp():
@@ -176,7 +178,7 @@ run_common_test()
 #run_tpc_exp()
 # run_theta_exp()
 
-# os.system('cp config-std.h ./common/config.h')
+os.system('cp config-std.h ./common/config.h')
 os.system("cp Makefile.sgx Makefile")
-# os.system('make clean > temp.out 2>&1')
-# os.system('rm temp.out')
+os.system('make clean > temp.out 2>&1')
+os.system('rm temp.out')
