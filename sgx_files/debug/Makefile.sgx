@@ -47,7 +47,7 @@ sgx-release:
 	cp ./sgx_files/release/sgx_t.mk ./sgx_t.mk
 	cp ./sgx_files/release/sgx_u.mk ./sgx_u.mk
 	cp ./sgx_files/release/Enclave.config.xml ./trusted/Enclave.config.xml
-    cp Makefile.sgx Makefile
+	cp Makefile.sgx Makefile
 
 sgx-debug:
 	cp ./sgx_files/debug/main.cpp ./main.cpp

@@ -1,3 +1,4 @@
+#include <thread_enc.h>
 #include "global.h"
 // #include "common/helper.h"
 #include "tpcc.h"
@@ -49,7 +50,7 @@ RC tpcc_wl::init_schema(const char * schema_file) {
 	i_customer_id = indexes["CUSTOMER_ID_IDX"];
 	i_customer_last = indexes["CUSTOMER_LAST_IDX"];
 	i_stock = indexes["STOCK_IDX"];
-	return RCOK;
+    return RCOK;
 }
 
 RC tpcc_wl::init_table() {
@@ -76,6 +77,14 @@ RC tpcc_wl::init_table() {
 		pthread_join(p_thds[i], NULL);
 
 //	printf("TPCC Data Initialization Complete!\n");
+    for (auto it = indexes.begin(); it != indexes.end(); it++) {
+        std::string iname = it->first;
+        std::string tname = iname;
+        auto pos = iname.find_first_of('_');
+        tname.erase(pos, tname.length() - pos);
+        index_init_ecall(g_part_cnt, (void *) (tables[tname]), iname, (void*)indexes[iname] ,
+                         indexes[iname]->_bucket_cnt_per_part * g_part_cnt);
+    }
 	return RCOK;
 }
 

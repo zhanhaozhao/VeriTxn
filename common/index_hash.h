@@ -57,6 +57,7 @@ public:
     BucketHeader *	load_bucket(int part_id, int bkt_idx);
 	char*	index_name;
     BucketHeader ** 	_buckets;
+	uint64_t 			_bucket_cnt_per_part;
 private:
 	void get_latch(BucketHeader * bucket);
 	void release_latch(BucketHeader * bucket);
@@ -64,7 +65,6 @@ private:
 	// TODO implement more complex hash function
 	uint64_t hash(idx_key_t key) {	return key % _bucket_cnt_per_part; }
 	
-	uint64_t 			_bucket_cnt_per_part;
 };
 
 #endif

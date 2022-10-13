@@ -1,7 +1,7 @@
 SGX_SDK ?= /opt/intel/sgxsdk
 SGX_MODE ?= HW
 SGX_ARCH ?= x64
-SGX_DEBUG ?= 0
+SGX_DEBUG ?= 1
 
 PROJECT_ROOT_DIR := $(shell readlink -f ..)
 # Enclave_Search_Dirs ?= $(shell \
@@ -40,3 +40,19 @@ clean:
 
 mrproper: clean
 	rm -rf ./install
+
+sgx-release:
+	cp ./sgx_files/release/main.cpp ./main.cpp
+	cp ./sgx_files/release/Makefile.sgx ./Makefile.sgx
+	cp ./sgx_files/release/sgx_t.mk ./sgx_t.mk
+	cp ./sgx_files/release/sgx_u.mk ./sgx_u.mk
+	cp ./sgx_files/release/Enclave.config.xml ./trusted/Enclave.config.xml
+    cp Makefile.sgx Makefile
+
+sgx-debug:
+	cp ./sgx_files/debug/main.cpp ./main.cpp
+	cp ./sgx_files/debug/Makefile.sgx ./Makefile.sgx
+	cp ./sgx_files/debug/sgx_t.mk ./sgx_t.mk
+	cp ./sgx_files/debug/sgx_u.mk ./sgx_u.mk
+	cp ./sgx_files/debug/Enclave.config.xml ./trusted/Enclave.config.xml
+	cp Makefile.sgx Makefile
