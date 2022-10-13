@@ -1,36 +1,44 @@
-SGX_SDK ?= /opt/intel/sgxsdk
-SGX_MODE ?= HW
-SGX_ARCH ?= x64
-SGX_DEBUG ?= 0
+PROJECT_ROOT ?= $(shell readlink -f .)
 
-PROJECT_ROOT_DIR := $(shell readlink -f ..)
-# Enclave_Search_Dirs ?= $(shell \
-# 	find $(INFERENCE_RT_DIR)/include -maxdepth 1 -type d -not -path '*/.' -printf '--search-path %p '\
-# )
 
-INSTALL ?= install
-INSTALL_PREFIX ?= ./install
-INSTALL_LIB_DIR = $(INSTALL_PREFIX)/lib
-INSTALL_INCLUDE_DIR = $(INSTALL_PREFIX)/include
+CC=g++
+CFLAGS=-w -g -std=c++0x -no-pie
 
-.PHONY: all install clean mrproper
+.SUFFIXES: .o .cpp .h
 
-all:
-	$(MAKE) -ef sgx_t.mk all SGX_MODE=$(SGX_MODE) SGX_DEBUG=$(SGX_DEBUG) Enclave_Search_Dirs="$(Enclave_Search_Dirs)"
-	$(MAKE) -ef sgx_u.mk all SGX_MODE=$(SGX_MODE) SGX_DEBUG=$(SGX_DEBUG) Enclave_Search_Dirs="$(Enclave_Search_Dirs)" 
+SRC_DIRS = ./ ./common/ ./untrusted/system/ ./untrusted/benchmarks/ ./untrusted/cache/ ./trusted/system/ ./trusted/concurrency_control/
+INCLUDE = -I. -I./common/ -I./untrusted/system/ -I./untrusted/benchmarks/ -I./untrusted/cache/ -I./trusted/system/ -I./trusted/concurrency_control/
 
-HEADERS := untrusted/worker.h
+# SRC_DIRS = ./ ./common ./untrusted/system/ ./untrusted/benchmarks/ ./untrusted/cache/
+# INCLUDE = -I. -I./common -I./untrusted/system -I./untrusted/benchmarks/ -I./untrusted/cache/
 
-install:
-	$(INSTALL) -d $(INSTALL_INCLUDE_DIR)
-	$(INSTALL) -d $(INSTALL_LIB_DIR)
-	# $(INSTALL) -C -m 644 ${HEADERS} $(INSTALL_INCLUDE_DIR)
-	# $(INSTALL) -C -m 664 *.signed.so $(INSTALL_LIB_DIR)
-	# $(INSTALL) -C -m 644 *.a $(INSTALL_LIB_DIR)
+# CFLAGS += $(INCLUDE) -D NOGRAPHITE=1 -no-pie -O0
+# LDFLAGS = -Wall -L. -L./libs -pthread -g -lrt -std=c++0x -O0 -ljemalloc
 
+CFLAGS += $(INCLUDE) -D NOGRAPHITE=1 -Werror -Wno-comment -O3
+LDFLAGS = -Wall -L.  -L./libs -pthread -g -lrt -std=c++0x -O3 -ljemalloc -lnanomsg
+# LDFLAGS = -Wall -L. -pthread -g -lrt -std=c++0x -O0 -ljemalloc -fsanitize=address -fno-omit-frame-pointer -static-libasan
+LDFLAGS += $(CFLAGS)
+
+CPPS = $(foreach dir, $(SRC_DIRS), $(wildcard $(dir)*.cpp))
+OBJS = $(CPPS:.cpp=.o)
+DEPS = $(CPPS:.cpp=.d)
+
+all:App
+
+App : $(OBJS)
+	$(CC) -o $@ $^ $(LDFLAGS)
+
+-include $(OBJS:%.o=%.d)
+
+%.d: %.cpp
+	$(CC) -MM -MT $*.o -MF $@ $(CFLAGS) $<
+
+%.o: %.cpp
+	$(CC) -c $(CFLAGS) -o $@ $<
+
+.PHONY: clean
 clean:
-	$(MAKE) -ef sgx_t.mk clean
-	$(MAKE) -ef sgx_u.mk clean
+	rm -f App ./trusted/*.o ./trusted/*.d ./trusted/system/*.o ./trusted/system/*.d ./trusted/concurrency_control/*.o trusted/concurrency_control/*.d ./untrusted/*.o ./untrusted/*.d ./untrusted/system/*.o ./untrusted/system/*.d ./untrusted/benchmarks/*.o ./untrusted/benchmarks/*.d ./untrusted/cache/*.o ./untrusted/cache/*.d ./common/*.o ./common/*.d $(OBJS)
 
-mrproper: clean
-	rm -rf ./install
+# $(DEPS)

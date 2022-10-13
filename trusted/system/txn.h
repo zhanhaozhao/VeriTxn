@@ -8,6 +8,7 @@
 #include "global_common.h"
 #include "db_thread.h"
 #include "helper.h"
+#include "log.h"
 #include "wl.h"
 
 // class workload;
@@ -62,6 +63,11 @@ public:
 
 	pthread_mutex_t txn_lock;
 	row_t * volatile cur_row;
+	#if WORKLOAD == YCSB
+	LogRecord		log_buf[MAX_ROW_PER_TXN+2];
+	#else
+	LogRecord		log_buf[20];
+	#endif
 #if CC_ALG == HEKATON
 	void * volatile history_entry;
 #endif

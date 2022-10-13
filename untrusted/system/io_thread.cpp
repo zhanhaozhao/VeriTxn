@@ -19,7 +19,7 @@
 #include "manager.h"
 #include "thread.h"
 #include "io_thread.h"
-#include "query.h"
+// #include "query.h"
 #include "mem_alloc.h"
 #include "transport.h"
 #include "math.h"
