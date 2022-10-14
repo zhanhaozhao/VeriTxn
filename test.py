@@ -17,7 +17,7 @@ def replace(filename, pattern, replacement):
 jobs = OrderedDict()
 dbms_cfg = ["config-std.h", "common/config.h"]
 algs = ['NO_WAIT']
-def insert_job(alg="NO_WAIT", workload="YCSB", thread_num=4, theta=0.6, bkt_fac = 1, read_perc=0.8, use_sgx=True):
+def insert_job(alg="NO_WAIT", workload="YCSB", thread_num=4, theta=0.6, bkt_fac = 1, read_perc=0.5, use_sgx=True):
 	jobs[workload + '_th_num=' + str(thread_num) + '_theta=' + str(theta) + '_bkt_fac=' + str(bkt_fac) + "_readP=" + str(read_perc) + "SGX=" + str(use_sgx)] = {
 		"WORKLOAD"			: workload,
 		"CORE_CNT"			: thread_num,
@@ -49,15 +49,16 @@ def test_compile(job):
 
 	os.system("make clean> temp.out 2>&1")
 	# print("clean finished!!!!")
-	# time.sleep(1)
+	time.sleep(0.5)
 	# exit(0)
 	ret = os.system("make -j8> temp.out")
 	# print("make finished!!!!")
 	if ret != 0:
 		print ("ERROR in compiling job=")
 		print (job)
-		exit(0)
+		return False
 	print ("PASS Compile\t\talg=%s,\tworkload=%s" % (job['CC_ALG'], job['WORKLOAD']))
+	return True
 
 def test_run(job, fimeName, test = ''):
 	print(job)
@@ -102,47 +103,68 @@ def run_all_test(jobs, filename) :
 	os.system("echo 'thread_cnt, txn_cnt, abort_cnt, execution_time, latency' > %s" % filename)
 	for (jobname, job) in jobs.items():
 		for ii in range(testRound):
-			test_compile(job)
+			while True:
+				if test_compile(job):
+					break
 			test_run(job, ">> %s" % filename)
+			os.system("make clean> temp.out 2>&1")
 
 # run YCSB tests
 def run_thread_exp():
 	global jobs
 	jobs = OrderedDict()
-	# for th in [3, 6, 7]:
+	# for th in [5]:
 	for th in [1, 2, 3, 4, 5, 6, 7, 8]:
 		for alg in algs:
-			insert_job(alg, 'YCSB', thread_num=th, read_perc=0, theta=0.9)
-	# print(jobs)
+			insert_job(alg, 'YCSB', thread_num=th, read_perc=0.5, theta=0.6, use_sgx=False)
 	run_all_test(jobs, "thread_ycsb.csv")
+	# jobs = OrderedDict()
+	# for th in [1, 2, 3, 4, 5, 6, 7, 8]:
+	# 	for alg in algs:
+	# 		insert_job(alg, 'YCSB', thread_num=th, read_perc=0.5, theta=0.6, use_sgx=True)
+	# run_all_test(jobs, "thread_ycsb_sgx.csv")
 
 def run_tpc_exp():
 	global jobs
 	jobs = OrderedDict()
-	# for th in [3, 6, 7]:
-	for th in [ 5, 6, 7, 8]:
+	for th in [1, 2, 3, 4, 5, 6, 7, 8]:
 		for alg in algs:
-			insert_job(alg, 'TPCC', thread_num=th, read_perc=0, theta=0.9)
-	# print(jobs)
+			insert_job(alg, 'TPCC', thread_num=th, use_sgx=False)
 	run_all_test(jobs, "thread_tpc.csv")
+	jobs = OrderedDict()
+	for th in [1, 2, 3, 4, 5, 6, 7, 8]:
+		for alg in algs:
+			insert_job(alg, 'TPCC', thread_num=th, use_sgx=True)
+	run_all_test(jobs, "thread_tpc_sgx.csv")
 
 def run_theta_exp():
-	global jobs
+	# global jobs
+	# jobs = OrderedDict()
+	# for th in [0, 0.5, 0.8, 0.9, 0.95, 0.99]:
+	# 	for alg in algs:
+	# 		insert_job(alg, 'YCSB', theta=th, use_sgx=False)
+	# run_all_test(jobs, "theta_ycsb.csv")
+
 	jobs = OrderedDict()
-	for th in [0, 0.5, 0.8, 0.9, 0.95, 0.99]:
+	for th in [0.8]:
 		for alg in algs:
-			insert_job(alg, 'YCSB', theta=th, read_perc=0, thread_num=8)
-	# print(jobs)
-	run_all_test(jobs, "theta_ycsb.csv")
+			insert_job(alg, 'YCSB', theta=th, use_sgx=True)
+	run_all_test(jobs, "theta_ycsb_sgx.csv")
 
 def run_bktsiz_exp():
 	global jobs
 	jobs = OrderedDict()
-	for th in [1, 4, 16, 64, 256, 1024]:
+	for th in [1, 4, 16, 32, 64, 128, 256]:
 		for alg in algs:
-			insert_job(alg, 'YCSB', bkt_fac=th)
+			insert_job(alg, 'YCSB', bkt_fac=th, use_sgx=False)
 	# print(jobs)
 	run_all_test(jobs, "bucket_siz.csv")
+	jobs = OrderedDict()
+	for th in [1, 4, 16, 32, 64, 128, 256]:
+		for alg in algs:
+			insert_job(alg, 'YCSB', bkt_fac=th, use_sgx=True)
+	# print(jobs)
+	run_all_test(jobs, "bucket_siz_sgx.csv")
 
 
 def run_rw_exp():
@@ -150,9 +172,15 @@ def run_rw_exp():
 	jobs = OrderedDict()
 	for th in [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]:
 		for alg in algs:
-			insert_job(alg, 'YCSB', read_perc=th, thread_num=8, theta=0.9)
-	# print(jobs)
+			insert_job(alg, 'YCSB', read_perc=th, thread_num=4, theta=0.9, use_sgx=False)
+	# # print(jobs)
 	run_all_test(jobs, "rw_ycsb.csv")
+	# jobs = OrderedDict()
+	# for th in [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]:
+	# 	for alg in algs:
+	# 		insert_job(alg, 'YCSB', read_perc=th, thread_num=4, theta=0.9, use_sgx=True)
+	# # print(jobs)
+	# run_all_test(jobs, "rw_ycsb_sgx.csv")
 
 # # run TPCC tests
 # jobs = {}
@@ -169,14 +197,14 @@ def run_common_test():
 	# print(jobs)
 	run_all_test(jobs, "comparison.csv")
 
-run_common_test()
+#run_common_test()
 # run_rw_exp()
-# run_bktsiz_exp()
-#run_thread_exp()
-#run_tpc_exp()
+# run_thread_exp()
+run_tpc_exp()
 # run_theta_exp()
+# run_bktsiz_exp()
 
 # os.system('cp config-std.h ./common/config.h')
-os.system("cp Makefile.sgx Makefile")
+# os.system("cp Makefile.sgx Makefile")
 # os.system('make clean > temp.out 2>&1')
 # os.system('rm temp.out')
