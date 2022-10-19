@@ -1,13 +1,24 @@
 #include "lru_cache.h"
 
+#ifdef READ_ONLY
+    const bool enable_lease = true;
+#else
+    const bool enable_lease = false;
+#endif
+
 RC lru_cache::init(uint64_t bucket_cnt, int part_cnt, uint64_t siz) {
     locked = false;
     _cache = new cache_node** [part_cnt];
+    _lease = new uint64_t* [part_cnt];
     _cached_cnt = 0;
+    n = part_cnt;
+    m = uint64_t (bucket_cnt/part_cnt);
     _limit = siz;
     for (int i = 0; i < part_cnt; i++) {
         _cache[i] = new cache_node* [bucket_cnt / part_cnt];
+        _lease[i] = new uint64_t [bucket_cnt / part_cnt];
         for (uint32_t j = 0; j < bucket_cnt / part_cnt; j ++) {
+            _lease[i][j] = BASE_LEASE;
             _cache[i][j] = nullptr;
         }
     }
@@ -24,8 +35,9 @@ void lru_cache::release(int part_id, uint64_t bkt_idx) {
 
 void *lru_cache::try_load(int part_id, uint64_t bkt_idx) {
     // use lock-free for a faster try cache. --> speed up from 84s to 16s.
+    assert(part_id >= 0 && part_id < n && bkt_idx >=0 && bkt_idx < m);
     auto cur = _cache[part_id][bkt_idx];
-    if (cur == nullptr) {
+    if (cur == nullptr || (cur->_ts + _lease[part_id][bkt_idx] > _timestamp && enable_lease)) {
         return nullptr;
     }
     _cache[part_id][bkt_idx]->_read_cnt ++;
@@ -34,8 +46,10 @@ void *lru_cache::try_load(int part_id, uint64_t bkt_idx) {
     return res;
 }
 
-void* lru_cache::free() {
+void* lru_cache::cache_free(int &part, uint64_t & bkt) {
+#ifdef PRE_LOAD
     assert(false);
+#endif
     while (!_history.empty()) {
         auto it = _history.front();
         auto cur = _cache[it.part][it.bkt];
@@ -45,6 +59,8 @@ void* lru_cache::free() {
         } else {
             _cache[it.part][it.bkt] = nullptr;
             auto res = cur->_value;
+            part = it.part;
+            bkt = it.bkt;
             _history.pop();
             delete cur;
             return res;
@@ -53,26 +69,51 @@ void* lru_cache::free() {
     return nullptr;
 }
 
+void lru_cache::reset_lease(int part_id, uint64_t bkt_idx) {
+    if (!enable_lease) {
+        return;
+    }
+    get_latch();
+    _lease[part_id][bkt_idx] = BASE_LEASE;
+    release_latch();
+}
+
+void lru_cache::inc_lease(int part_id, uint64_t bkt_idx) {
+    if (!enable_lease) {
+        return;
+    }
+    get_latch();
+    _lease[part_id][bkt_idx] *= 2;
+    release_latch();
+}
+
 // swap and load;
-void *lru_cache::load_and_swap(int part_id, uint64_t bkt_idx,  void *inserted, void* &swapped) {
+void *lru_cache::load_and_swap(int part_id, uint64_t bkt_idx,  void *inserted, void* &swapped, int &swapped_part, uint64_t &swapped_idx) {
+    assert(part_id >= 0 && part_id < n && bkt_idx >=0 && bkt_idx < m);
     void * res;
     get_latch();
-    swapped = nullptr;
-    if (_cache[part_id][bkt_idx] != nullptr) {
+    swapped = nullptr, swapped_idx = 0, swapped_part = 0;
+    if (_cache[part_id][bkt_idx] != nullptr && (!_cache[part_id][bkt_idx]->_ts + _lease[part_id][bkt_idx] > _timestamp || !enable_lease)) {
         // loaded by others.
         res = _cache[part_id][bkt_idx]->_value;
         _cache[part_id][bkt_idx]->_read_cnt ++;
         _cache[part_id][bkt_idx]->_ts = ++ _timestamp;
+    } else if (_cache[part_id][bkt_idx] != nullptr) {
+        swapped = _cache[part_id][bkt_idx]->_value;
+        swapped_part = part_id, swapped_idx = bkt_idx;
+        delete _cache[part_id][bkt_idx];
+        _cache[part_id][bkt_idx] = new cache_node(++_timestamp, inserted);
+        res = inserted;
     } else {
         res = inserted;
         if (_cached_cnt == _limit) {
-            swapped = free();
+            swapped = cache_free(swapped_part, swapped_idx);
             if (swapped != nullptr) {
-                _cache[part_id][bkt_idx] = new cache_node(_timestamp, inserted);
+                _cache[part_id][bkt_idx] = new cache_node(++_timestamp, inserted);
             }
         } else {
             _cached_cnt ++;
-            _cache[part_id][bkt_idx] = new cache_node(_timestamp, inserted);
+            _cache[part_id][bkt_idx] = new cache_node(++_timestamp, inserted);
         }
     }
     release_latch();

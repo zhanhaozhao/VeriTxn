@@ -5,7 +5,7 @@
 // Simulation + Hardware
 /***********************************************/
 #define NODE_CNT 1
-#define THREAD_CNT 1
+#define THREAD_CNT 5
 #define PART_CNT NODE_CNT
 #define INPUT_CNT					1
 #define OUTPUT_CNT					1
@@ -16,13 +16,13 @@
 // CPU_FREQ is used to get accurate timing info 
 #define CPU_FREQ 					2 	// in GHz/s
 #define BUCKET_FACTOR 1
-#define PRE_LOAD                    1
+//#define PRE_LOAD                    1
 
 
 // # of transactions to run for warmup
 #define WARMUP						0
 // YCSB or TPCC
-#define WORKLOAD YCSB
+#define WORKLOAD TPCC
 // print the transaction latency distribution
 #define PRT_LAT_DISTR				false
 #define STATS_ENABLE				true
@@ -62,9 +62,10 @@
 #define ENABLE_LATCH				false
 #define CENTRAL_INDEX				false
 #define CENTRAL_MANAGER 			false
-#define INDEX_STRUCT				IDX_HASH
+#define INDEX_STRUCT				IDX_BTREE
 #define BTREE_ORDER 				16
 #define INDEX_NAME_LENGTH       	16
+#define BTREE_NODE_NUM              2000000
 
 // [DL_DETECT]
 #define DL_LOOP_DETECT				1000 	// 100 us
@@ -221,6 +222,10 @@ extern enum TestCases					g_test_case;
 #define TS_CAS						2
 #define TS_HW						3
 #define TS_CLOCK					4
+// Verification type
+#define PAGE_VERI                   1
+#define MERKLE_TREE                 2
+#define MERKLE_TREE_LAZY            3
 
 #define MSG_SIZE_MAX 4096
 #define MSG_TIME_LIMIT 0
@@ -233,6 +238,9 @@ extern enum TestCases					g_test_case;
 #define USE_ASYNC_HASH 1
 #define USE_LOG 1
 #define VERIFIED_CACHE_SIZ (6 * 1024 * 1024)
+#define BASE_LEASE      1000
+#define VERI_TYPE     PAGE_VERI
+// #define READ_ONLY 1
 
 // Log queue type
 #define LOG_CIRCUL_BUFF 1

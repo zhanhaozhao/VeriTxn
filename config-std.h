@@ -220,5 +220,7 @@ extern enum TestCases					g_test_case;
 
 // turn on SGX
 #define USE_SGX 1
-
+#define VERIFIED_CACHE_SIZ (6 * 1024 * 1024)
+#define BASE_LEASE 1000
+// #define READ_ONLY 1
 #endif

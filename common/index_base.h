@@ -3,7 +3,7 @@
 
 #include "global_common.h"
 #include "common/helper.h"
-// #include "common/table.h"
+#include "common/table.h"
 
 // class table_t;
 class index_btree;

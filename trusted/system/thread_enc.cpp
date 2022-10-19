@@ -10,6 +10,8 @@
 #include "occ.h"
 #include "index_enc.h"
 #include "mem_helper_enc.h"
+#include "global_enc.h"
+#include "index_btree_enc.h"
 
 // pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -38,39 +40,35 @@ void global_init_ecall(void * stats) {
 }
 
 void index_init_ecall(int part_cnt, void * table, std::string iname, void * index_ptr, uint64_t bucket_cnt) {
-	// IndexEnc * index = (IndexEnc *) aligned_alloc(64, sizeof(IndexEnc));
-	IndexEnc * index = new IndexEnc();
+    INDEX_ENC * index = new INDEX_ENC();
     assert(table);
 	table_t * tbl = (table_t *) table;
 
-    //printf("%p\n", tbl);
+#if INDEX_STRUCT == IDX_HASH
 	index->init(part_cnt, tbl, bucket_cnt);
-	//printf("%s\n", tbl->get_table_name().c_str());
-//#ifdef YCSB
-//        auto ss = tbl->table_name.c_str();
-//        std::string ss = std::string(tbl->get_table_name());
-//        assert(ss == "MAIN_TABLE");
-//#endif
+#else
+	index->init(part_cnt);
+	index->table = tbl;
+#endif
     std::string tname = std::string(tbl->get_table_name());
 	tab_map->_tables[tname] = table;
 	tab_map->_indexes[iname] = index;
 	inner_index_map->_indexes[iname] = index_ptr;
 	index->index_name = iname;
-#ifdef PRE_LOAD
+}
+
+void index_load_ecall(int part_cnt, void * table, std::string iname, void * index_ptr, uint64_t bucket_cnt) {
+    INDEX_ENC * index = (INDEX_ENC *)tab_map->_indexes[iname];
+#if INDEX_STRUCT == IDX_HASH
+    #ifdef PRE_LOAD
     for (int i=0;i<part_cnt;i++)
         for (uint64_t j=0;j<bucket_cnt;j++) {
             index->load_bucket(iname, i, j);
         }
+    #endif
+#else
+    index->load_all(iname);
 #endif
-}
-
-void index_load_ecall(int part_cnt, void * table, std::string iname, void * index_ptr, uint64_t bucket_cnt) {
-	IndexEnc * index = (IndexEnc *)tab_map->_indexes[iname];
-    for (int i = 0; i < part_cnt; i++) {
-        for (int j = 0; j < bucket_cnt / part_cnt; j++) {
-            index->load_bucket(iname, i, j);
-        }
-    }
 }
 
 
@@ -122,6 +120,8 @@ int run_txn_ecall(void * thd, ts_t txn_ts) {
 		m_txn = glob_manager_enc->get_txn_man(thd_id);
 	}
 	assert (m_txn);
+
+//	generate_txn_ocall(h_thd, h_thd->m_query);
 
 	base_query * m_query = h_thd->m_query;
 	assert (m_query);

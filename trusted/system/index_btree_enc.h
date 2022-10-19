@@ -1,0 +1,81 @@
+//
+// Created by pan on 2022/12/10.
+//
+
+#ifndef DBX1000_INDEX_BTREE_ENC_H
+#define DBX1000_INDEX_BTREE_ENC_H
+
+#include "common/index_btree.h"
+#include "common/global_common.h"
+#include "index_base.h"
+#include "string"
+#include "common/base_row.h"
+#include "common/helper.h"
+#include "common/lru_cache.h"
+
+struct BTNode {
+    // TODO bad hack!
+    bool is_leaf;
+    idx_key_t * keys;   // keys[0] as node ID.
+    UInt32 num_keys;
+    bool latch;
+    pthread_mutex_t locked;
+    latch_t latch_type;
+    UInt32  share_cnt;
+
+    uint    part;
+    BTNode* parent;
+    void** data;
+    bt_node *origin;
+    uint64_t node_id;
+#if VERI_TYPE == MERKLE_TREE
+    uint64_t merkle_hash;
+    uint64_t *child_merkle_hash;
+    uint64_t hash() const;
+#elif VERI_TYPE == PAGE_VERI
+    uint64_t get_hash();
+#endif
+};
+
+class IndexBTEnc {
+public:
+    RC			init(uint64_t part_cnt);
+    RC          load_all(std::string index_name);
+    BTNode*     load_child(BTNode *cur_node, UInt32 i);
+    RC			init(uint64_t part_cnt, table_t * table);
+    RC	 		index_read(idx_key_t key, itemid_t * &item, int part_id = -1);
+    RC	 		index_read(idx_key_t key, itemid_t * &item, int part_id=-1, int thd_id=0);
+    RC          dfs(BTNode* c);
+
+#if VERI_TYPE == MERKLE_TREE
+    void            update_hash(BTNode* c);
+#endif
+    std::string     index_name;
+    table_t*        table;
+
+private:
+    // index structures may have part_cnt = 1 or PART_CNT.
+    uint64_t part_cnt;
+    BTNode*		make_node(bt_node* out, BTNode* parent, int64_t part);
+
+    RC 			find_leaf(glob_param params, idx_key_t key, idx_acc_t access_type, BTNode *& leaf, BTNode  *& last_ex);
+    RC 			find_leaf(glob_param params, idx_key_t key, idx_acc_t access_type, BTNode *& leaf);
+    UInt32	 	order; // # of keys in a node(for both leaf and non-leaf)
+    BTNode** 	roots; // each partition has a different root
+    lru_cache   **_cache;
+#if VERI_TYPE == PAGE_VERI
+    uint64_t    **_verify_hash;
+#endif
+    BTNode *   find_root(uint64_t part_id);
+
+    bool 		latch_node(BTNode * node, latch_t latch_type);
+    latch_t		release_latch(BTNode * node);
+    RC		 	upgrade_latch(BTNode * node);
+    // clean up all the LATCH_EX up tp last_ex
+    RC 			cleanup(BTNode * node, BTNode * last_ex);
+    uint64_t    _default_bt_veri_hash = 0;
+    std::atomic<uint64_t> enc_btree_node_id;
+};
+
+
+#endif //DBX1000_INDEX_BTREE_ENC_H

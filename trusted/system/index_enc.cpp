@@ -135,6 +135,7 @@ BucketHeader_ENC* IndexEnc::load_bucket(std::string iname, int part_id, uint64_t
     if (cur == nullptr) {
         auto out_bkt = &(((IndexHash *) inner_index_map->_indexes[iname])->_buckets[part_id][bkt_idx]);
         auto res_bucket = new BucketHeader_ENC;
+        res_bucket->init();
         res_bucket->locked = false;
         BucketNode_ENC *last_node = nullptr;
         for (auto it = out_bkt->first_node; it; it = it->next) {
@@ -170,17 +171,51 @@ BucketHeader_ENC* IndexEnc::load_bucket(std::string iname, int part_id, uint64_t
             last_node = node;
         }
         void* swapped = nullptr;
-        cur = (BucketHeader_ENC *) _cache->load_and_swap(part_id, bkt_idx, (void *) res_bucket, swapped);
+        int sw_pt = 0;
+        uint64_t sw_bk = 0;
+        cur = (BucketHeader_ENC *) _cache->load_and_swap(part_id, bkt_idx, (void *) res_bucket, swapped, sw_pt, sw_bk);
+        if (swapped != nullptr) {
+            // if the bucket is flushed outside veri-cache, update the _verify_hash value.
+            auto flushed_bkt = (BucketHeader_ENC *)swapped;
+            uint64_t new_hash = flushed_bkt->get_hash();
+            if (new_hash == _verify_hash[sw_pt][sw_bk]) {
+                _cache->inc_lease(sw_pt, sw_bk);
+            } else {
+                _cache->reset_lease(sw_pt, sw_bk);
+                _verify_hash[sw_pt][sw_bk] = new_hash;
+            }
+            delete flushed_bkt;
+        }
+        if (cur != res_bucket) {    // concurrent index access has loaded the bucket.
+            delete res_bucket;
+        } else {
+            if (_verify_hash[part_id][bkt_idx] == _default_verify_hash) {
+                _verify_hash[part_id][bkt_idx] = cur->get_hash();
+            } else {
+                assert(_verify_hash[part_id][bkt_idx] == cur->get_hash());
+            }
+        }
     }
     return cur;
 }
 
 void IndexEnc::flush_bucket(int part_id, uint64_t bkt_idx, BucketHeader_ENC* cur, bool modified) {
+#ifndef SGX_DISK
     if (modified) {
-
+//        _verify_hash[part_id][bkt_idx] = cur->get_hash();
+        _buckets[part_id][bkt_idx] = *cur;
+    }
+    return;
+#else
+    if (modified) {
+//        _verify_hash[part_id][bkt_idx] = cur->get_hash();
+//        flush_disk(part_id, bkt_idx, cur->encode());
+//        test_encoder(cur);
     } else {
 
     }
+//    delete cur;
+#endif
 }
 
 RC IndexEnc::index_read(std::string iname, idx_key_t key, itemid_t * &item,
@@ -197,20 +232,10 @@ RC IndexEnc::index_read(std::string iname, idx_key_t key, itemid_t * &item,
         return Abort;
     }
     cur_bkt->read_item(key, item);
-//    assert (item->location != nullptr);
-    // 3. release the latch
-//	release_latch(cur_bkt);
+
     flush_bucket(part_id, bkt_idx, cur_bkt, false);
     return rc;
 }
-
-//DFlow IndexEnc::load_disk(int part_id, uint64_t bkt_idx) {
-//    return get_bucket_disk(part_id, bkt_idx);
-//}
-
-//void IndexEnc::flush_disk(int part_id, uint64_t bkt_idx, const DFlow &value) {
-//    put_bucket_disk(part_id, bkt_idx, value);
-//}
 
 /************** BucketHeader_ENC Operations ******************/
 

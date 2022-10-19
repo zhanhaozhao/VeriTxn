@@ -88,9 +88,16 @@ RC tpcc_wl::init_table() {
         std::string tname = iname;
         auto pos = iname.find_first_of('_');
         tname.erase(pos, tname.length() - pos);
+#if INDEX_STRUCT == IDX_HASH
         index_init_ecall(g_part_cnt, (void *) (tables[tname]), iname, (void*)indexes[iname] ,
                          indexes[iname]->_bucket_cnt_per_part * g_part_cnt);
+#else
+        index_init_ecall(g_part_cnt, (void *) (tables[tname]), iname, (void*)indexes[iname] ,
+                         BTREE_NODE_NUM);
+        index_load_ecall(g_part_cnt, (void *) (tables[tname]), iname, (void*)indexes[iname] ,
+                         BTREE_NODE_NUM);
     }
+#endif
 	return RCOK;
 }
 

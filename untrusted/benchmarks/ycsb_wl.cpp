@@ -28,9 +28,8 @@ RC ycsb_wl::init() {
 	printf("begin to init [YCSB] Table.\n");
 	std::string path = "./untrusted/benchmarks/YCSB_schema.txt";
 	init_schema( path );
-	
-	init_table_parallel();
-//	init_table();
+
+    init_table();
 	int part_cnt = (CENTRAL_INDEX)? 1 : g_part_cnt;
 	index_load_ecall(part_cnt, (void *) (the_table), "MAIN_INDEX", (void*)the_index , g_synth_table_size * 2);
 	return RCOK;
@@ -65,20 +64,19 @@ RC ycsb_wl::init_table() {
 			uint64_t primary_key = total_row;
 			new_row->set_primary_key(primary_key);
             new_row->set_value(0, &primary_key);
-			Catalog * schema = the_table->get_schema();
-			for (UInt32 fid = 0; fid < schema->get_field_cnt(); fid ++) {
-				int field_size = schema->get_field_size(fid);
-				char value[field_size];
-				for (int i = 0; i < field_size; i++) 
-					value[i] = (char)('a' + random() % 25) ;
-				new_row->set_value(fid, value);
-			}
-            itemid_t * m_item = 
-                (itemid_t *) mem_allocator.alloc( sizeof(itemid_t), part_id );
-			assert(m_item != NULL);
+            Catalog * schema = the_table->get_schema();
+            for (UInt32 fid = 0; fid < schema->get_field_cnt(); fid ++) {
+                char value[6] = "hello";
+                new_row->set_value(fid, value);
+            }
+
+            itemid_t * m_item =
+                    (itemid_t *) mem_allocator.alloc( sizeof(itemid_t), part_id );
+            assert(m_item != NULL);
             m_item->type = DT_row;
             m_item->location = new_row;
             m_item->valid = true;
+            m_item->next = nullptr;
             uint64_t idx_key = primary_key;
             rc = the_index->index_insert(idx_key, m_item, part_id);
             assert(rc == RCOK);
@@ -86,6 +84,7 @@ RC ycsb_wl::init_table() {
         }
     }
 ins_done:
+    index_init_ecall(1, (void *) tables["MAIN_TABLE"], "MAIN_INDEX", (void*) the_index, (g_synth_table_size * 2) / BUCKET_FACTOR);
 //    printf("[YCSB] Table \"MAIN_TABLE\" initialized.\n");
     return RCOK;
 
@@ -108,7 +107,7 @@ void ycsb_wl::init_table_parallel() {
 	}
 	enable_thread_mem_pool = false;
 	mem_allocator.unregister();
-    // index_init_ecall(1, (void *) tables["MAIN_TABLE"], "MAIN_INDEX", (void*) the_index, (g_synth_table_size * 2) / BUCKET_FACTOR);
+    index_init_ecall(1, (void *) tables["MAIN_TABLE"], "MAIN_INDEX", (void*) the_index, (g_synth_table_size * 2) / BUCKET_FACTOR);
 }
 
 void * ycsb_wl::init_table_slice() {
@@ -133,10 +132,6 @@ void * ycsb_wl::init_table_slice() {
 			key < max_key;
 			key ++
 	) {
-		++key_cnt;
-		if(key_cnt % 500000 == 0) {
-			printf("Thd %d inserted %ld keys\n",tid,key_cnt);
-		}
 		base_row_t * new_row = NULL;
 		uint64_t row_id;
 		int part_id = key_to_part(key);
@@ -164,7 +159,6 @@ void * ycsb_wl::init_table_slice() {
 		rc = the_index->index_insert(idx_key, m_item, part_id);
 		assert(rc == RCOK);
 	}
-	printf("Thd %d inserted %ld keys\n",tid,key_cnt);
 	return NULL;
 }
 

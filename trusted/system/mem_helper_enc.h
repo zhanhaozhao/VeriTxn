@@ -45,6 +45,14 @@
 #define ARR_PTR_ENC(type, name, size) \
 	ARR_PTR_MULTI_ENC(type, name, size, 1)
 
+#define M_ASSERT_ENC(cond, ...) \
+	if (!(cond)) {\
+		printf("ASSERTION FAILURE [%s : %d] ", \
+		__FILE__, __LINE__); \
+		printf(__VA_ARGS__);\
+		assert(false);\
+	}
+
 #define ARR_PTR_INIT_ENC(type, name, size, value) \
 	name = new type * [size]; \
 	if (g_part_alloc) { \

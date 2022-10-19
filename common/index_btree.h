@@ -4,11 +4,11 @@
 // #include "global_common.h"
 // #include "common/helper.h"
 #include "index_base.h"
+#include "string"
 // #include "common/helper.h"
 
 
 typedef struct bt_node {
-	// TODO bad hack!
    	void ** pointers; // for non-leaf nodes, point to bt_nodes
 	bool is_leaf;
 	idx_key_t * keys;
@@ -19,6 +19,13 @@ typedef struct bt_node {
 	pthread_mutex_t locked;
 	latch_t latch_type;
 	UInt32 share_cnt;
+#if VERI_TYPE == MERKLE_TREE
+    uint64_t merkle_hash;
+    uint64_t *child_merkle_hash;
+    uint64_t hash() const;
+#elif VERI_TYPE == PAGE_VERI
+    uint64_t get_hash();
+#endif
 } bt_node;
 
 struct glob_param {
@@ -31,11 +38,16 @@ public:
 	RC			init(uint64_t part_cnt, table_t * table);
 	bool 		index_exist(idx_key_t key); // check if the key exist. 
 	RC 			index_insert(idx_key_t key, itemid_t * item, int part_id = -1);
-	RC	 		index_read(idx_key_t key, itemid_t * &item, 
-					uint64_t thd_id, int64_t part_id = -1);
 	RC	 		index_read(idx_key_t key, itemid_t * &item, int part_id = -1);
+    RC	 		index_read(idx_key_t key, itemid_t * &item, int part_id=-1, int thd_id=0);
 	RC	 		index_read(idx_key_t key, itemid_t * &item);
 	RC 			index_next(uint64_t thd_id, itemid_t * &item, bool samekey = false);
+    char*     index_name;
+    bt_node ** 	roots; // each partition has a different root
+#if VERI_TYPE == MERKLE_TREE
+    void        update_hash(bt_node * c);
+    void up_to_root(bt_node *c);
+#endif
 
 private:
 	// index structures may have part_cnt = 1 or PART_CNT.
@@ -58,7 +70,9 @@ private:
 	
 	UInt32 		cut(UInt32 length);
 	UInt32	 	order; // # of keys in a node(for both leaf and non-leaf)
-	bt_node ** 	roots; // each partition has a different root
+#if VERI_TYPE == PAGE_VERI
+    uint64_t    **_verify_hash;
+#endif
 	bt_node *   find_root(uint64_t part_id);
 
 	bool 		latch_node(bt_node * node, latch_t latch_type);

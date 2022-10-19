@@ -1,5 +1,7 @@
 // #include "global_enc.h"
 #include "global_enc_struct.h"
+#include "global_enc.h"
+#include "index_btree_enc.h"
 
 #include "txn.h"
 #include "row_enc.h"
@@ -218,14 +220,18 @@ txn_man::index_read(std::string iname, idx_key_t key, int part_id) {
 //	uint64_t starttime = get_cur_time_ocall();
 	itemid_t * item;
 	// index --> en_index;
-	IndexEnc * index_enc = (IndexEnc *) tab_map->_indexes[iname];
+    INDEX_ENC * index_enc = (INDEX_ENC *) tab_map->_indexes[iname];
 	if (index_enc == nullptr) {
         assert(false);
 //        index_enc = new IndexEnc;
 //        index_enc->init(index->_bucket_cnt, int(index->_part_cnt));
 //        tab_map->_indexes[index->index_name] = index_enc;
 	}
+#if INDEX_STRUCT == IDX_HASH
 	index_enc->index_read(iname, key, item, part_id, get_thd_id());
+#else
+    index_enc->index_read(key, item, part_id, get_thd_id());
+#endif
     assert(((row_t*)item->location)->get_table());
 	// index->index_read(key, item, part_id, get_thd_id());
 //	INC_TMP_STATS_ENC(get_thd_id(), time_index, get_cur_time_ocall() - starttime);
@@ -235,14 +241,18 @@ txn_man::index_read(std::string iname, idx_key_t key, int part_id) {
 void 
 txn_man::index_read(std::string iname, idx_key_t key, int part_id, itemid_t *& item) {
 //	uint64_t starttime = get_cur_time_ocall();
-	IndexEnc * index_enc = (IndexEnc *) tab_map->_indexes[iname];
+	INDEX_ENC * index_enc = (INDEX_ENC *) tab_map->_indexes[iname];
     if (index_enc == nullptr) {
         assert(false);
 //        index_enc = new IndexEnc;
 //        index_enc->init(index->_bucket_cnt, int(index->_part_cnt));
 //        tab_map->_indexes[index->index_name] = index_enc;
     }
+#if INDEX_STRUCT == IDX_HASH
     index_enc->index_read(iname, key, item, part_id, get_thd_id());
+#else
+    index_enc->index_read(key, item, part_id, get_thd_id());
+#endif
 	// index->index_read(key, item, part_id, get_thd_id());
 //	INC_TMP_STATS_ENC(get_thd_id(), time_index, get_cur_time_ocall() - starttime);
 }

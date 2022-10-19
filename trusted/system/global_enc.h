@@ -105,6 +105,13 @@ extern UInt32 g_ts_batch_num_enc;
 
 // // YCSB
 extern UInt32 g_cc_alg_enc;
+
+#if INDEX_STRUCT  == IDX_HASH
+    #define INDEX_ENC IndexEnc
+#else
+#define INDEX_ENC IndexBTEnc
+#endif
+
 // extern ts_t g_query_intvl;
 // extern UInt32 g_part_per_txn;
 // extern double g_perc_multi_part;

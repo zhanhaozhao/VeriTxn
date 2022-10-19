@@ -4,6 +4,72 @@
 #include "index_btree.h"
 #include "base_row.h"
 
+#if VERI_TYPE == MERKLE_TREE
+
+inline uint64_t string_hash(const std::string& s) {
+    return uint64_t (std::hash<std::string>{}(s));
+}
+
+uint64_t bt_node::hash() const {
+    uint64_t res = 0ULL;
+    for (UInt32 i=0;i<num_keys;i++) {
+        res ^= keys[i];
+    }
+    if (is_leaf) {
+//        res ^= num_keys+1;
+        for (UInt32 i=0;i<num_keys;i++) {
+            auto tmp = (base_row_t*)(((itemid_t*) pointers[i])->location);
+            res ^= string_hash(tmp->encode());
+        }
+    } else {
+        for (UInt32 i=0;i<=num_keys;i++) {
+            res ^= child_merkle_hash[i];
+            auto child = (bt_node*)pointers[i];
+            assert(child_merkle_hash[i] == child->merkle_hash);
+// TODO: bug fix here.
+        }
+    }
+    return res;
+}
+
+
+void index_btree::update_hash(bt_node* c) {
+    if (!c->is_leaf) {
+        for (UInt32 i=0;i<=c->num_keys;i++) {
+            auto child = (bt_node*)c->pointers[i];
+            c->child_merkle_hash[i] = child->merkle_hash;
+        }
+    }
+    c->merkle_hash = c->hash();
+    assert(c->merkle_hash == c->hash());    // hash function should be the same in retry.
+}
+
+void index_btree::up_to_root(bt_node* c) {
+    for (;c!= nullptr; c = c->parent) {
+        update_hash(c);
+    }
+}
+
+RC index_btree::init(uint64_t part_cnt) {
+    this->part_cnt = part_cnt;
+    order = BTREE_ORDER;
+    // these pointers can be mapped anywhere. They won't be changed
+    roots = (bt_node **) malloc(part_cnt * sizeof(bt_node *));
+    // "cur_xxx_per_thd" is only for SCAN queries.
+    ARR_PTR(bt_node *, cur_leaf_per_thd, g_thread_cnt);
+    ARR_PTR(UInt32, cur_idx_per_thd, g_thread_cnt);
+    // the index tree of each partition musted be mapped to corresponding l2 slices
+    for (UInt32 part_id = 0; part_id < part_cnt; part_id ++) {
+        RC rc;
+        rc = make_lf(part_id, roots[part_id]);
+        update_hash(roots[part_id]);
+        assert (rc == RCOK);
+    }
+    return RCOK;
+}
+
+#elif VERI_TYPE == PAGE_VERI
+
 RC index_btree::init(uint64_t part_cnt) {
 	this->part_cnt = part_cnt;
 	order = BTREE_ORDER;
@@ -20,6 +86,7 @@ RC index_btree::init(uint64_t part_cnt) {
 	}
 	return RCOK;
 }
+#endif
 
 RC index_btree::init(uint64_t part_cnt, table_t * table) {
 	this->table = table;
@@ -84,8 +151,7 @@ index_btree::index_read(idx_key_t key,
 	return index_read(key, item, 0, part_id);
 }
 
-RC index_btree::index_read(idx_key_t key, itemid_t *& item, 
-	uint64_t thd_id, int64_t part_id) 
+RC index_btree::index_read(idx_key_t key, itemid_t *& item, int part_id, int thd_id)
 {
 	RC rc = Abort;
 	glob_param params;
@@ -181,6 +247,10 @@ RC index_btree::make_node(uint64_t part_id, bt_node *& node) {
 	new_node->pointers = NULL;
 	new_node->keys = (idx_key_t *) mem_allocator.alloc((order - 1) * sizeof(idx_key_t), part_id);
 	new_node->pointers = (void **) mem_allocator.alloc(order * sizeof(void *), part_id);
+#if VERI_TYPE == MERKLE_TREE
+    new_node->merkle_hash = 0;
+	new_node->child_merkle_hash = new uint64_t [order+1];
+#endif
 	assert (new_node->keys != NULL && new_node->pointers != NULL);
 	new_node->is_leaf = false;
 	new_node->num_keys = 0;
@@ -387,6 +457,10 @@ RC index_btree::insert_into_leaf(glob_param params, bt_node * leaf, idx_key_t ke
 	if (idx >= 0) {
 		item->next = (itemid_t *)leaf->pointers[idx];
 		leaf->pointers[idx] = (void *) item;
+#if VERI_TYPE == MERKLE_TREE
+        update_hash(leaf);
+        up_to_root(leaf);
+#endif
 		return RCOK;
 	}
 	while (insertion_point < leaf->num_keys && leaf->keys[insertion_point] < key)
@@ -399,6 +473,10 @@ RC index_btree::insert_into_leaf(glob_param params, bt_node * leaf, idx_key_t ke
 	leaf->pointers[insertion_point] = (void *)item;
 	leaf->num_keys++;
 	M_ASSERT( (leaf->num_keys < order), "too many keys in leaf" );
+#if VERI_TYPE == MERKLE_TREE
+    update_hash(leaf);
+    up_to_root(leaf);
+#endif
 	return RCOK;
 }
 
@@ -471,8 +549,16 @@ RC index_btree::split_lf_insert(glob_param params, bt_node * leaf, idx_key_t key
 
 	new_leaf->parent = leaf->parent;
 	new_key = new_leaf->keys[0];
-	
+#if VERI_TYPE == MERKLE_TREE
+    update_hash(new_leaf);
+    update_hash(leaf);
+#endif
+
 	rc = insert_into_parent(params, leaf, new_key, new_leaf);
+//#if VERI_TYPE == MERKLE_TREE
+//    update_up(new_leaf);
+//    update_up(leaf);
+//#endif
 	return rc;
 }
 
@@ -493,13 +579,17 @@ RC index_btree::insert_into_parent(
 		insert_idx ++;
 	// the parent has enough space, just insert into it
 	if (parent->num_keys < order - 1) {
-		for (UInt32 i = parent->num_keys-1; i >= insert_idx; i--) {
+		for (int i = parent->num_keys-1; i >= int(insert_idx); i--) {
 			parent->keys[i + 1] = parent->keys[i];
 			parent->pointers[i+2] = parent->pointers[i+1];
 		}
 		parent->num_keys ++;
 		parent->keys[insert_idx] = key;
 		parent->pointers[insert_idx + 1] = right;
+#if VERI_TYPE == MERKLE_TREE
+        update_hash(parent);
+        up_to_root(parent);
+#endif
 		return RCOK;
 	}
 
@@ -524,15 +614,17 @@ RC index_btree::insert_into_new_root(
 	new_root->pointers[0] = left;
 	new_root->pointers[1] = right;
 	new_root->num_keys++;
+
 	M_ASSERT( (new_root->num_keys < order), "too many keys in leaf" );
 	new_root->parent = NULL;
 	left->parent = new_root;
 	right->parent = new_root;
 	left->next = right;
+#if VERI_TYPE == MERKLE_TREE
+    update_hash(new_root);
+#endif
 
-	this->roots[part_id] = new_root;	
-	// TODO this new root is not latched, at this point, other threads
-	// may start to access this new root. Is this ok?
+	this->roots[part_id] = new_root;
 	return RCOK;
 }
 
@@ -621,19 +713,24 @@ RC index_btree::split_nl_insert(
 		child = (bt_node *)new_node->pointers[i];
 		child->parent = new_node;
 	}
+#if VERI_TYPE == MERKLE_TREE
+    update_hash(old_node);
+    update_hash(new_node);
+#endif
 
-	/* Insert a new key into the parent of the two
-	 * nodes resulting from the split, with
-	 * the old node to the left and the new to the right.
-	 */
 
-	return insert_into_parent(params, old_node, k_prime, new_node);	
+    /* Insert a new key into the parent of the two
+     * nodes resulting from the split, with
+     * the old node to the left and the new to the right.
+     */
+    return insert_into_parent(params, old_node, k_prime, new_node);
 }
 
 int index_btree::leaf_has_key(bt_node * leaf, idx_key_t key) {
-	for (UInt32 i = 0; i < leaf->num_keys; i++) 
-		if (leaf->keys[i] == key)
-			return i;
+	for (int i = 0; i < int(leaf->num_keys); i++)
+		if (leaf->keys[i] == key) {
+            return i;
+        }
 	return -1;
 }
 
