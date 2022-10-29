@@ -11,7 +11,7 @@ The following paper describes DBx1000:
 Dependencies
 ----------------------
 
-- Sever Equipped with Intel SGX
+- Sever equipped with Intel SGX
 - Intel SGX SDK
 
 
