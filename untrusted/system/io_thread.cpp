@@ -91,7 +91,6 @@ RC InputThread::server_recv_loop() {
 			if (msg->rtype == ASYNC_HASH) {
 				AsyncHashMessage* amsg = (AsyncHashMessage*)msg;
 				std::string index_name = amsg->index_name;
-				//TODO: 在服务器上打开编译
 				update_hash_value(index_name, amsg->part_id, amsg->bkt_idx, amsg->hash);
 			}
 			// DEBUG("recv txn %ld type %d\n",msg->get_txn_id(),msg->get_rtype());

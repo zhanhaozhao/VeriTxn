@@ -140,7 +140,6 @@ void Logger::processRecord(uint64_t thd_id) {
 
     if(record) {
         #if USE_AZURE == 1
-            // TODO: 将日志发给云服务器
             if(record->rcd.iud == L_NOTIFY) {
                 updateBuffer(thd_id, record);
             }

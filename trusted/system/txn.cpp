@@ -123,7 +123,6 @@ void txn_man::cleanup(RC rc) {
 #if CC_ALG != TICTOC && CC_ALG != SILO
 		accesses[rid]->data = NULL;
 #endif
-		//TODO: 记录日志，调用记录日志
 	}
 
 	if (rc == Abort) {
