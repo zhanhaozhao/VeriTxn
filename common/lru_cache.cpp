@@ -1,7 +1,3 @@
-//
-// Created by pan on 2022/10/17.
-//
-
 #include "lru_cache.h"
 
 RC lru_cache::init(uint64_t bucket_cnt, int part_cnt, uint64_t siz) {

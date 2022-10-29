@@ -1,7 +1,3 @@
-//
-// Created by pan on 2022/9/28.
-//
-
 #include <cassert>
 #include "coder.h"
 

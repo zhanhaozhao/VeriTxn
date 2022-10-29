@@ -1,6 +1,3 @@
-//
-// Created by pan on 2022/9/28.
-//
 // #include "string"
 #include <vector>
 #include "global_common.h"

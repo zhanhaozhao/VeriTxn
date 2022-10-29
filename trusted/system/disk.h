@@ -1,7 +1,3 @@
-//
-// Created by pan on 2022/9/27.
-//
-
 #ifndef DBX1000_DISK_H
 #define DBX1000_DISK_H
 

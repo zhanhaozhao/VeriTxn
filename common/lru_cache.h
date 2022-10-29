@@ -1,7 +1,3 @@
-//
-// Created by pan on 2022/10/17.
-//
-
 #include <atomic>
 #include "global_common.h"
 #include "helper.h"

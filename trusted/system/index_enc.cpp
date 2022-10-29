@@ -1,7 +1,3 @@
-//
-// Created by pan on 2022/9/28.
-//
-
 // #include <utility>
 // #include "global_enc.h"
 #include "index_enc.h"
