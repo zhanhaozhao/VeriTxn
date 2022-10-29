@@ -4,8 +4,11 @@
 /***********************************************/
 // Simulation + Hardware
 /***********************************************/
-#define THREAD_CNT 5
-#define PART_CNT					1
+#define NODE_CNT 1
+#define THREAD_CNT 1
+#define PART_CNT NODE_CNT
+#define INPUT_CNT					1
+#define OUTPUT_CNT					1
 // each transaction only accesses 1 virtual partition. But the lock/ts manager and index are not aware of such partitioning. VIRTUAL_PART_CNT describes the request distribution and is only used to generate queries. For HSTORE, VIRTUAL_PART_CNT should be the same as PART_CNT.
 #define VIRTUAL_PART_CNT			1
 #define PAGE_SIZE					4096
@@ -19,7 +22,7 @@
 // # of transactions to run for warmup
 #define WARMUP						0
 // YCSB or TPCC
-#define WORKLOAD TPCC
+#define WORKLOAD YCSB
 // print the transaction latency distribution
 #define PRT_LAT_DISTR				false
 #define STATS_ENABLE				true
@@ -42,8 +45,8 @@
 /***********************************************/
 // WAIT_DIE, NO_WAIT, DL_DETECT, TIMESTAMP, MVCC, HEKATON, HSTORE, OCC, VLL, TICTOC, SILO
 // TODO TIMESTAMP does not work at this moment
-#define CC_ALG NO_WAIT
-#define ISOLATION_LEVEL 			SERIALIZABLE
+#define CC_ALG OCC
+#define ISOLATION_LEVEL SERIALIZABLE
 
 // all transactions acquire tuples according to the primary key order.
 #define KEY_ORDER					false
@@ -52,7 +55,7 @@
 // per-row lock/ts management or central lock/ts management
 #define CENTRAL_MAN					false
 #define BUCKET_CNT					31
-#define ABORT_PENALTY 				100000
+#define ABORT_PENALTY 10 * 1000000UL   // in ns.
 #define ABORT_BUFFER_SIZE			10
 #define ABORT_BUFFER_ENABLE			true
 // [ INDEX ]
@@ -61,6 +64,7 @@
 #define CENTRAL_MANAGER 			false
 #define INDEX_STRUCT				IDX_HASH
 #define BTREE_ORDER 				16
+#define INDEX_NAME_LENGTH       	16
 
 // [DL_DETECT]
 #define DL_LOOP_DETECT				1000 	// 100 us
@@ -112,20 +116,20 @@
 // max number of rows touched per transaction
 #define MAX_ROW_PER_TXN				64
 #define QUERY_INTVL 				1UL
-#define MAX_TXN_PER_PART 			10000
+#define MAX_TXN_PER_PART 10000
 #define FIRST_PART_LOCAL 			true
 #define MAX_TUPLE_SIZE				1024 // in bytes
 // ==== [YCSB] ====
-#define INIT_PARALLELISM			16
-#define SYNTH_TABLE_SIZE 			(1024 * 1024)
-#define ZIPF_THETA 0.9
-#define READ_PERC 0
-#define WRITE_PERC 1
+#define INIT_PARALLELISM 8
+#define SYNTH_TABLE_SIZE 1048576
+#define ZIPF_THETA 0.6
+#define READ_PERC 0.5
+#define WRITE_PERC 0.5
 #define SCAN_PERC 					0
 #define SCAN_LEN					20
-#define PART_PER_TXN 				1
+#define PART_PER_TXN 2
 #define PERC_MULTI_PART				1
-#define REQ_PER_QUERY				64
+#define REQ_PER_QUERY 64
 #define FIELD_PER_TUPLE				10
 // ==== [TPCC] ====
 // For large warehouse count, the tables do not fit in memory
@@ -136,7 +140,7 @@
 // are not modeled.
 #define TPCC_ACCESS_ALL 			false
 #define WH_UPDATE					true
-#define NUM_WH 						1
+#define NUM_WH PART_CNT
 //
 enum TPCCTxnType {TPCC_ALL,
     TPCC_PAYMENT,
@@ -147,7 +151,7 @@ enum TPCCTxnType {TPCC_ALL,
 extern enum TPCCTxnType 					g_tpcc_txn_type;
 
 //#define TXN_TYPE					TPCC_ALL
-#define PERC_PAYMENT 				0.5
+#define PERC_PAYMENT 0.0
 #define FIRSTNAME_MINLEN 			8
 #define FIRSTNAME_LEN 				16
 #define LASTNAME_LEN 				16
@@ -218,8 +222,27 @@ extern enum TestCases					g_test_case;
 #define TS_HW						3
 #define TS_CLOCK					4
 
+#define MSG_SIZE_MAX 4096
+#define MSG_TIME_LIMIT 0
+#define TPORT_PORT 6000
+#define MAX_TPORT_NAME				128
 // turn on SGX
+#define USE_SGX 1
+#define TPORT_TYPE tcp
+#define USE_NANOMSG 1
+#define USE_ASYNC_HASH 1
+#define USE_LOG 1
 #define VERIFIED_CACHE_SIZ (6 * 1024 * 1024)
 
+// Log queue type
+#define LOG_CIRCUL_BUFF 1
+#define LOG_STRING_QUEUE 2
 
+#define LOG_QUEUE_TYPE LOG_STRING_QUEUE
+
+#if LOG_QUEUE_TYPE == LOG_CIRCUL_BUFF
+#define MAX_LOG_QUEUE_RECORDS 10000
+#endif
+
+#define USE_AZURE 0
 #endif
