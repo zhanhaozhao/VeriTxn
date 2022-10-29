@@ -103,6 +103,7 @@ public:
 	itemid_t(Data_type type, void * loc) {
         this->type = type;
         this->location = loc;
+        this->next = nullptr;
     };
 	Data_type type;
 	void * location; // points to the table | page | row

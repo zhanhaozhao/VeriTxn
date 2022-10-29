@@ -1,11 +1,8 @@
-SGX_SDK ?= /opt/intel/sgxsdk
-SGX_MODE ?= HW
-SGX_ARCH ?= x64
-SGX_DEBUG ?= 0
+PROJECT_ROOT ?= $(shell readlink -f .)
 
 
 CC=g++
-CFLAGS=-w -g -std=c++0x -no-pie
+CFLAGS=-Wall -g -std=c++0x -no-pie
 
 .SUFFIXES: .o .cpp .h
 
@@ -18,8 +15,8 @@ INCLUDE = -I. -I./common/ -I./untrusted/system/ -I./untrusted/benchmarks/ -I./un
 # CFLAGS += $(INCLUDE) -D NOGRAPHITE=1 -no-pie -O0
 # LDFLAGS = -Wall -L. -L./libs -pthread -g -lrt -std=c++0x -O0 -ljemalloc
 
-CFLAGS += $(INCLUDE) -D NOGRAPHITE=1 -Werror -Wno-comment -O3
-LDFLAGS = -Wall -L.  -L./libs -pthread -g -lrt -std=c++0x -O3 -ljemalloc -lnanomsg
+CFLAGS += $(INCLUDE) -D NOGRAPHITE=1 -Werror -Wno-comment -O0
+LDFLAGS = -Wall -L.  -L./libs -pthread -g -lrt -std=c++0x -O0 -ljemalloc
 # LDFLAGS = -Wall -L. -pthread -g -lrt -std=c++0x -O0 -ljemalloc -fsanitize=address -fno-omit-frame-pointer -static-libasan
 LDFLAGS += $(CFLAGS)
 
@@ -27,9 +24,9 @@ CPPS = $(foreach dir, $(SRC_DIRS), $(wildcard $(dir)*.cpp))
 OBJS = $(CPPS:.cpp=.o)
 DEPS = $(CPPS:.cpp=.d)
 
-all:App
+all:rundb
 
-App : $(OBJS)
+rundb : $(OBJS)
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 -include $(OBJS:%.o=%.d)
@@ -42,10 +39,10 @@ App : $(OBJS)
 
 .PHONY: clean
 clean:
-	rm -f App ./trusted/*.o ./trusted/*.d ./trusted/system/*.o ./trusted/system/*.d ./trusted/concurrency_control/*.o trusted/concurrency_control/*.d ./untrusted/*.o ./untrusted/*.d ./untrusted/system/*.o ./untrusted/system/*.d ./untrusted/benchmarks/*.o ./untrusted/benchmarks/*.d ./untrusted/cache/*.o ./untrusted/cache/*.d ./common/*.o ./common/*.d $(OBJS)
+	rm -f rundb ./trusted/*.o ./trusted/*.d ./untrusted/*.o ./untrusted/*.d ./common/*.o ./common/*.d $(OBJS) $(DEPS)
 
-mrproper: clean
-	rm -rf ./install
+# $(DEPS)
+
 
 sgx-release:
 	cp ./sgx_files/release/main.cpp ./main.cpp
@@ -53,7 +50,7 @@ sgx-release:
 	cp ./sgx_files/release/sgx_t.mk ./sgx_t.mk
 	cp ./sgx_files/release/sgx_u.mk ./sgx_u.mk
 	cp ./sgx_files/release/Enclave.config.xml ./trusted/Enclave.config.xml
-    cp Makefile.sgx Makefile
+	cp Makefile.sgx Makefile
 
 sgx-debug:
 	cp ./sgx_files/debug/main.cpp ./main.cpp

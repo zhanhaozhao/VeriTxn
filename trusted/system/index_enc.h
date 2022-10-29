@@ -3,6 +3,7 @@
 
 #include "global_enc.h"
 #include "row_enc.h"
+#include "lru_cache.h"
 #include <atomic>
 // #include "mem_helper_enc.h"
 // #include "common/helper.h"
@@ -13,6 +14,13 @@
 class BucketNode_ENC {
 public:
     BucketNode_ENC(idx_key_t key) {	init(key); next = nullptr; items = nullptr;};
+    ~BucketNode_ENC() {
+        for (auto it = items; it != nullptr; it = it->next) {
+            auto cur_item = (row_t *)it->location;
+            delete cur_item;
+            delete it;
+        }
+    }
     void init(idx_key_t key) {
         this->key = key;
         next = nullptr;
@@ -30,6 +38,11 @@ public:
 // BucketHeader_ENC does concurrency control of Hash
 class BucketHeader_ENC {
 public:
+    ~BucketHeader_ENC(){
+        for (auto it = first_node; it != nullptr ; it = it->next) {
+            delete it;
+        }
+    }
     void init();
     void insert_item(idx_key_t key, itemid_t * item, int part_id);
     void read_item(idx_key_t key, itemid_t * &item) const;
@@ -42,13 +55,11 @@ public:
 
 class IndexEnc  {
 public:
-    RC 			init(uint64_t bucket_cnt, int part_cnt, std::string index_name);
+    RC 			init(uint64_t bucket_cnt, int part_cnt);
     RC 			init(int part_cnt,
                        table_t * table,
-                       uint64_t bucket_cnt,
-                       std::string index_name);
+                       uint64_t bucket_cnt);
     bool 		index_exist(idx_key_t key); // check if the key exist.
-    void        update_verify_hash(int part_id, uint64_t bkt_idx, uint64_t hash);
     RC 			index_insert(idx_key_t key, itemid_t * item, int part_id=-1);
     // the following call returns a single item
     RC	 		index_read(std::string iname, idx_key_t key, itemid_t * &item, int part_id=-1);
@@ -67,8 +78,7 @@ private:
     uint64_t 			_bucket_cnt_per_part;
     uint64_t 			_default_verify_hash;
     uint64_t**          _verify_hash;
-    std::atomic<BucketHeader_ENC*>** _cache;
-    std::string         _name;
+    lru_cache*           _cache;
 #ifndef SGX_DISK
     BucketHeader_ENC**      _buckets;
 #endif
