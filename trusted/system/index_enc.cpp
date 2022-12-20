@@ -119,6 +119,10 @@ RC IndexEnc::index_read(std::string iname, idx_key_t key, itemid_t * &item, int 
     return rc;
 }
 
+void IndexEnc::update_verify_hash(int part_id, uint64_t bkt_idx, uint64_t hash) {
+    _verify_hash[part_id][bkt_idx] = hash;
+}
+
 //#define DECOUPLE
 
 #ifndef DECOUPLE

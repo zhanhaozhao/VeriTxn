@@ -44,7 +44,7 @@ void index_init_ecall(int part_cnt, void * table, std::string iname, void * inde
 	table_t * tbl = (table_t *) table;
 
     //printf("%p\n", tbl);
-	index->init(part_cnt, tbl, bucket_cnt, iname);
+	index->init(part_cnt, tbl, bucket_cnt);
 	//printf("%s\n", tbl->get_table_name().c_str());
 //#ifdef YCSB
 //        auto ss = tbl->table_name.c_str();

@@ -61,6 +61,7 @@ public:
                        uint64_t bucket_cnt);
     bool 		index_exist(idx_key_t key); // check if the key exist.
     RC 			index_insert(idx_key_t key, itemid_t * item, int part_id=-1);
+    void        update_verify_hash(int part_id, uint64_t bkt_idx, uint64_t hash);
     // the following call returns a single item
     RC	 		index_read(std::string iname, idx_key_t key, itemid_t * &item, int part_id=-1);
     RC	 		index_read(std::string iname, idx_key_t key, itemid_t * &item,

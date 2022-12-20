@@ -2,7 +2,7 @@ PROJECT_ROOT ?= $(shell readlink -f .)
 
 
 CC=g++
-CFLAGS=-w -g -std=c++0x -no-pie
+CFLAGS=-Wall -g -std=c++0x -no-pie
 
 .SUFFIXES: .o .cpp .h
 
@@ -24,9 +24,9 @@ CPPS = $(foreach dir, $(SRC_DIRS), $(wildcard $(dir)*.cpp))
 OBJS = $(CPPS:.cpp=.o)
 DEPS = $(CPPS:.cpp=.d)
 
-all:App
+all:rundb
 
-App : $(OBJS)
+rundb : $(OBJS)
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 -include $(OBJS:%.o=%.d)
@@ -39,7 +39,10 @@ App : $(OBJS)
 
 .PHONY: clean
 clean:
-	rm -f App ./trusted/*.o ./trusted/*.d ./trusted/system/*.o ./trusted/system/*.d ./trusted/concurrency_control/*.o trusted/concurrency_control/*.d ./untrusted/*.o ./untrusted/*.d ./untrusted/system/*.o ./untrusted/system/*.d ./untrusted/benchmarks/*.o ./untrusted/benchmarks/*.d ./untrusted/cache/*.o ./untrusted/cache/*.d ./common/*.o ./common/*.d $(OBJS) $(DEPS)
+	rm -f rundb ./trusted/*.o ./trusted/*.d ./untrusted/*.o ./untrusted/*.d ./common/*.o ./common/*.d $(OBJS) $(DEPS)
+
+# $(DEPS)
+
 
 sgx-release:
 	cp ./sgx_files/release/main.cpp ./main.cpp
