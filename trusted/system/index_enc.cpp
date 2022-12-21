@@ -13,23 +13,6 @@
 #include "api.h"
 #include "lru_cache.h"
 
-uint64_t compute_hash(std::string const& s) {
-    const int p = 31;
-    const int m = 1e9 + 9;
-    uint64_t hash_value = 0;
-    uint64_t p_pow = 1;
-    for (char c : s) {
-        hash_value = (hash_value + (c - 'a' + 1) * p_pow) % m;
-        p_pow = (p_pow * p) % m;
-    }
-    return hash_value;
-}
-
-inline uint64_t string_hash(const std::string& s) {
-    return compute_hash(s);
-    return uint64_t (std::hash<std::string>{}(s));
-}
-
 void test_encoder(const BucketHeader_ENC* x);
 void test_encoder(const BucketNode_ENC* x);
 
@@ -292,7 +275,13 @@ void BucketHeader_ENC::read_item(idx_key_t key, itemid_t * &item) const {
 }
 
 uint64_t BucketHeader_ENC::get_hash() const {
-    return string_hash(encode());
+    uint64_t res;
+    BucketNode_ENC * cur_node = first_node;
+    while (cur_node != nullptr) {
+        res ^= cur_node->hash() ^ cur_node->key;
+        cur_node = cur_node->next;
+    }
+    return res;
 }
 
 DFlow BucketHeader_ENC::encode() const {
@@ -343,6 +332,18 @@ void test_encoder_row(row_t* x) {
 //    cout << e << "  and " << tmp->encode() << endl;
     assert(e == tmp->encode());
 #endif
+}
+
+uint64_t BucketNode_ENC::hash() const {
+    uint64_t res;
+    itemid_t * it = items;
+    res ^= key;
+    while (it != nullptr) {
+        auto tmp = (row_t*)(it->location);
+        res ^= tmp->hash();
+        it = it -> next;
+    }
+    return res;
 }
 
 DFlow BucketNode_ENC::encode() const {

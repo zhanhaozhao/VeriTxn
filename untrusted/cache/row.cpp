@@ -74,7 +74,7 @@ const char* base_row_t::get_table_name() {
 	return get_table()->get_table_name(); 
 };
 uint64_t base_row_t::get_tuple_size() {
-	return get_schema()->get_tuple_size();
+	return table->get_schema()->get_tuple_size();
 }
 
 uint64_t base_row_t::get_field_cnt() { 
@@ -129,6 +129,10 @@ void base_row_t::copy(base_row_t * src) {
 	set_data(src->get_data(), src->get_tuple_size());
 }
 
+void base_row_t::set_row_id(uint64_t id) {
+    _row_id = id;
+}
+
 void base_row_t::free_row() {
 	free(data);
 }
@@ -154,6 +158,17 @@ std::string base_row_t::encode() {
     }
     data_items.emplace_back(std::make_pair("data:", data_str));
     return encode_vec(data_items);
+}
+
+std::uint64_t base_row_t::hash() {
+    uint64_t res = 0;
+    res ^= _primary_key ^ _row_id;
+    auto siz = get_tuple_size();
+    for (unsigned i=0;i<siz;i++) {
+        uint8_t val = data[i];  // 256.
+        res ^= val;
+    }
+    return res;
 }
 
 void base_row_t::decode(const std::string& e) {

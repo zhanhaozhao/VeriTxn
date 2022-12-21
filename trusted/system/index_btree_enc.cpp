@@ -5,10 +5,6 @@
 #include "base_row.h"
 #include "atomic"
 
-inline uint64_t string_hash(const std::string& s) {
-    return uint64_t (std::hash<std::string>{}(s));
-}
-
 #if VERI_TYPE == MERKLE_TREE
 uint64_t BTNode::hash() const {
     uint64_t res = 0ULL;
@@ -16,10 +12,12 @@ uint64_t BTNode::hash() const {
         res ^= keys[i];
     }
     if (is_leaf) {
-//        res ^= num_keys+1;
+        res ^= num_keys+1;
         for (UInt32 i=0;i<num_keys;i++) {
-            auto tmp = (row_t*)(((itemid_t*) data[i])->location);
-            res ^= string_hash(tmp->encode());
+            for (auto it = (itemid_t*) data[i];it!= nullptr; it=it->next) {
+                auto tmp = (row_t*)(it->location);
+                res ^= tmp->hash();
+            }
         }
     } else {
         for (UInt32 i=0;i<=num_keys;i++) {
@@ -50,7 +48,8 @@ BTNode* IndexBTEnc::load_child(BTNode *cur_node, UInt32 i) {
     }
     if (cur != new_node) delete new_node;
     if (cur->is_leaf) { // only need to verify leaf nodes.
-        assert(cur->origin->hash() == cur->origin->merkle_hash);
+        auto new_hash =cur->origin->hash();
+        assert(new_hash == cur->origin->merkle_hash);
         assert(cur->hash() == cur->merkle_hash);
         assert(cur_node->child_merkle_hash[i] == cur->merkle_hash);
     }
@@ -81,7 +80,7 @@ uint64_t BTNode::get_hash() {
     if (is_leaf) {
         for (UInt32 i=0;i<num_keys;i++) {
             auto tmp = (row_t*)(((itemid_t*) data[i])->location);
-            res ^= string_hash(tmp->encode());
+            res ^= tmp->hash();
         }
     }
     return num_keys;
@@ -242,6 +241,7 @@ BTNode* IndexBTEnc::make_node(bt_node* out, BTNode* parent, int64_t part) {
                 new_row->table = old_row->table;
                 new_row->init_manager(new_row);
                 new_row->set_primary_key(old_row->get_primary_key());
+                new_row->set_row_id(old_row->get_row_id());
                 auto new_item = new itemid_t;
                 new_item->next = nullptr;
                 new_item->location = (void *) new_row;

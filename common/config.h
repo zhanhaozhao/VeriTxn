@@ -5,7 +5,7 @@
 // Simulation + Hardware
 /***********************************************/
 #define NODE_CNT 1
-#define THREAD_CNT 5
+#define THREAD_CNT 1
 #define PART_CNT NODE_CNT
 #define INPUT_CNT					1
 #define OUTPUT_CNT					1
@@ -22,7 +22,7 @@
 // # of transactions to run for warmup
 #define WARMUP						0
 // YCSB or TPCC
-#define WORKLOAD TPCC
+#define WORKLOAD YCSB
 // print the transaction latency distribution
 #define PRT_LAT_DISTR				false
 #define STATS_ENABLE				true
@@ -62,7 +62,7 @@
 #define ENABLE_LATCH				false
 #define CENTRAL_INDEX				false
 #define CENTRAL_MANAGER 			false
-#define INDEX_STRUCT				IDX_BTREE
+#define INDEX_STRUCT				IDX_BTREE //IDX_HASH    //
 #define BTREE_ORDER 				16
 #define INDEX_NAME_LENGTH       	16
 #define BTREE_NODE_NUM              2000000

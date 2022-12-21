@@ -96,8 +96,8 @@ RC tpcc_wl::init_table() {
                          BTREE_NODE_NUM);
         index_load_ecall(g_part_cnt, (void *) (tables[tname]), iname, (void*)indexes[iname] ,
                          BTREE_NODE_NUM);
-    }
 #endif
+    }
 	return RCOK;
 }
 

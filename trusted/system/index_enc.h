@@ -26,6 +26,7 @@ public:
         next = nullptr;
         items = NULL;
     }
+    uint64_t hash() const;
     DFlow encode() const;
     void decode(const DFlow & e);
     idx_key_t 		key;

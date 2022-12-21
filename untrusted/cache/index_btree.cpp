@@ -6,27 +6,24 @@
 
 #if VERI_TYPE == MERKLE_TREE
 
-inline uint64_t string_hash(const std::string& s) {
-    return uint64_t (std::hash<std::string>{}(s));
-}
-
 uint64_t bt_node::hash() const {
     uint64_t res = 0ULL;
     for (UInt32 i=0;i<num_keys;i++) {
         res ^= keys[i];
     }
     if (is_leaf) {
-//        res ^= num_keys+1;
+        res ^= num_keys+1;
         for (UInt32 i=0;i<num_keys;i++) {
-            auto tmp = (base_row_t*)(((itemid_t*) pointers[i])->location);
-            res ^= string_hash(tmp->encode());
+            for (auto it = (itemid_t*) pointers[i];it!= nullptr; it=it->next) {
+                auto tmp = (base_row_t*)(it->location);
+                res ^= tmp->hash();
+            }
         }
     } else {
         for (UInt32 i=0;i<=num_keys;i++) {
             res ^= child_merkle_hash[i];
             auto child = (bt_node*)pointers[i];
             assert(child_merkle_hash[i] == child->merkle_hash);
-// TODO: bug fix here.
         }
     }
     return res;
@@ -211,6 +208,9 @@ RC index_btree::index_insert(idx_key_t key, itemid_t * item, int part_id) {
 	if (leaf->num_keys < order - 1 || leaf_has_key(leaf, key) >= 0) {
 		rc = insert_into_leaf(params, leaf, key, item);
 		// only the leaf should be ex latched.
+#if VERI_TYPE == MERKLE_TREE
+        up_to_root(leaf);
+#endif
 //		assert( release_latch(leaf) == LATCH_EX );
 		for (int i = 0; i < depth; i++)
 			release_latch(ex_list[i]);
@@ -218,6 +218,9 @@ RC index_btree::index_insert(idx_key_t key, itemid_t * item, int part_id) {
 	}
 	else { // split the nodes when necessary
 		rc = split_lf_insert(params, leaf, key, item);
+#if VERI_TYPE == MERKLE_TREE
+            up_to_root(leaf);
+#endif
 		for (int i = 0; i < depth; i++)
 			release_latch(ex_list[i]);
 //			assert( release_latch(ex_list[i]) == LATCH_EX );
@@ -458,7 +461,7 @@ RC index_btree::insert_into_leaf(glob_param params, bt_node * leaf, idx_key_t ke
 		item->next = (itemid_t *)leaf->pointers[idx];
 		leaf->pointers[idx] = (void *) item;
 #if VERI_TYPE == MERKLE_TREE
-        update_hash(leaf);
+//        update_hash(leaf);
         up_to_root(leaf);
 #endif
 		return RCOK;
@@ -474,7 +477,6 @@ RC index_btree::insert_into_leaf(glob_param params, bt_node * leaf, idx_key_t ke
 	leaf->num_keys++;
 	M_ASSERT( (leaf->num_keys < order), "too many keys in leaf" );
 #if VERI_TYPE == MERKLE_TREE
-    update_hash(leaf);
     up_to_root(leaf);
 #endif
 	return RCOK;
@@ -549,16 +551,20 @@ RC index_btree::split_lf_insert(glob_param params, bt_node * leaf, idx_key_t key
 
 	new_leaf->parent = leaf->parent;
 	new_key = new_leaf->keys[0];
-#if VERI_TYPE == MERKLE_TREE
-    update_hash(new_leaf);
-    update_hash(leaf);
-#endif
+//#if VERI_TYPE == MERKLE_TREE
+//    update_hash(new_leaf);
+//    update_hash(leaf);
+//#endif
 
 	rc = insert_into_parent(params, leaf, new_key, new_leaf);
 //#if VERI_TYPE == MERKLE_TREE
 //    update_up(new_leaf);
 //    update_up(leaf);
 //#endif
+#if VERI_TYPE == MERKLE_TREE
+    up_to_root(new_leaf);
+    up_to_root(leaf);
+#endif
 	return rc;
 }
 
@@ -586,10 +592,10 @@ RC index_btree::insert_into_parent(
 		parent->num_keys ++;
 		parent->keys[insert_idx] = key;
 		parent->pointers[insert_idx + 1] = right;
-#if VERI_TYPE == MERKLE_TREE
-        update_hash(parent);
-        up_to_root(parent);
-#endif
+//#if VERI_TYPE == MERKLE_TREE
+//        update_hash(parent);
+//        up_to_root(parent);
+//#endif
 		return RCOK;
 	}
 
@@ -620,9 +626,9 @@ RC index_btree::insert_into_new_root(
 	left->parent = new_root;
 	right->parent = new_root;
 	left->next = right;
-#if VERI_TYPE == MERKLE_TREE
-    update_hash(new_root);
-#endif
+//#if VERI_TYPE == MERKLE_TREE
+//    update_hash(new_root);
+//#endif
 
 	this->roots[part_id] = new_root;
 	return RCOK;
@@ -713,10 +719,10 @@ RC index_btree::split_nl_insert(
 		child = (bt_node *)new_node->pointers[i];
 		child->parent = new_node;
 	}
-#if VERI_TYPE == MERKLE_TREE
-    update_hash(old_node);
-    update_hash(new_node);
-#endif
+//#if VERI_TYPE == MERKLE_TREE
+//    update_hash(old_node);
+//    update_hash(new_node);
+//#endif
 
 
     /* Insert a new key into the parent of the two

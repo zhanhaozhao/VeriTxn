@@ -89,7 +89,8 @@ public:
 	// for concurrency control. can be lock, timestamp etc.
 	RC get_row(access_t type, txn_man * txn, row_t *& row);
 	void return_row(access_t type, txn_man * txn, row_t * row);
-	
+    void set_row_id(uint64_t id);
+
   #if CC_ALG == DL_DETECT || CC_ALG == NO_WAIT || CC_ALG == WAIT_DIE
     Row_lock * manager;
   #elif CC_ALG == TIMESTAMP
@@ -108,6 +109,7 @@ public:
 	char * data;
 	table_t * table;
     std::string encode();
+    uint64_t hash();
     void decode(const std::string &e);
 
 private:
