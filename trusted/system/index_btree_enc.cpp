@@ -200,7 +200,7 @@ BTNode* IndexBTEnc::make_node(bt_node* out, BTNode* parent, int64_t part) {
     BTNode * new_node = (BTNode *) malloc(sizeof(BTNode));
     assert (new_node != nullptr);
     new_node->num_keys = out->num_keys;
-    new_node->node_id = atomic_fetch_add(&enc_btree_node_id, 1);
+    new_node->node_id = ATOM_ADD_FETCH(enc_btree_node_id, 1);
     new_node->parent = parent;
     new_node->origin = out;
 #if VERI_TYPE == MERKLE_TREE

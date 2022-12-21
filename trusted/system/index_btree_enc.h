@@ -74,7 +74,7 @@ private:
     // clean up all the LATCH_EX up tp last_ex
     RC 			cleanup(BTNode * node, BTNode * last_ex);
     uint64_t    _default_bt_veri_hash = 0;
-    std::atomic<uint64_t> enc_btree_node_id;
+    uint64_t    enc_btree_node_id;
 };
 
 
