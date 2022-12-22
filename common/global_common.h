@@ -69,7 +69,7 @@ typedef uint64_t pgid_t; // page id
 /* INDEX */
 enum latch_t {LATCH_EX, LATCH_SH, LATCH_NONE};
 // accessing type determines the latch type on nodes
-enum idx_acc_t {INDEX_INSERT, INDEX_READ, INDEX_NONE};
+enum idx_acc_t {INDEX_INSERT, INDEX_READ, INDEX_NONE, INDEX_EX};
 typedef uint64_t idx_key_t; // key id for index
 typedef uint64_t (*func_ptr)(idx_key_t);	// part_id func_ptr(index_key);
 

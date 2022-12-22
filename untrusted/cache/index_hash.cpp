@@ -93,6 +93,28 @@ RC IndexHash::index_read(idx_key_t key, itemid_t * &item,
 	return rc;
 }
 
+uint64_t BucketHeader::get_hash() const {
+    uint64_t res = 0;
+    BucketNode * cur_node = first_node;
+    while (cur_node != nullptr) {
+        res ^= cur_node->hash() ^ cur_node->key;
+        cur_node = cur_node->next;
+    }
+    return res;
+}
+
+uint64_t BucketNode::hash() const {
+    uint64_t res = 0;
+    itemid_t * it = items;
+    res ^= key;
+    while (it != nullptr) {
+        auto tmp = (base_row_t*)(it->location);
+        res ^= tmp->hash();
+        it = it -> next;
+    }
+    return res;
+}
+
 BucketHeader *	IndexHash::load_bucket(int part_id, int bkt_idx) {
 	BucketHeader * cur_bkt = &_buckets[part_id][bkt_idx];
 	return cur_bkt;

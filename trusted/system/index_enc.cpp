@@ -88,6 +88,9 @@ RC IndexEnc::index_insert(idx_key_t key, itemid_t * item, int part_id) {
     // 4. release the latch
     release_latch(cur_bkt);
 
+//    // 5. release the cache flag.
+//    _cache->release(part_id, bkt_idx);
+
     return rc;
 }
 
@@ -99,6 +102,7 @@ RC IndexEnc::index_read(std::string iname, idx_key_t key, itemid_t * &item, int 
     RC rc = RCOK;
     cur_bkt->read_item(key, item);
     flush_bucket(part_id, bkt_idx, cur_bkt, false);
+//    _cache->release(part_id, bkt_idx);
     return rc;
 }
 
@@ -113,32 +117,87 @@ void IndexEnc::update_verify_hash(int part_id, uint64_t bkt_idx, uint64_t hash) 
 #include "base_row.h"
 #endif
 
+void flush_out(std::string iname, int part_id, uint64_t bkt_idx, BucketHeader_ENC *c) {
+    auto res = new BucketHeader;
+    res->init();
+    res->locked = false;
+    BucketNode *last_node = nullptr;
+    for (auto it = c->first_node; it; it = it->next) {
+        auto node = new BucketNode(it->key);
+        itemid_t *last_item = nullptr;
+        node->next = nullptr;
+        for (auto pt = it->items; pt; pt = pt->next) {
+            auto old_row = (row_t *) pt->location;
+            auto new_row = new base_row_t;
+            new_row->init(old_row->table, part_id, old_row->get_row_id());
+            int n = old_row->get_tuple_size();
+            new_row->data = (char*)malloc((n+1) * sizeof (char ));//new char[n + 1];
+            memcpy(new_row->data, old_row->data, n + 1);
+            new_row->table = old_row->table;
+            new_row->set_primary_key(old_row->get_primary_key());
+            auto new_item = new itemid_t;
+            new_item->next = nullptr;
+            new_item->location = (void *) new_row;
+            new_item->valid = true;
+            new_item->type = DT_row;
+            assert(new_row->hash() == old_row->hash());
+            if (last_item == nullptr) {
+                node->items = new_item;
+            } else {
+                last_item->next = new_item;
+            }
+            last_item = new_item;
+        }
+        assert(node->hash() == it->hash());
+        if (last_node == nullptr) {
+            res->first_node = node;
+        } else {
+            last_node->next = node;
+        }
+        last_node = node;
+    }
+    auto idx = (IndexHash *) inner_index_map->_indexes[iname];
+    idx->get_latch(&idx->_buckets[part_id][bkt_idx]);
+    idx->_buckets[part_id][bkt_idx] = *res;
+    c->origin = &idx->_buckets[part_id][bkt_idx];
+    assert(c->get_hash() == c->origin->get_hash());
+}
+
 BucketHeader_ENC* IndexEnc::load_bucket(std::string iname, int part_id, uint64_t bkt_idx) {
     auto cur = (BucketHeader_ENC*) _cache->try_load(part_id, bkt_idx);
     if (cur == nullptr) {
-        auto out_bkt = &(((IndexHash *) inner_index_map->_indexes[iname])->_buckets[part_id][bkt_idx]);
         auto res_bucket = new BucketHeader_ENC;
+        uint total_size = 0;
+        res_bucket->origin = &(((IndexHash *) inner_index_map->_indexes[iname])->_buckets[part_id][bkt_idx]);
         res_bucket->init();
+        res_bucket->from = this;
+        res_bucket->bkt = bkt_idx;
+        res_bucket->part = part_id;
         res_bucket->locked = false;
         BucketNode_ENC *last_node = nullptr;
-        for (auto it = out_bkt->first_node; it; it = it->next) {
+        for (auto it = res_bucket->origin->first_node; it; it = it->next) {
             auto node = new BucketNode_ENC(it->key);
             itemid_t *last_item = nullptr;
             node->next = nullptr;
             for (auto pt = it->items; pt; pt = pt->next) {
                 auto old_row = (base_row_t *) pt->location;
                 auto new_row = new row_t;
+                new_row->from_page = (void*) res_bucket;
                 int n = old_row->table->get_schema()->get_tuple_size();
                 new_row->data = new char[n + 1];
                 memcpy(new_row->data, old_row->data, n + 1);
                 new_row->table = old_row->table;
                 new_row->init_manager(new_row);
+                new_row->set_row_id(old_row->get_row_id());
                 new_row->set_primary_key(old_row->get_primary_key());
+                assert(new_row->hash() == old_row->hash());
+                total_size += sizeof (*new_row);
                 auto new_item = new itemid_t;
                 new_item->next = nullptr;
                 new_item->location = (void *) new_row;
                 new_item->valid = true;
                 new_item->type = DT_row;
+                total_size += sizeof (*new_item);
                 if (last_item == nullptr) {
                     node->items = new_item;
                 } else {
@@ -146,6 +205,8 @@ BucketHeader_ENC* IndexEnc::load_bucket(std::string iname, int part_id, uint64_t
                 }
                 last_item = new_item;
             }
+            total_size += sizeof (*node);
+            assert(node->hash() == it->hash());
             if (last_node == nullptr) {
                 res_bucket->first_node = node;
             } else {
@@ -153,13 +214,19 @@ BucketHeader_ENC* IndexEnc::load_bucket(std::string iname, int part_id, uint64_t
             }
             last_node = node;
         }
+        total_size += sizeof(*res_bucket);
+        assert(res_bucket->get_hash() == res_bucket->origin->get_hash());
         void* swapped = nullptr;
         int sw_pt = 0;
         uint64_t sw_bk = 0;
-        cur = (BucketHeader_ENC *) _cache->load_and_swap(part_id, bkt_idx, (void *) res_bucket, swapped, sw_pt, sw_bk);
+        void * cur_void;
+        RC rc = _cache->load_and_swap(part_id, bkt_idx, total_size, (void *) res_bucket, swapped, sw_pt, sw_bk, cur_void);
+        assert(rc == RCOK);
+        cur = (BucketHeader_ENC*) cur_void;
         if (swapped != nullptr) {
             // if the bucket is flushed outside veri-cache, update the _verify_hash value.
             auto flushed_bkt = (BucketHeader_ENC *)swapped;
+#ifdef READ_ONLY
             uint64_t new_hash = flushed_bkt->get_hash();
             if (new_hash == _verify_hash[sw_pt][sw_bk]) {
                 _cache->inc_lease(sw_pt, sw_bk);
@@ -167,6 +234,12 @@ BucketHeader_ENC* IndexEnc::load_bucket(std::string iname, int part_id, uint64_t
                 _cache->reset_lease(sw_pt, sw_bk);
                 _verify_hash[sw_pt][sw_bk] = new_hash;
             }
+#endif
+//            assert(false);
+// lazy update of verify hash.
+            get_latch(flushed_bkt);
+            _verify_hash[sw_pt][sw_bk] = flushed_bkt->get_hash();
+            flush_out(iname, sw_pt, sw_bk, flushed_bkt);
             delete flushed_bkt;
         }
         if (cur != res_bucket) {    // concurrent index access has loaded the bucket.
@@ -180,6 +253,10 @@ BucketHeader_ENC* IndexEnc::load_bucket(std::string iname, int part_id, uint64_t
         }
     }
     return cur;
+}
+
+void IndexEnc::release_up_cache(BucketHeader_ENC* c) {
+    _cache->release(c->part, c->bkt);
 }
 
 void IndexEnc::flush_bucket(int part_id, uint64_t bkt_idx, BucketHeader_ENC* cur, bool modified) {
@@ -217,6 +294,7 @@ RC IndexEnc::index_read(std::string iname, idx_key_t key, itemid_t * &item,
     cur_bkt->read_item(key, item);
 
     flush_bucket(part_id, bkt_idx, cur_bkt, false);
+//    _cache->release(part_id, bkt_idx);
     return rc;
 }
 
@@ -275,7 +353,7 @@ void BucketHeader_ENC::read_item(idx_key_t key, itemid_t * &item) const {
 }
 
 uint64_t BucketHeader_ENC::get_hash() const {
-    uint64_t res;
+    uint64_t res = 0;
     BucketNode_ENC * cur_node = first_node;
     while (cur_node != nullptr) {
         res ^= cur_node->hash() ^ cur_node->key;
@@ -335,7 +413,7 @@ void test_encoder_row(row_t* x) {
 }
 
 uint64_t BucketNode_ENC::hash() const {
-    uint64_t res;
+    uint64_t res = 0;
     itemid_t * it = items;
     res ^= key;
     while (it != nullptr) {

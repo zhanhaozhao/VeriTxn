@@ -85,6 +85,22 @@ void txn_man::cleanup(RC rc) {
 	return;
 #endif
 
+#if VERI_TYPE == MERKLE_TREE
+    for (int i = 0; i < row_cnt; i++) {
+        Access *access = accesses[i];
+        auto node = (PAGE_ENC*) access->orig_row->from_page;
+        if (access->type == WR)
+            node->from->merkle_update(node);
+        node->from->release_up_cache(node);
+    }
+#else
+    for (int i = 0; i < row_cnt; i++) {
+        Access *access = accesses[i];
+        auto node = (PAGE_ENC*) access->orig_row->from_page;
+        node->from->release_up_cache(node);
+    }
+#endif
+
 #if USE_LOG == 1
 	int size = 0, buf_size = 0;
 	// LogRecord** logs = log_generate.createRecords(this);

@@ -6,6 +6,24 @@
 
 #if VERI_TYPE == MERKLE_TREE
 
+RC index_btree::calculate_hash() {
+    for (UInt32 i=0;i<part_cnt;i++) {
+        dfs(roots[i]);
+    }
+    return RCOK;
+}
+
+RC index_btree::dfs(bt_node * c) {
+    assert(c != nullptr);
+    if (!c->is_leaf) {
+        for (UInt32 i = 0; i <= c->num_keys; i ++) {
+            dfs((bt_node*) c->pointers[i]);
+        }
+    }
+    update_hash(c);
+    return RCOK;
+}
+
 uint64_t bt_node::hash() const {
     uint64_t res = 0ULL;
     for (UInt32 i=0;i<num_keys;i++) {
@@ -38,7 +56,7 @@ void index_btree::update_hash(bt_node* c) {
         }
     }
     c->merkle_hash = c->hash();
-    assert(c->merkle_hash == c->hash());    // hash function should be the same in retry.
+//    assert(c->merkle_hash == c->hash());    // hash function should be the same in retry.
 }
 
 void index_btree::up_to_root(bt_node* c) {
@@ -49,6 +67,7 @@ void index_btree::up_to_root(bt_node* c) {
 
 RC index_btree::init(uint64_t part_cnt) {
     this->part_cnt = part_cnt;
+    btree_node_id = 0;
     order = BTREE_ORDER;
     // these pointers can be mapped anywhere. They won't be changed
     roots = (bt_node **) malloc(part_cnt * sizeof(bt_node *));
@@ -208,9 +227,6 @@ RC index_btree::index_insert(idx_key_t key, itemid_t * item, int part_id) {
 	if (leaf->num_keys < order - 1 || leaf_has_key(leaf, key) >= 0) {
 		rc = insert_into_leaf(params, leaf, key, item);
 		// only the leaf should be ex latched.
-#if VERI_TYPE == MERKLE_TREE
-        up_to_root(leaf);
-#endif
 //		assert( release_latch(leaf) == LATCH_EX );
 		for (int i = 0; i < depth; i++)
 			release_latch(ex_list[i]);
@@ -218,9 +234,6 @@ RC index_btree::index_insert(idx_key_t key, itemid_t * item, int part_id) {
 	}
 	else { // split the nodes when necessary
 		rc = split_lf_insert(params, leaf, key, item);
-#if VERI_TYPE == MERKLE_TREE
-            up_to_root(leaf);
-#endif
 		for (int i = 0; i < depth; i++)
 			release_latch(ex_list[i]);
 //			assert( release_latch(ex_list[i]) == LATCH_EX );
@@ -248,8 +261,12 @@ RC index_btree::make_node(uint64_t part_id, bt_node *& node) {
 	bt_node * new_node = (bt_node *) mem_allocator.alloc(sizeof(bt_node), part_id);
 	assert (new_node != NULL);
 	new_node->pointers = NULL;
-	new_node->keys = (idx_key_t *) mem_allocator.alloc((order - 1) * sizeof(idx_key_t), part_id);
+	new_node->node_id = new_node->node_id = ATOM_ADD_FETCH(btree_node_id, 1);
+    new_node->keys = (idx_key_t *) mem_allocator.alloc((order - 1) * sizeof(idx_key_t), part_id);
 	new_node->pointers = (void **) mem_allocator.alloc(order * sizeof(void *), part_id);
+	new_node->share_cnt = 0;
+	new_node->latch = false;
+	new_node->latch_type = LATCH_NONE;
 #if VERI_TYPE == MERKLE_TREE
     new_node->merkle_hash = 0;
 	new_node->child_merkle_hash = new uint64_t [order+1];
@@ -381,6 +398,7 @@ RC index_btree::find_leaf(glob_param params, idx_key_t key, idx_acc_t access_typ
 	return rc;
 }
 
+
 RC index_btree::find_leaf(glob_param params, idx_key_t key, idx_acc_t access_type, bt_node *& leaf, bt_node  *& last_ex) 
 {
 //	RC rc;
@@ -460,8 +478,7 @@ RC index_btree::insert_into_leaf(glob_param params, bt_node * leaf, idx_key_t ke
 	if (idx >= 0) {
 		item->next = (itemid_t *)leaf->pointers[idx];
 		leaf->pointers[idx] = (void *) item;
-#if VERI_TYPE == MERKLE_TREE
-//        update_hash(leaf);
+#ifdef SEPARATE_MERKLE
         up_to_root(leaf);
 #endif
 		return RCOK;
@@ -476,7 +493,7 @@ RC index_btree::insert_into_leaf(glob_param params, bt_node * leaf, idx_key_t ke
 	leaf->pointers[insertion_point] = (void *)item;
 	leaf->num_keys++;
 	M_ASSERT( (leaf->num_keys < order), "too many keys in leaf" );
-#if VERI_TYPE == MERKLE_TREE
+#ifdef SEPARATE_MERKLE
     up_to_root(leaf);
 #endif
 	return RCOK;
@@ -551,17 +568,9 @@ RC index_btree::split_lf_insert(glob_param params, bt_node * leaf, idx_key_t key
 
 	new_leaf->parent = leaf->parent;
 	new_key = new_leaf->keys[0];
-//#if VERI_TYPE == MERKLE_TREE
-//    update_hash(new_leaf);
-//    update_hash(leaf);
-//#endif
 
 	rc = insert_into_parent(params, leaf, new_key, new_leaf);
-//#if VERI_TYPE == MERKLE_TREE
-//    update_up(new_leaf);
-//    update_up(leaf);
-//#endif
-#if VERI_TYPE == MERKLE_TREE
+#ifdef SEPARATE_MERKLE
     up_to_root(new_leaf);
     up_to_root(leaf);
 #endif
@@ -592,10 +601,6 @@ RC index_btree::insert_into_parent(
 		parent->num_keys ++;
 		parent->keys[insert_idx] = key;
 		parent->pointers[insert_idx + 1] = right;
-//#if VERI_TYPE == MERKLE_TREE
-//        update_hash(parent);
-//        up_to_root(parent);
-//#endif
 		return RCOK;
 	}
 
@@ -626,9 +631,6 @@ RC index_btree::insert_into_new_root(
 	left->parent = new_root;
 	right->parent = new_root;
 	left->next = right;
-//#if VERI_TYPE == MERKLE_TREE
-//    update_hash(new_root);
-//#endif
 
 	this->roots[part_id] = new_root;
 	return RCOK;
@@ -719,10 +721,6 @@ RC index_btree::split_nl_insert(
 		child = (bt_node *)new_node->pointers[i];
 		child->parent = new_node;
 	}
-//#if VERI_TYPE == MERKLE_TREE
-//    update_hash(old_node);
-//    update_hash(new_node);
-//#endif
 
 
     /* Insert a new key into the parent of the two
@@ -746,6 +744,7 @@ UInt32 index_btree::cut(UInt32 length) {
 	else
 		return length/2 + 1;
 }
+
 /*
 void index_btree::print_btree(bt_node * start) {
 	if (roots == NULL) {
@@ -780,3 +779,21 @@ void index_btree::print_btree(bt_node * start) {
 	} while (!last_iter);
 
 }*/
+
+
+
+#if VERI_TYPE == PAGE_VERI
+uint64_t bt_node::get_hash() {
+    uint64_t res = 0ULL;
+    for (UInt32 i=0;i<num_keys;i++) {
+        res ^= keys[i];
+    }
+    if (is_leaf) {
+        for (UInt32 i=0;i<num_keys;i++) {
+            auto tmp = (base_row_t*)(((itemid_t*) pointers[i])->location);
+            res ^= tmp->hash();
+        }
+    }
+    return num_keys;
+}
+#endif

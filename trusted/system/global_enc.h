@@ -108,8 +108,10 @@ extern UInt32 g_cc_alg_enc;
 
 #if INDEX_STRUCT  == IDX_HASH
     #define INDEX_ENC IndexEnc
+    #define PAGE_ENC BucketHeader_ENC
 #else
 #define INDEX_ENC IndexBTEnc
+#define PAGE_ENC  BTNode
 #endif
 
 // extern ts_t g_query_intvl;

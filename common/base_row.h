@@ -107,13 +107,13 @@ public:
     std::string encode();
     uint64_t hash();
     void decode(const std::string &e);
+    void set_row_id(uint64_t id);
 private:
 	// primary key should be calculated from the data stored in the row.
 	uint64_t 		_primary_key;
 	uint64_t		_part_id;
 	uint64_t 		_row_id;
 
-    void set_row_id(uint64_t id);
 };
 
 #endif

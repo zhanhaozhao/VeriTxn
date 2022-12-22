@@ -165,8 +165,8 @@ std::uint64_t base_row_t::hash() {
     res ^= _primary_key ^ _row_id;
     auto siz = get_tuple_size();
     for (unsigned i=0;i<siz;i++) {
-        uint8_t val = data[i];  // 256.
-        res ^= val;
+        auto val = (unsigned char) (data[i]);  // 256.
+        res ^= uint64_t (val);
     }
     return res;
 }

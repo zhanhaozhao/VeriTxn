@@ -31,8 +31,11 @@ RC ycsb_wl::init() {
 
     init_table();
 	int part_cnt = (CENTRAL_INDEX)? 1 : g_part_cnt;
+#ifdef BATCH_MERKLE
+    the_index->calculate_hash();
+#endif
 	index_load_ecall(part_cnt, (void *) (the_table), "MAIN_INDEX", (void*)the_index , g_synth_table_size * 2);
-	return RCOK;
+    return RCOK;
 }
 
 RC ycsb_wl::init_schema(std::string schema_file) {

@@ -5,11 +5,14 @@
 #include "row_enc.h"
 #include "lru_cache.h"
 #include <atomic>
+#include <index_hash.h>
 // #include "mem_helper_enc.h"
 // #include "common/helper.h"
 
 #define SGX_DISK    //
 //#define TEST_C //
+
+class IndexEnc;
 
 class BucketNode_ENC {
 public:
@@ -52,6 +55,10 @@ public:
     void decode(const DFlow & e);
     BucketNode_ENC * 	first_node;
     bool 			locked;
+    BucketHeader *  origin;
+    int part;
+    uint64_t  bkt;
+    IndexEnc        *from;
 };
 
 class IndexEnc  {
@@ -70,6 +77,11 @@ public:
     std::string         index_name;
     BucketHeader_ENC *load_bucket(std::string iname, int part_id, uint64_t bkt_idx);
     void flush_bucket(int part_id, uint64_t bkt_idx, BucketHeader_ENC *cur, bool modified);
+
+//    static DFlow load_disk(int part_id, uint64_t bkt_idx);
+//    static void flush_disk(int part_id, uint64_t bkt_idx, const DFlow & e);
+    void release_up_cache(BucketHeader_ENC *c);
+
 private:
     void get_latch(BucketHeader_ENC * bucket);
     void release_latch(BucketHeader_ENC * bucket);
@@ -85,8 +97,6 @@ private:
     BucketHeader_ENC**      _buckets;
 #endif
 
-//    static DFlow load_disk(int part_id, uint64_t bkt_idx);
-//    static void flush_disk(int part_id, uint64_t bkt_idx, const DFlow & e);
 };
 
 #endif

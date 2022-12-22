@@ -10,6 +10,7 @@
 
 typedef struct bt_node {
    	void ** pointers; // for non-leaf nodes, point to bt_nodes
+   	uint64_t node_id;
 	bool is_leaf;
 	idx_key_t * keys;
 	bt_node * parent;
@@ -49,9 +50,13 @@ public:
     void up_to_root(bt_node *c);
 #endif
 
+    RC dfs(bt_node *c);
+    RC calculate_hash();
+
 private:
 	// index structures may have part_cnt = 1 or PART_CNT.
 	uint64_t part_cnt;
+    uint64_t btree_node_id;
 	RC			make_lf(uint64_t part_id, bt_node *& node);
 	RC			make_nl(uint64_t part_id, bt_node *& node);
 	RC		 	make_node(uint64_t part_id, bt_node *& node);
@@ -84,6 +89,7 @@ private:
 	// the leaf and the idx within the leaf that the thread last accessed.
 	bt_node *** cur_leaf_per_thd;
 	UInt32 ** 		cur_idx_per_thd;
+
 };
 
 #endif

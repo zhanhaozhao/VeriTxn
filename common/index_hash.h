@@ -20,6 +20,7 @@ public:
 	}
     DFlow encode() const;
     void decode(const DFlow & e);
+    uint64_t hash() const;
     idx_key_t 		key;
 	// The node for the next key	
 	BucketNode * 	next;
@@ -38,6 +39,8 @@ public:
 	BucketNode * 	first_node;
 	uint64_t 		node_cnt;
 	bool 			locked;
+
+    uint64_t get_hash() const;
 };
 
 // TODO Hash index does not support partition yet.
@@ -58,10 +61,10 @@ public:
 	char*	index_name;
     BucketHeader ** 	_buckets;
 	uint64_t 			_bucket_cnt_per_part;
+    void get_latch(BucketHeader * bucket);
+    void release_latch(BucketHeader * bucket);
 private:
-	void get_latch(BucketHeader * bucket);
-	void release_latch(BucketHeader * bucket);
-	
+
 	// TODO implement more complex hash function
 	uint64_t hash(idx_key_t key) {	return key % _bucket_cnt_per_part; }
 	

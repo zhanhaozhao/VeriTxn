@@ -5,6 +5,8 @@
 // #include "global.h"
 #include "global_common.h"
 #include "txn.h"
+#include "index_enc.h"
+#include "index_btree_enc.h"
 
 
 #define DECL_SET_VALUE(type) \
@@ -45,9 +47,9 @@ public:
 	RC switch_schema(table_t * host_table);
 	// not every row has a manager
 	void init_manager(row_t * row);
-	~row_t(){
-	    delete [] data;
-	}
+//	~row_t(){
+//	    delete [] data;
+//	}
 
 	table_t * get_table();
 	Catalog * get_schema();
@@ -58,8 +60,10 @@ public:
 
 	void copy(row_t * src);
 
-	void 		set_primary_key(uint64_t key) { _primary_key = key; };
-	uint64_t 	get_primary_key() {return _primary_key; };
+    void 		set_primary_key(uint64_t key) { _primary_key = key; };
+    uint64_t 	get_primary_key() {return _primary_key; };
+    void 		set_bucket_id(uint64_t id) { _bucket_id = id; };
+    uint64_t 	get_bucket_id() {return _bucket_id; };
 	uint64_t 	get_part_id() { return _part_id; };
 
 	void set_value(int id, void * ptr);
@@ -108,6 +112,7 @@ public:
   #endif
 	char * data;
 	table_t * table;
+	void * from_page;
     std::string encode();
     uint64_t hash();
     void decode(const std::string &e);
@@ -117,6 +122,7 @@ private:
 	uint64_t 		_primary_key;
 	uint64_t		_part_id;
 	uint64_t 		_row_id;
+	uint64_t        _bucket_id;
 
 };
 
