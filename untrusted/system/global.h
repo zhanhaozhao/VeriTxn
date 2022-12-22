@@ -81,6 +81,13 @@ extern ts_t g_dl_loop_detect;
 extern bool g_ts_batch_alloc;
 extern UInt32 g_ts_batch_num;
 
+
+extern uint64_t g_log_buffer_size;
+extern uint32_t g_max_log_entry_size;
+extern uint32_t g_num_logger;
+extern uint64_t g_flush_blocksize;
+extern uint64_t g_read_blocksize;
+
 extern std::map<std::string, std::string> g_params;
 
 // YCSB

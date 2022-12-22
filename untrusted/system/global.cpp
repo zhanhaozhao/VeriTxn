@@ -70,6 +70,13 @@ double g_perc_payment = PERC_PAYMENT;
 bool g_wh_update = WH_UPDATE;
 char * output_file = NULL;
 
+
+uint64_t g_log_buffer_size = LOG_BUFFER_SIZE;
+uint32_t g_max_log_entry_size = MAX_LOG_ENTRY_SIZE;
+uint32_t g_num_logger = NUM_LOGGER;
+uint64_t g_flush_blocksize = FLUSH_BLOCK_SIZE;
+uint64_t g_read_blocksize = READ_BLOCK_SIZE;
+
 std::map<std::string, std::string> g_params;
 
 #if TPCC_SMALL

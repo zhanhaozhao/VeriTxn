@@ -68,6 +68,8 @@ public:
 	#else
 	LogRecord		log_buf[20];
 	#endif
+	char *			_log_entry;
+	uint32_t 		_log_entry_size;
 #if CC_ALG == HEKATON
 	void * volatile history_entry;
 #endif

@@ -104,12 +104,24 @@
 // [VLL]
 #define TXN_QUEUE_SIZE_LIMIT		THREAD_CNT
 
+// Logging type
+#define LOG_DATA					1
+#define LOG_COMMAND					2
+
 /***********************************************/
 // Logging
 /***********************************************/
-#define LOG_COMMAND					false
-#define LOG_REDO					false
+// #define LOG_COMMAND					false
+// #define LOG_REDO					false
 #define LOG_BATCH_TIME				10 // in ms
+#define LOG_TYPE                    LOG_DATA
+#define LOG_BUFFER_SIZE				(1048576 * 50)	// in bytes
+#define MAX_LOG_ENTRY_SIZE			16384 // in Bytes
+
+#define NUM_LOGGER					1 // the number of loggers
+#define FLUSH_BLOCK_SIZE		1048576 // twice as best among 4096 40960 409600 4096000
+#define READ_BLOCK_SIZE 419430400
+
 
 /***********************************************/
 // Benchmark
@@ -232,7 +244,7 @@ extern enum TestCases					g_test_case;
 #define TPORT_PORT 6000
 #define MAX_TPORT_NAME				128
 // turn on SGX
-#define USE_SGX 0
+// #define USE_SGX 0
 #define TPORT_TYPE tcp
 #define USE_NANOMSG 1
 #define USE_ASYNC_HASH 1

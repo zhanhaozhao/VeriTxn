@@ -26,10 +26,14 @@ void LogThread::setup() {}
 RC LogThread::run() {
   tsetup();
 	while (true) {
-    logger.processRecord(get_thd_id());
-    //logger.flushBufferCheck();
+    // logger.processRecord(get_thd_id());
+
+    uint32_t bytes = (uint32_t)logger.tryFlush();
+
+    // logger.flushBufferCheck();
     if (_wl->sim_done) {
-        return FINISH;
+      // logger.~Logger();
+      return FINISH;
     }
   }
   return FINISH;

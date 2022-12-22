@@ -51,6 +51,9 @@ void txn_man::init(thread_t * h_thd, workload * h_wl, uint64_t thd_id) {
 	_cur_tid = 0;
 #endif
 
+	_log_entry = new char [16384]; //g_max_log_entry_size
+	_log_entry_size = 0;
+
 }
 
 void txn_man::set_txn_id(txnid_t txn_id) {
@@ -88,12 +91,15 @@ void txn_man::cleanup(RC rc) {
 #if USE_LOG == 1
 	int size = 0, buf_size = 0;
 	// LogRecord** logs = log_generate.createRecords(this);
-	log_generate.createRecords(this);
+	// log_generate.createRecords(this);
+	log_generate.create_log_entry(this);
 	size = wr_cnt + 1;
 	buf_size = size * sizeof(LogRecord);
 	// char* buf = log_generate.log_to_buf(logs, size, &buf_size);
-	std::string send_log((char*)log_buf, buf_size);
-	send_logs(send_log, buf_size);
+	// std::string send_log((char*)log_buf, buf_size);
+	// send_logs(send_log, buf_size);
+	std::string send_log((char*) _log_entry, _log_entry_size);
+	send_logs(send_log, _log_entry_size, get_thd_id());
 	// for (int i = 0; i < size; i++) {
 	// 	free(logs[i]);
 	// }

@@ -74,7 +74,20 @@ int main(int argc, char* argv[])
 
 	printf("Initializing trusted log generator... ");
 	fflush(stdout);
-	logger.init("logfile.log");
+
+	std::string bench = "YCSB";
+	if (WORKLOAD == TPCC)
+	{
+		bench = "TPCC_" + std::to_string(g_perc_payment);
+	}
+	std::string dir = "./logs/";
+
+#if LOG_TYPE == LOG_DATA
+		logger.init(dir + "/SD_log" + std::to_string(0) + "_" + bench + "_S.data");
+#else
+		logger.init(dir + "/SC_log" + std::to_string(0) + "_" + bench + "_S.data");
+#endif
+
 	#if LOG_QUEUE_TYPE == LOG_CIRCUL_BUFF
 	log_queues = (Logqueue**) _mm_malloc(sizeof(Logqueue*), g_thread_cnt);
 	new Logqueue[g_thread_cnt];

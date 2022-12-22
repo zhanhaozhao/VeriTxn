@@ -3,6 +3,11 @@
 #include "message.h"
 #include "helper.h"
 // #include "mem_alloc.h"
+
+#include <fcntl.h>
+#include <inttypes.h>
+#include "mem_helper.h"
+
 #if USE_AZURE == 1
 #include <iostream>
 #include <azure/storage/blobs.hpp>
@@ -91,15 +96,37 @@ void Logger::updateBuffer(uint64_t thd_id, LogRecord * record) {
 #include <fstream>
 #endif
 
-void Logger::init(const char * log_file_name) {
-    #if USE_AZURE == 1
-        init_azure();
-    #else
-        this->log_file_name = log_file_name;
-        log_file.open(log_file_name, std::ios::out | std::ios::app | std::ios::binary);
-        assert(log_file.is_open());
-    #endif
-    pthread_mutex_init(&mtx,NULL);
+void Logger::init(std::string log_file_name) {
+    // #if USE_AZURE == 1
+    //     init_azure();
+    // #else
+    //     this->log_file_name = log_file_name;
+    //     log_file.open(log_file_name, std::ios::out | std::ios::app | std::ios::binary);
+    //     assert(log_file.is_open());
+    // #endif
+    // pthread_mutex_init(&mtx,NULL);
+
+
+
+    std::string name = log_file_name;
+    // for parallel logging. The metafile format.
+    //  | file_id | start_lsn | * num_of_log_files
+    _fd = open(name.c_str(), O_TRUNC | O_WRONLY | O_CREAT, 0664);
+    
+    assert(*_lsn  == 0);
+    uint32_t bytes = write(_fd, (uint64_t*)_lsn, sizeof(uint64_t));
+    assert(bytes == sizeof(uint64_t));
+    fsync(_fd);
+    
+    assert(_fd != -1);
+
+    name = name + ".0"; // + to_string(_curr_file_id);
+
+    _fd_data = open(name.c_str(), O_DIRECT | O_TRUNC | O_WRONLY | O_CREAT, 0664);
+    assert(_fd_data != -1);
+
+
+
 }
 
 void Logger::release() { log_file.close(); }
@@ -185,5 +212,296 @@ void Logger::flushBuffer(uint64_t thd_id) {
   log_file.flush();
   last_flush = get_sys_clock();
   log_buf_cnt = 0;
+}
+
+
+
+Logger::Logger() // uint32_t logger_id
+	// : _logger_id (logger_id)
+{
+	_log_buffer_size = g_log_buffer_size;
+	// if (g_log_recover) {
+				
+    //     _disk_lsn = (uint64_t *) MALLOC(sizeof(uint64_t), logger_id);
+    //     *_disk_lsn = 0;
+    //     _next_lsn = (uint64_t *) MALLOC(sizeof(uint64_t), logger_id);
+    //     *_next_lsn = 0;
+
+    //     _gc_lsn = new uint64_t volatile * [g_thread_cnt];
+    //     for (uint32_t i = 0; i < g_thread_cnt; i++) {
+    //         _gc_lsn[i] = (uint64_t *) MALLOC(sizeof(uint64_t), logger_id);
+    //         *_gc_lsn[i] = 0;
+    //     }
+    //     _eof = false;
+
+	// } else {
+		
+    *_lsn = 0;
+    *_persistent_lsn = 0;
+    
+    for (uint32_t i = 0; i < g_thread_cnt; i++) {
+        _filled_lsn[i] = (uint64_t *) malloc(sizeof(uint64_t)); //logger_id
+        *_filled_lsn[i] = 0; 
+    }
+
+    for (uint32_t i = 0; i < g_thread_cnt; i++) {
+        _allocate_lsn[i] = (uint64_t *) malloc(sizeof(uint64_t));
+        *_allocate_lsn[i] = (uint64_t) -1;
+    }
+
+	// }
+	// if(g_flush_interval==0)
+	_flush_interval = UINT64_MAX; // flush interval turned off
+	// else
+	// 	_flush_interval = g_flush_interval; // in ns  
+	_last_flush_time = (uint64_t *) malloc(sizeof(uint64_t)); //logger_id
+	COMPILER_BARRIER
+	*_last_flush_time = get_sys_clock();
+
+	// _buffer = (char *) numa_alloc_onnode(_log_buffer_size + g_max_log_entry_size, (logger_id % g_num_logger) % NUMA_NODE_NUM);
+    _buffer = (char *) malloc(_log_buffer_size + g_max_log_entry_size);
+
+    std::cout << "Log buffer size " << _log_buffer_size << std::endl;
+	assert(_buffer != 0);
+}
+
+
+Logger::~Logger()
+{
+// #if LOG_RAM_DISK
+// 	if (!g_log_recover && !g_no_flush)
+// 		_disk->flush(*_lsn);
+// 	delete _disk;
+// #else 
+// 	if (!g_log_recover && !g_no_flush) {
+		
+    printf("Destructor %d. flush size=%" PRIu64 " (%" PRIu64 " to %" PRIu64 ")\n", _logger_id, (*_lsn) / 512 * 512 - *_persistent_lsn, 
+        *_persistent_lsn, (*_lsn) / 512 * 512);
+    uint64_t end_lsn = (*_lsn) / 512 * 512;
+    uint64_t start_lsn = *_persistent_lsn;
+    if(end_lsn > start_lsn)
+        flush(start_lsn, end_lsn);
+    // INC_FLOAT_STATS_V0(log_bytes, end_lsn - start_lsn);
+        
+    uint32_t bytes = write(_fd, &end_lsn, sizeof(uint64_t));
+    //uint32_t bytes = write(_fd, _lsn, sizeof(uint64_t));
+    assert(bytes == sizeof(uint64_t));
+    fsync(_fd);
+
+    close(_fd);
+    close(_fd_data);
+	// }
+	
+	//_mm_free(_buffer); // because this could be very big.
+	// numa_free((void*)_buffer, _log_buffer_size + g_max_log_entry_size);
+    free(_buffer);
+// #endif
+}
+
+uint64_t
+Logger::logTxn(char * log_entry, uint32_t size, uint64_t epoch, bool sync, uint64_t thd_id)
+{
+	// called by serial logging AND parallel command logging 
+	// The log is stored to the in memory cirular buffer
+    // if the log buffer is full, wait for it to flush.  
+		
+	//assert( *(uint32_t*)log_entry == 0xbeef);
+
+	//printf("TPCC log size: %d\n", size);
+	//COMPILER_BARRIER;
+	// uint64_t starttime = get_sys_clock();
+	if (*_lsn + size >= 
+		*_persistent_lsn + _log_buffer_size - g_max_log_entry_size * g_thread_cnt / g_num_logger) 
+	{
+		//printf("[%" PRIu64 "] txn aborted, persistent_lsn=%" PRIu64 "\n", GET_THD_ID, *_persistent_lsn);
+		//assert(false);
+		return -1; 
+	}
+	uint32_t size_aligned = size % 64 == 0 ? size: size + 64 - size % 64;
+	//INC_INT_STATS(time_debug6, get_sys_clock() - starttime);
+
+	if(log_entry[0] != 0x7f)
+		*_allocate_lsn[thd_id] = *_lsn; 
+	// assumingly this will be no less than the _filled_lsn
+
+	COMPILER_BARRIER
+	uint64_t lsn;
+	if(sync)
+  		lsn = ATOM_FETCH_ADD(*_lsn, size_aligned);	
+	else
+	{
+		// assert(LOG_ALGORITHM == LOG_SERIAL R); // only serial logging puts this code in a critical section.	
+		lsn = *_lsn;
+
+		*_lsn += size_aligned;
+	}
+	
+	if ((lsn / _log_buffer_size < (lsn + size) / _log_buffer_size))	{
+		// reaching the end of the circular buffer, write in two steps 
+		uint32_t tail_size = _log_buffer_size - lsn % _log_buffer_size; 
+		memcpy(_buffer + lsn % _log_buffer_size, log_entry, tail_size);
+		memcpy(_buffer, log_entry + tail_size, size - tail_size);
+	} else {
+		memcpy(_buffer + lsn % _log_buffer_size, log_entry, size);
+	}
+	COMPILER_BARRIER
+	// INC_INT_STATS(time_insideSLT1, get_sys_clock() - starttime);
+
+	*(_filled_lsn[thd_id]) = lsn + size_aligned; 
+
+	// INC_INT_STATS(time_insideSLT2, get_sys_clock() - starttime);
+  	return lsn + size; // or it could be lsn+size_aligned-1
+}
+
+uint64_t Logger::serialLogTxn(std::string buf, int entry_size, uint64_t thd_id) {
+    
+    uint64_t newlsn;
+    char* log_entry = (char*) buf.data();
+
+#if CC_ALG == SILO
+	
+	for(;;)
+	{
+		newlsn = logTxn(log_entry, entry_size, 0, true, thd_id); // need to sync
+		if(newlsn < UINT64_MAX)
+			break;
+		
+		PAUSE 
+	}
+	
+#else
+	for(;;)
+	{
+		#if CC_ALG == NO_WAIT
+		newlsn = logTxn(log_entry, entry_size, 0, true, thd_id);
+		#else
+		newlsn = logTxn(log_entry, entry_size, 0, false, thd_id);
+		#endif
+		if(newlsn < UINT64_MAX)
+			break;
+		
+		PAUSE
+	}
+
+#endif
+	return newlsn;
+
+}
+
+uint64_t
+Logger::tryFlush() 
+{
+	// entries before ready_lsn can be flushed. 
+	// if (g_no_flush) {
+	// 	uint32_t size = *_lsn - *_persistent_lsn; //*_persistent_lsn - *_lsn;
+	// 	*_persistent_lsn = *_lsn;
+	// 	return size;
+	// }
+	uint64_t ready_lsn = *_lsn;
+
+	
+	COMPILER_BARRIER
+	// #if SOLVE_LIVELOCK
+// #if PARTITION_AWARE
+// 	for (uint32_t i = 0; i < g_thread_cnt; i++) // because any worker could write to this log
+// #else
+	for (uint32_t i = _logger_id; i < g_thread_cnt; i+= g_num_logger)
+// #endif	
+	{
+		uint64_t filledLSN = *_filled_lsn[i]; // the reading order matters
+		COMPILER_BARRIER
+		uint64_t allocateLSN = *_allocate_lsn[i];
+		if (allocateLSN >= filledLSN && ready_lsn > allocateLSN) {
+			ready_lsn = allocateLSN;
+		}
+	}
+	// #else
+// #if PARTITION_AWARE
+	// for (uint32_t i = 0; i < g_thread_cnt; i++) // because any worker could write to this log
+// #else
+	// for (uint32_t i = _logger_id; i < g_thread_cnt; i+= g_num_logger)
+// #endif
+		// if (ready_lsn > *_filled_lsn[i]) {
+			// ready_lsn = *_filled_lsn[i];
+		// }
+	// #endif
+
+	if (get_sys_clock() - *_last_flush_time < _flush_interval &&
+	    ready_lsn - *_persistent_lsn < g_flush_blocksize) 
+	{	
+		return 0;
+	}
+	// if(ready_lsn - *_persistent_lsn < g_flush_blocksize)
+	// {
+	// 	INC_INT_STATS(int_flush_time_interval, 1); // caused by time larger than _flush_interval
+	// }
+	// else
+	// {
+	// 	INC_INT_STATS(int_flush_half_full, 1); // caused by half full buffer
+	// }
+
+	assert(ready_lsn >= *_persistent_lsn);
+	// timeout or buffer full enough.
+	*_last_flush_time = get_sys_clock();
+	
+	uint64_t start_lsn = *_persistent_lsn;
+	uint64_t end_lsn = ready_lsn - ready_lsn % 512; // round to smaller 512x
+
+	if(end_lsn - start_lsn > g_flush_blocksize)
+		end_lsn = start_lsn + g_flush_blocksize;
+
+
+	flush(start_lsn, end_lsn);
+
+	/*******************************/
+	COMPILER_BARRIER
+	//printf("[%" PRIu64 "] update persistent lsn from %" PRIu64 " to %" PRIu64 ", ready=%" PRIu64 "\n", GET_THD_ID, *_persistent_lsn, end_lsn, ready_lsn);
+	*_persistent_lsn = end_lsn;
+
+	uint32_t chunk_size = g_thread_cnt;// _log_buffer_size 
+	if (end_lsn / chunk_size  > start_lsn / chunk_size ) {
+		// write ready_lsn into the file.
+
+		uint32_t bytes = write(_fd, &ready_lsn, sizeof(ready_lsn)); // TODO: end_lsn??
+		assert(bytes == sizeof(ready_lsn));
+		fsync(_fd);
+	}
+
+	return end_lsn - start_lsn;
+}
+
+void 
+Logger::flush(uint64_t start_lsn, uint64_t end_lsn)
+{
+	uint64_t starttime = get_sys_clock();
+
+	if (start_lsn == end_lsn) return;
+	assert(end_lsn - start_lsn < _log_buffer_size);
+	
+	assert(_fd_data != 1 && _fd_data != 0);
+	uint32_t bytes;
+	if (start_lsn / _log_buffer_size < end_lsn / _log_buffer_size) {
+		// flush in two steps.
+		uint32_t tail_size = _log_buffer_size - start_lsn % _log_buffer_size;
+		bytes = write(_fd_data, _buffer + start_lsn % _log_buffer_size, tail_size); 
+		assert(bytes == tail_size);
+		bytes = write(_fd_data, _buffer, end_lsn % _log_buffer_size); 
+		assert(bytes == end_lsn % _log_buffer_size);
+	} else { 
+		// here an error might occur that, the serial port (SATA) might be being used by another one.
+		// where the error number would be 
+		bytes = write(_fd_data, (void *)(_buffer + start_lsn % _log_buffer_size), end_lsn - start_lsn);
+		// When using RAID0, sometimes only 2147479552 bytes are written
+
+		M_ASSERT(bytes == end_lsn - start_lsn, "bytes=%d, planned=%" PRIu64 ", errno=%d, _fd=%d, end_lsn=%" PRIu64 ", start_lsn=%" PRIu64 ", data=%" PRIu64 "\n", 
+			bytes, end_lsn - start_lsn, errno, _fd_data, end_lsn, start_lsn, (uint64_t)(_buffer));
+		//printf("start_lsn = %ld, end_lsn = %ld\n", start_lsn, end_lsn);
+		//assert(*(uint32_t*)(_buffer + start_lsn % _log_buffer_size) == 0xbeef);
+	}
+	// INC_INT_STATS(int_debug2, bytes);
+	// INC_INT_STATS(int_debug3, 1);
+	fsync(_fd_data); // sync the data
+	// INC_INT_STATS_V0(time_io, get_sys_clock() - starttime); // actual time in flush.
+//#endif
 }
 

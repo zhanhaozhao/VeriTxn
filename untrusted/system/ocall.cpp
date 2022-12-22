@@ -42,16 +42,22 @@ void async_hash(std::string index_name, int part_id, uint64_t bkt_idx, uint64_t 
 	}
 }
 
-void send_logs(std::string logs, int size) {
-	logger.buf_to_log(logs);
+void send_logs(std::string logs, int size, uint64_t thd_id) {
+	// logger.buf_to_log(logs);
+
+	logger.serialLogTxn(logs, size, thd_id);
+
 	// 	LogRecord* clog = NULL;
 	// 	clog = (LogRecord*)logs[i];
 	// 	logger.enqueueRecord(logs[i]);
 	// }
 }
 
-void untrust_send_logs(std::string logs) {
-	logger.buf_to_log(logs);
+void untrust_send_logs(std::string logs, uint64_t thd_id) {
+	// logger.buf_to_log(logs);
+
+	logger.serialLogTxn(logs, logs.size(), thd_id);
+
 	// 	LogRecord* clog = NULL;
 	// 	clog = (LogRecord*)logs[i];
 	// 	logger.enqueueRecord(logs[i]);
