@@ -60,7 +60,7 @@
 #define ENABLE_LATCH				true
 #define CENTRAL_INDEX				false
 #define CENTRAL_MANAGER 			false
-#define INDEX_STRUCT				IDX_BTREE
+#define INDEX_STRUCT				IDX_HASH
 #define BTREE_ORDER 				16
 #define INDEX_NAME_LENGTH       	16
 #define INDEX_NAME_LENGTH       	16
@@ -231,14 +231,15 @@ extern enum TestCases					g_test_case;
 #define TPORT_PORT 6000
 #define MAX_TPORT_NAME				128
 // turn on SGX
-#define USE_SGX 0
+#define USE_SGX 1
 #define TPORT_TYPE tcp
 #define USE_NANOMSG 1
 #define USE_ASYNC_HASH 1
 #define USE_LOG 1
 
 // cache parameters
-#define VERIFIED_CACHE_SIZ      (6  * 1024 * 1024)  //* 1024
+#define VERIFIED_CACHE_SIZ      (1  * 1024 * 1024)  // 256MB
+//#define VERIFIED_CACHE_SIZ      (8 * 1024  * 1024 * 1024)  // 8GB
 #define BASE_LEASE      100
 #define VERI_TYPE     PAGE_VERI
 #if VERI_TYPE == MERKLE_TREE

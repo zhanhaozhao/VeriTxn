@@ -18,9 +18,10 @@ class BucketNode_ENC {
 public:
     BucketNode_ENC(idx_key_t key) {	init(key); next = nullptr; items = nullptr;};
     ~BucketNode_ENC() {
-        for (auto it = items; it != nullptr; it = it->next) {
-            auto cur_item = (row_t *)it->location;
-            delete cur_item;
+        auto next_item = items;
+        for (auto it = items; next_item != nullptr; it = next_item) {
+            delete (row_t *)it->location;
+            next_item = it->next;
             delete it;
         }
     }
@@ -32,7 +33,7 @@ public:
     uint64_t hash() const;
     DFlow encode() const;
     void decode(const DFlow & e);
-    idx_key_t 		key;
+    idx_key_t 		key{};
     // The node for the next key
     BucketNode_ENC * 	next;
     // NOTE. The items can be a list of items connected by the next pointer.
@@ -42,8 +43,18 @@ public:
 // BucketHeader_ENC does concurrency control of Hash
 class BucketHeader_ENC {
 public:
+    BucketHeader_ENC() {
+        first_node = nullptr;
+        locked = false;
+        origin = nullptr;
+        part = 0;
+        bkt = 0;
+        from = nullptr;
+    }
     ~BucketHeader_ENC(){
-        for (auto it = first_node; it != nullptr ; it = it->next) {
+        BucketNode_ENC* next_node = first_node;
+        for (auto it = first_node; next_node != nullptr ; it = next_node) {
+            next_node = it->next;
             delete it;
         }
     }
@@ -56,8 +67,8 @@ public:
     BucketNode_ENC * 	first_node;
     bool 			locked;
     BucketHeader *  origin;
-    int part;
-    uint64_t  bkt;
+    int             part;
+    uint64_t        bkt{};
     IndexEnc        *from;
 };
 

@@ -56,9 +56,9 @@ void *lru_cache::try_load(uint part_id, uint64_t bkt_idx) {
 }
 
 RC lru_cache::cache_free(int &part, uint64_t & bkt, void * &swapped) {
-#ifdef PRE_LOAD
-    assert(false);
-#endif
+//#ifdef PRE_LOAD
+//    assert(false);
+//#endif
     while (!free_pool.empty()) {
         auto it = free_pool.front();
         auto cur = _cache[it.part][it.bkt];

@@ -18,6 +18,9 @@ RC IndexBTEnc::init(uint64_t part_cnt) {
     _verify_hash = new uint64_t* [part_cnt];
     for (uint64_t i=0;i<part_cnt;i++) {
         _verify_hash[i] = new uint64_t [BTREE_NODE_NUM];
+        for (uint64_t j=0;j<BTREE_NODE_NUM;j++) {
+            _verify_hash[i][j] = _default_bt_veri_hash;
+        }
     }
 #else
     merkle_owner_thread = -1;
@@ -73,6 +76,7 @@ void IndexBTEnc::flush_out(BTNode *c) {
     c->origin->merkle_hash = c->merkle_hash;
 #elif VERI_TYPE == PAGE_VERI
     assert(c->is_leaf); // only need to keep leaf data on time, since no parent hash is maintained.
+    _verify_hash[c->part][c->node_id] = c->get_hash();
 #endif
     c->origin->num_keys = c->num_keys;
     c->origin->is_leaf = c->is_leaf;
@@ -233,7 +237,10 @@ BTNode* IndexBTEnc::load_child(BTNode *cur_node, int i) {
     int sw_part = 0;
     uint64_t sw_node_id = 0;
     void *cur_void = nullptr;
-    auto rc = _cache->load_and_swap(cur_node->part, new_node->node_id, sizeof (*new_node), (void *) new_node, swapped, sw_part, sw_node_id, cur_void);
+    RC rc = Abort;
+    while (rc != RCOK) {
+        rc = _cache->load_and_swap(cur_node->part, new_node->node_id, sizeof (*new_node), (void *) new_node, swapped, sw_part, sw_node_id, cur_void);
+    }
     cur = (BTNode*)cur_void;
     if (rc != RCOK) {
         assert(false);
@@ -291,9 +298,10 @@ BTNode* IndexBTEnc::load_child(BTNode *cur_node, int i) {
 
 #include "common/config.h"
 
-RC IndexBTEnc::dfs(BTNode* c) {
+RC IndexBTEnc::dfs(BTNode* c) { // force load BTree nodes.
     assert(c != nullptr);
     if (c->is_leaf) {
+        _cache->release(c->part, c->node_id);// do not force load leaf nodes.
         return RCOK;
     }
     for (UInt32 i = 0; i <= c->num_keys; i ++) {
