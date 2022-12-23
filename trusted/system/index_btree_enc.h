@@ -28,6 +28,7 @@ struct BTNode {
     uint    part;
     uint64_t parent;
     uint64_t *child;
+    uint64_t next;
     void** data;
     bt_node *origin;
     uint64_t node_id;
@@ -50,6 +51,7 @@ public:
     RC			init(uint64_t part_cnt, table_t * table);
     RC	 		index_read(idx_key_t key, itemid_t * &item, int part_id = -1);
     RC	 		index_read(idx_key_t key, itemid_t * &item, int part_id=-1, int thd_id=0);
+    RC 			index_next(itemid_t * &item, itemid_t * old, bool samekey = false);
     RC          dfs(BTNode* c);
 
 #if VERI_TYPE == MERKLE_TREE
@@ -87,6 +89,8 @@ private:
     uint64_t    _default_bt_veri_hash = 0;
 
     void flush_out(BTNode *c);
+
+    BTNode *load_next(BTNode *cur_node);
 };
 
 

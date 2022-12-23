@@ -4,6 +4,6 @@
   <StackMaxSize>0x1200000</StackMaxSize>
   <HeapInitSize>0x200000000</HeapInitSize>
   <HeapMaxSize>0x800000000</HeapMaxSize>
-  <TCSNum>8</TCSNum>
+  <TCSNum>20</TCSNum>
   <TCSPolicy>0</TCSPolicy>
 </EnclaveConfiguration>

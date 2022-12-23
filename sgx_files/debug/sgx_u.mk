@@ -79,7 +79,7 @@ App_C_Cpp_Flags += -I$(PROJECT_ROOT_DIR)/common -I$(PROJECT_ROOT_DIR)/untrusted 
 
 ### Linking setting ###
 App_Link_Flags := -L$(SGX_LIBRARY_PATH)	-l$(Urts_Library_Name) \
-	-lpthread -lz -lm -lcrypto -lrt
+	-lpthread -lz -lm -lcrypto -lrt -lnanomsg
 
 ## Add sgx_uae_service library to link ##
 ifneq ($(SGX_MODE), HW)

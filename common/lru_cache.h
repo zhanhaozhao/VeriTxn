@@ -9,6 +9,13 @@
 struct cache_node;
 struct cache_visit;
 
+struct cache_visit {
+    uint64_t bkt;
+    int part;
+    uint64_t ts;
+    uint _size;
+};
+
 // TODO: support _cache lease for read only node.
 class lru_cache {
 public:
@@ -41,13 +48,6 @@ private:
 
     RC cache_free(int &part, uint64_t &bkt, void * &swapped);
 
-};
-
-struct cache_visit {
-    uint64_t bkt;
-    int part;
-    uint64_t ts;
-    uint _size;
 };
 
 struct cache_node {

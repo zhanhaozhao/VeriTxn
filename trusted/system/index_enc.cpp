@@ -117,6 +117,9 @@ void IndexEnc::update_verify_hash(int part_id, uint64_t bkt_idx, uint64_t hash) 
 #include "base_row.h"
 #endif
 
+#include "common/index_hash.h"
+#include "common/base_row.h"
+
 void flush_out(std::string iname, int part_id, uint64_t bkt_idx, BucketHeader_ENC *c) {
     auto res = new BucketHeader;
     res->init();
@@ -214,6 +217,7 @@ BucketHeader_ENC* IndexEnc::load_bucket(std::string iname, int part_id, uint64_t
             }
             last_node = node;
         }
+        assert(last_node->next== nullptr);
         total_size += sizeof(*res_bucket);
         assert(res_bucket->get_hash() == res_bucket->origin->get_hash());
         void* swapped = nullptr;
