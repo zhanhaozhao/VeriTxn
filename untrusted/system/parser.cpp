@@ -23,6 +23,10 @@ void print_usage() {
 	printf("\t-GuINT      ; TS_BATCH_NUM\n");
 	
 	printf("\t-o STRING   ; output file\n\n");
+
+	printf("[Logging]:\n");
+	printf("\t-LrINT      ; LOG_RECOVER %d\n", g_log_recover);
+
 	printf("  [YCSB]:\n");
 	printf("\t-cINT       ; PART_PER_TXN\n");
 	printf("\t-eINT       ; PERC_MULTI_PART\n");
@@ -116,6 +120,13 @@ void parser(int argc, char * argv[]) {
 			if (argv[i][2] == 'c')
 				g_test_case = CONFLICT;
 		}
+		else if (argv[i][1] == 'L'){
+			if (argv[i][2] == 'r') {
+				char c = argv[i][3];
+				assert(c == '0' || c == '1');
+				g_log_recover = (c == '1')? true : false;
+			}
+		}
 		else if (argv[i][1] == 'o') {
 			i++;
 			output_file = argv[i];
@@ -138,4 +149,12 @@ void parser(int argc, char * argv[]) {
 	}
 	if (g_thread_cnt < g_init_parallelism)
 		g_init_parallelism = g_thread_cnt;
+
+	printf("g_flush_blocksize=%lu, g_log_buffer_size=%lu\n", g_flush_blocksize, g_log_buffer_size);
+	//assert(g_flush_blocksize < g_log_buffer_size / 2);
+	if(g_flush_blocksize >= g_log_buffer_size / 2) g_log_buffer_size = g_flush_blocksize * 4;
+	if(g_log_recover && g_read_blocksize >= g_log_buffer_size / 2)
+		g_log_buffer_size = g_read_blocksize * 4;
+		//assert(g_read_blocksize < g_log_buffer_size / 2);
+	assert(g_log_buffer_size % 512 == 0);
 }

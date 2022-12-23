@@ -74,3 +74,6 @@
 		*name[i] = value; \
 
 #endif
+
+#define LIKELY(condition) __builtin_expect((condition), 1)
+#define UNLIKELY(condition) __builtin_expect((condition), 0)

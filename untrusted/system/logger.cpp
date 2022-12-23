@@ -106,25 +106,124 @@ void Logger::init(std::string log_file_name) {
     // #endif
     // pthread_mutex_init(&mtx,NULL);
 
+    _log_buffer_size = g_log_buffer_size;
+	
+    if (g_log_recover) {
+
+        // LOGREPLAY
+        _disk_lsn = (uint64_t *) malloc(sizeof(uint64_t));
+        *_disk_lsn = 0;
+        _next_lsn = (uint64_t *) malloc(sizeof(uint64_t));
+        *_next_lsn = 0;
+
+        _gc_lsn = new uint64_t volatile * [g_thread_cnt];
+        for (uint32_t i = 0; i < g_thread_cnt; i++) {
+            _gc_lsn[i] = (uint64_t *) malloc(sizeof(uint64_t));
+            *_gc_lsn[i] = 0;
+        }
+        _eof = false;
+
+        _buffer = (char *) malloc(_log_buffer_size + g_max_log_entry_size);
+        std::cout << "Replay Log buffer size " << _log_buffer_size << std::endl;
+
+	} else {
+		
+        *_lsn = 0;
+        *_persistent_lsn = 0;
+        
+        for (uint32_t i = 0; i < g_thread_cnt; i++) {
+            _filled_lsn[i] = (uint64_t *) malloc(sizeof(uint64_t)); //logger_id
+            *_filled_lsn[i] = 0; 
+        }
+
+        for (uint32_t i = 0; i < g_thread_cnt; i++) {
+            _allocate_lsn[i] = (uint64_t *) malloc(sizeof(uint64_t));
+            *_allocate_lsn[i] = (uint64_t) -1;
+        }
+
+	}
+
+	// if(g_flush_interval==0)
+	_flush_interval = UINT64_MAX; // flush interval turned off
+	// else
+	// 	_flush_interval = g_flush_interval; // in ns  
+	_last_flush_time = (uint64_t *) malloc(sizeof(uint64_t)); //logger_id
+	COMPILER_BARRIER
+	*_last_flush_time = get_sys_clock();
+
+	// _buffer = (char *) numa_alloc_onnode(_log_buffer_size + g_max_log_entry_size, (logger_id % g_num_logger) % NUMA_NODE_NUM);
+    _buffer = (char *) malloc(_log_buffer_size + g_max_log_entry_size);
+
+    std::cout << "Log buffer size " << _log_buffer_size << std::endl;
+	assert(_buffer != 0);
 
 
-    std::string name = log_file_name;
-    // for parallel logging. The metafile format.
-    //  | file_id | start_lsn | * num_of_log_files
-    _fd = open(name.c_str(), O_TRUNC | O_WRONLY | O_CREAT, 0664);
-    
-    assert(*_lsn  == 0);
-    uint32_t bytes = write(_fd, (uint64_t*)_lsn, sizeof(uint64_t));
-    assert(bytes == sizeof(uint64_t));
-    fsync(_fd);
-    
-    assert(_fd != -1);
+    if (g_log_recover) {
+        std::string path = log_file_name + ".0";
+        // if(g_ramdisk)
+        //     _fd_data = open(path.c_str(), O_RDONLY);
+        // else
+        _fd_data = open(path.c_str(), O_DIRECT | O_RDONLY);
+        uint64_t fdatasize = lseek(_fd_data, 0, SEEK_END);
+        std::cout << "data size " << fdatasize << std::endl;
+        _fdatasize = fdatasize;
 
-    name = name + ".0"; // + to_string(_curr_file_id);
+        lseek(_fd_data, 0, SEEK_SET);
+        assert(_fd != -1);
+    //if (g_log_recover) {
+        int _fd = open(log_file_name.c_str(), O_RDONLY);
+        assert(_fd != -1);
+        uint32_t fsize = lseek(_fd, 0, SEEK_END);
+        lseek(_fd, 0, SEEK_SET);
+        _num_chunks = fsize / sizeof(uint64_t);
+        //_starting_lsns = new uint64_t [_num_chunks];
+        _starting_lsns = (uint64_t*) malloc(_num_chunks * sizeof(uint64_t));
+        uint32_t size = read(_fd, _starting_lsns, fsize);
+        assert(size == fsize);
+        _chunk_size = 0;
+        for (uint32_t i = 0; i < _num_chunks; i ++) {
+            if (_starting_lsns[i] >= fdatasize)
+            {
+                _num_chunks = i;
+                break;
+            }
+            uint64_t fstart = _starting_lsns[i] / 512 * 512; 
+            uint64_t fend = _starting_lsns[i+1];
+            if (fend % 512 != 0)
+                fend = fend / 512 * 512 + 512; 
+            if (fend - fstart > _chunk_size)
+                _chunk_size = fend - fstart;
+            printf("_starting_lsns[%d] = %" PRIu64 "\n", i, _starting_lsns[i]);
+        }
+        
+        printf("Chunk Number adjusted to %d\n", _num_chunks);
 
-    _fd_data = open(name.c_str(), O_DIRECT | O_TRUNC | O_WRONLY | O_CREAT, 0664);
-    assert(_fd_data != -1);
+        _chunk_size = _chunk_size / 512 * 512 + 1024;
+        close(_fd);
+        _next_chunk = (uint32_t*) malloc(sizeof(uint32_t));
+        *_next_chunk = 0; //_num_chunks - 1; //_num_chunks-1; // start from end
+        _file_size = fsize;
+		
+	} else {
 
+        std::string name = log_file_name;
+        // for parallel logging. The metafile format.
+        //  | file_id | start_lsn | * num_of_log_files
+        _fd = open(name.c_str(), O_TRUNC | O_WRONLY | O_CREAT, 0664);
+        
+        assert(*_lsn  == 0);
+        uint32_t bytes = write(_fd, (uint64_t*)_lsn, sizeof(uint64_t));
+        assert(bytes == sizeof(uint64_t));
+        fsync(_fd);
+        
+        assert(_fd != -1);
+
+        name = name + ".0"; // + to_string(_curr_file_id);
+
+        _fd_data = open(name.c_str(), O_DIRECT | O_TRUNC | O_WRONLY | O_CREAT, 0664);
+        assert(_fd_data != -1);
+
+    }
 
 
 }
@@ -219,50 +318,7 @@ void Logger::flushBuffer(uint64_t thd_id) {
 Logger::Logger() // uint32_t logger_id
 	// : _logger_id (logger_id)
 {
-	_log_buffer_size = g_log_buffer_size;
-	// if (g_log_recover) {
-				
-    //     _disk_lsn = (uint64_t *) MALLOC(sizeof(uint64_t), logger_id);
-    //     *_disk_lsn = 0;
-    //     _next_lsn = (uint64_t *) MALLOC(sizeof(uint64_t), logger_id);
-    //     *_next_lsn = 0;
-
-    //     _gc_lsn = new uint64_t volatile * [g_thread_cnt];
-    //     for (uint32_t i = 0; i < g_thread_cnt; i++) {
-    //         _gc_lsn[i] = (uint64_t *) MALLOC(sizeof(uint64_t), logger_id);
-    //         *_gc_lsn[i] = 0;
-    //     }
-    //     _eof = false;
-
-	// } else {
-		
-    *_lsn = 0;
-    *_persistent_lsn = 0;
-    
-    for (uint32_t i = 0; i < g_thread_cnt; i++) {
-        _filled_lsn[i] = (uint64_t *) malloc(sizeof(uint64_t)); //logger_id
-        *_filled_lsn[i] = 0; 
-    }
-
-    for (uint32_t i = 0; i < g_thread_cnt; i++) {
-        _allocate_lsn[i] = (uint64_t *) malloc(sizeof(uint64_t));
-        *_allocate_lsn[i] = (uint64_t) -1;
-    }
-
-	// }
-	// if(g_flush_interval==0)
-	_flush_interval = UINT64_MAX; // flush interval turned off
-	// else
-	// 	_flush_interval = g_flush_interval; // in ns  
-	_last_flush_time = (uint64_t *) malloc(sizeof(uint64_t)); //logger_id
-	COMPILER_BARRIER
-	*_last_flush_time = get_sys_clock();
-
-	// _buffer = (char *) numa_alloc_onnode(_log_buffer_size + g_max_log_entry_size, (logger_id % g_num_logger) % NUMA_NODE_NUM);
-    _buffer = (char *) malloc(_log_buffer_size + g_max_log_entry_size);
-
-    std::cout << "Log buffer size " << _log_buffer_size << std::endl;
-	assert(_buffer != 0);
+	
 }
 
 
@@ -273,24 +329,24 @@ Logger::~Logger()
 // 		_disk->flush(*_lsn);
 // 	delete _disk;
 // #else 
-// 	if (!g_log_recover && !g_no_flush) {
-		
-    printf("Destructor %d. flush size=%" PRIu64 " (%" PRIu64 " to %" PRIu64 ")\n", _logger_id, (*_lsn) / 512 * 512 - *_persistent_lsn, 
-        *_persistent_lsn, (*_lsn) / 512 * 512);
-    uint64_t end_lsn = (*_lsn) / 512 * 512;
-    uint64_t start_lsn = *_persistent_lsn;
-    if(end_lsn > start_lsn)
-        flush(start_lsn, end_lsn);
-    // INC_FLOAT_STATS_V0(log_bytes, end_lsn - start_lsn);
-        
-    uint32_t bytes = write(_fd, &end_lsn, sizeof(uint64_t));
-    //uint32_t bytes = write(_fd, _lsn, sizeof(uint64_t));
-    assert(bytes == sizeof(uint64_t));
-    fsync(_fd);
+	if (!g_log_recover) {
 
-    close(_fd);
-    close(_fd_data);
-	// }
+        printf("Destructor %d. flush size=%" PRIu64 " (%" PRIu64 " to %" PRIu64 ")\n", _logger_id, (*_lsn) / 512 * 512 - *_persistent_lsn, 
+            *_persistent_lsn, (*_lsn) / 512 * 512);
+        uint64_t end_lsn = (*_lsn) / 512 * 512;
+        uint64_t start_lsn = *_persistent_lsn;
+        if(end_lsn > start_lsn)
+            flush(start_lsn, end_lsn);
+        // INC_FLOAT_STATS_V0(log_bytes, end_lsn - start_lsn);
+            
+        uint32_t bytes = write(_fd, &end_lsn, sizeof(uint64_t));
+        //uint32_t bytes = write(_fd, _lsn, sizeof(uint64_t));
+        assert(bytes == sizeof(uint64_t));
+        fsync(_fd);
+
+        close(_fd);
+        close(_fd_data);
+	}
 	
 	//_mm_free(_buffer); // because this could be very big.
 	// numa_free((void*)_buffer, _log_buffer_size + g_max_log_entry_size);
@@ -505,3 +561,205 @@ Logger::flush(uint64_t start_lsn, uint64_t end_lsn)
 //#endif
 }
 
+uint64_t 
+Logger::tryReadLog()
+{
+	uint64_t bytes, start_lsn_moded, end_lsn_moded;
+	bytes = 0;
+// #if ASYNC_IO
+// 	if(AIOworking){
+// 		// short-cut tryReadLog function if the previous is till working
+// 		if(aio_error64(&cb) == EINPROGRESS)
+// 			return 0;
+// 		bytes = aio_return64(&cb);
+// 		//cout << GET_THD_ID << " Read bytes:" << bytes << endl;
+// 		if(bytes < lastSize)
+// 			_eof = true;
+// 		fileOffset += bytes;
+// 		start_lsn_moded = lastStartLSN % _log_buffer_size;
+// 		end_lsn_moded = (lastStartLSN + bytes) % _log_buffer_size;
+// 		assert(end_lsn_moded == 0 || end_lsn_moded >= start_lsn_moded); // bytes could be 0
+// 		if(start_lsn_moded < g_max_log_entry_size)
+// 		{
+// 			if(end_lsn_moded > 0 && end_lsn_moded < g_max_log_entry_size)
+// 				memcpy(_buffer + start_lsn_moded + _log_buffer_size, _buffer + start_lsn_moded, end_lsn_moded - start_lsn_moded);
+// 			else
+// 				memcpy(_buffer + start_lsn_moded + _log_buffer_size, _buffer + start_lsn_moded, g_max_log_entry_size - start_lsn_moded);
+// 		}
+// 		AIOworking = false;
+
+// 		*_disk_lsn = lastStartLSN + bytes;
+
+// 		INC_INT_STATS(int_flush_half_full, 1);
+// 		INC_INT_STATS(log_data, bytes);
+// 		INC_INT_STATS_V0(time_io, get_sys_clock() - lastTime);
+// 	}
+// #endif
+
+	uint64_t starttime = get_sys_clock();
+
+	uint64_t gc_lsn = *_next_lsn;
+	COMPILER_BARRIER
+	for (uint32_t i = _logger_id; i < g_thread_cnt; i+=g_num_logger)
+		if (gc_lsn > *_gc_lsn[i] && *_gc_lsn[i] != 0) {
+		//if (i % g_num_logger == _logger_id && gc_lsn > *_gc_lsn[i] && *_gc_lsn[i] != 0) {
+			gc_lsn = *_gc_lsn[i];
+		}
+	assert(gc_lsn <= *_disk_lsn);
+	if (*_disk_lsn - gc_lsn > _log_buffer_size / 2) 
+		return bytes;
+	assert(*_disk_lsn >= gc_lsn);
+	assert(*_disk_lsn % 512 == 0);
+	uint64_t start_lsn = *_disk_lsn;
+		
+	gc_lsn -= gc_lsn % 512; 
+
+	
+	uint64_t budget = g_read_blocksize; //(uint64_t)(_log_buffer_size * g_recover_buffer_perc);
+	uint64_t end_lsn = start_lsn + budget;
+	if (end_lsn - gc_lsn >= _log_buffer_size)
+		end_lsn = gc_lsn + _log_buffer_size - 512;
+	
+	if (end_lsn - start_lsn < budget / 2) // we need to control the amount of bytes every time
+		return bytes;
+	
+	//uint64_t end_lsn = gc_lsn + (uint64_t)(_log_buffer_size * g_recover_buffer_perc);
+	if (start_lsn == end_lsn) return bytes;
+	assert(end_lsn - start_lsn <= _log_buffer_size);
+	//uint32_t bytes;
+	start_lsn_moded = start_lsn % _log_buffer_size;
+	end_lsn_moded = end_lsn % _log_buffer_size;
+	
+// #if ASYNC_IO
+// 	lastStartLSN = start_lsn;
+// 	//memset(&cb, 0, sizeof(aiocb64));
+// 	//cb.aio_fildes = _fd_data;
+// 	cb.aio_buf = _buffer + start_lsn_moded;
+// 	cb.aio_offset = fileOffset;
+// 	if (end_lsn_moded > 0 && start_lsn_moded >= end_lsn_moded) {
+// 		// flush in two steps.
+// 		uint32_t tail_size = _log_buffer_size - start_lsn_moded;
+// 		cb.aio_nbytes = tail_size;
+// 		lastSize = tail_size;
+// 		//bytes = read(_fd_data, _buffer + start_lsn_moded, tail_size);
+// 	} else { 
+// 		cb.aio_nbytes = end_lsn - start_lsn;
+// 		lastSize = end_lsn - start_lsn;
+// 	}
+// 	//cout << GET_THD_ID << " aio read from " << start_lsn << " to " << end_lsn << "|" << lastSize << endl;
+// 	lastTime = get_sys_clock();
+// 	if(aio_read64(&cb) == -1)
+// 	{
+// 		assert(false); // Async request failure
+// 	}
+// 	AIOworking = true;
+// #else
+	if (end_lsn_moded > 0 && start_lsn_moded >= end_lsn_moded) {
+		// flush in two steps.
+		uint32_t tail_size = _log_buffer_size - start_lsn_moded;
+
+		bytes = read(_fd_data, _buffer + start_lsn_moded, tail_size);
+		if(start_lsn_moded < g_max_log_entry_size)
+			memcpy(_buffer + start_lsn_moded + _log_buffer_size, _buffer + start_lsn_moded, g_max_log_entry_size - start_lsn_moded);
+		if (bytes < tail_size) 
+			_eof = true; 
+		else {
+			bytes += read(_fd_data, _buffer, end_lsn_moded);
+            if (bytes < end_lsn  - start_lsn)
+				_eof = true; 
+			// fill in the dummy tail
+			//cout << GET_THD_ID % g_num_logger << " Wrapping " << start_lsn << " " << end_lsn << " " << _log_buffer_size << endl;
+			memcpy(_buffer+_log_buffer_size, _buffer, end_lsn_moded < g_max_log_entry_size ? end_lsn_moded : g_max_log_entry_size);
+		}
+
+	} else { 
+		bytes = read(_fd_data, _buffer + start_lsn_moded, end_lsn - start_lsn);
+		//M_ASSERT(bytes == end_lsn - start_lsn, "bytes=%d, planned=%" PRIu64 ", errno=%d, _fd=%d, end_lsn=%" PRIu64 ", start_lsn=%" PRIu64 ", data=%" PRIu64 "\n", 
+		//	bytes, end_lsn - start_lsn, errno, _fd_data, end_lsn, start_lsn, (uint64_t)(_buffer));
+        if (bytes < end_lsn - start_lsn) 
+			_eof = true;
+		if(start_lsn_moded < g_max_log_entry_size)
+		{
+			if(end_lsn_moded > 0)
+				memcpy(_buffer + start_lsn_moded + _log_buffer_size, _buffer + start_lsn_moded, (end_lsn_moded < g_max_log_entry_size ? end_lsn_moded : g_max_log_entry_size) - start_lsn_moded);
+			else
+			{
+				memcpy(_buffer + start_lsn_moded + _log_buffer_size, _buffer + start_lsn_moded, g_max_log_entry_size - start_lsn_moded);
+			}
+		}
+	}
+	end_lsn = start_lsn + bytes;
+	
+	COMPILER_BARRIER
+
+    *_disk_lsn = end_lsn;
+
+	// INC_INT_STATS(int_debug3, 1);
+	// INC_INT_STATS(int_debug2, bytes);
+	// INC_INT_STATS_V0(time_io, get_sys_clock() - starttime);
+// #endif
+    // INC_INT_STATS(int_debug1, 1); // how many time we initiate the AIO.
+	// INC_INT_STATS(time_debug10, get_sys_clock() - starttime); // actual time in read.
+	return bytes;
+/*#else 
+	assert(false);
+	return 0;
+#endif*/
+}
+
+uint64_t Logger::get_next_log_entry_non_atom(char * &entry) //, uint32_t &mysize)
+{
+	//uint64_t next_lsn;
+	uint32_t size;
+	uint64_t t1 = get_sys_clock();
+	
+	//next_lsn = *_next_lsn;
+    
+    // TODO. 
+    // There is a werid bug: for the last block (512-bit) of the file, the data 
+    // is corrupted? the assertion in txn.cpp : 449 would fail.
+    // Right now, the hack to solve this bug:
+    //  	do not read the last few blocks.
+    uint32_t dead_tail = 0;// _eof? 2048 : 0;
+    if (UNLIKELY(*_next_lsn + sizeof(uint32_t) * 2 >= *_disk_lsn - dead_tail)) {
+        entry = NULL;
+        // INC_INT_STATS(time_debug11, get_sys_clock() - t1);
+        return -1;
+    }
+    // Assumption. 
+    // Each log record has the following format
+    //  | checksum (32 bit) | size (32 bit) | ...
+
+    uint64_t size_offset = *_next_lsn % _log_buffer_size + sizeof(uint32_t);
+    
+    size = *(uint32_t*) (_buffer + size_offset);
+    //mysize = size;
+    
+    // round to a cacheline size
+    size = size % 64 == 0 ? size : size + 64 - size % 64;
+    //INC_INT_STATS(time_debug6, get_sys_clock() - t2);
+    if (UNLIKELY(*_next_lsn + size >= *_disk_lsn - dead_tail)) {
+        entry = NULL;
+        // INC_INT_STATS(time_debug12, get_sys_clock() - t1);
+        return -1;
+    }
+    //INC_INT_STATS(int_debug5, 1);
+	uint64_t tt2 = get_sys_clock();
+	// INC_INT_STATS(time_debug_get_next, tt2 - t1);
+	
+	entry = _buffer + (*_next_lsn % _log_buffer_size);
+		// TODO: assume file read is slower than processing txn,
+		// a.k.a., the circular buffer will not be freshed.
+	*_next_lsn = *_next_lsn + size;
+
+	// INC_INT_STATS(int_debug_get_next, 1);	
+	// INC_INT_STATS(time_recover5, get_sys_clock() - t1);
+	return *_next_lsn - 1; // for maxLSN
+
+}
+
+void 
+Logger::set_gc_lsn(uint64_t lsn, uint64_t thd_id)
+{
+	*_gc_lsn[thd_id] = lsn;
+}

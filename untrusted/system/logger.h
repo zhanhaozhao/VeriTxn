@@ -109,7 +109,7 @@ public:
 	 uint64_t 	get_next_log_batch(char * &entry, uint32_t &num);
 	uint32_t 	get_next_log_chunk(char * &chunk, uint64_t &size, uint64_t &base_lsn);
 	void 		return_log_chunk(char * buffer, uint32_t chunk_num);
-	void 		set_gc_lsn(uint64_t lsn);
+	void 		set_gc_lsn(uint64_t lsn, uint64_t thd_id);
 	volatile bool     _eof __attribute__((aligned(64)));
 private:
 	volatile uint64_t * _disk_lsn; // __attribute__((aligned(64)));

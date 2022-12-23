@@ -58,6 +58,7 @@ extern UInt32 g_node_cnt;
 extern bool volatile warmup_finish;
 extern bool volatile enable_thread_mem_pool;
 extern pthread_barrier_t warmup_bar;
+extern pthread_barrier_t log_bar;
 // #ifndef NOGRAPHITE
 // extern carbon_barrier_t enable_barrier;
 // #endif
@@ -84,6 +85,7 @@ extern UInt32 g_ts_batch_num;
 
 extern uint64_t g_log_buffer_size;
 extern uint32_t g_max_log_entry_size;
+extern bool g_log_recover;
 extern uint32_t g_num_logger;
 extern uint64_t g_flush_blocksize;
 extern uint64_t g_read_blocksize;

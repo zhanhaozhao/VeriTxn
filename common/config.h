@@ -5,7 +5,7 @@
 // Simulation + Hardware
 /***********************************************/
 #define NODE_CNT 1
-#define THREAD_CNT 5
+#define THREAD_CNT 4
 #define PART_CNT NODE_CNT
 #define INPUT_CNT					1
 #define OUTPUT_CNT					1
@@ -22,7 +22,7 @@
 // # of transactions to run for warmup
 #define WARMUP						0
 // YCSB or TPCC
-#define WORKLOAD TPCC
+#define WORKLOAD YCSB
 // print the transaction latency distribution
 #define PRT_LAT_DISTR				false
 #define STATS_ENABLE				true
@@ -117,7 +117,7 @@
 #define LOG_TYPE                    LOG_DATA
 #define LOG_BUFFER_SIZE				(1048576 * 50)	// in bytes
 #define MAX_LOG_ENTRY_SIZE			16384 // in Bytes
-
+#define LOG_RECOVER                 false
 #define NUM_LOGGER					1 // the number of loggers
 #define FLUSH_BLOCK_SIZE		1048576 // twice as best among 4096 40960 409600 4096000
 #define READ_BLOCK_SIZE 419430400

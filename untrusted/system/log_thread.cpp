@@ -25,17 +25,39 @@ void LogThread::setup() {}
 
 RC LogThread::run() {
   tsetup();
-	while (true) {
-    // logger.processRecord(get_thd_id());
 
-    uint32_t bytes = (uint32_t)logger.tryFlush();
+  // pthread_barrier_wait(&log_bar);
+  if (g_log_recover) {
+    while (true)
+		{ //glob_manager->get_workload()->sim_done < g_thread_cnt) {
+			uint64_t bytes = logger.tryReadLog();
+			// total_log_data += bytes;
+			if (logger.iseof())
+				break;
+			if (bytes == 0)
+			{
+				usleep(100);
+			}
+      // logger.flushBufferCheck();
+      // if (_wl->sim_done) {
+      //   // logger.~Logger();
+      //   return FINISH;
+      // }
+		}
+  } else {
+    while (true) {
+      // logger.processRecord(get_thd_id());
+      uint32_t bytes = (uint32_t)logger.tryFlush();
 
-    // logger.flushBufferCheck();
-    if (_wl->sim_done) {
-      // logger.~Logger();
-      return FINISH;
+      // logger.flushBufferCheck();
+      if (_wl->sim_done) {
+        // logger.~Logger();
+        return FINISH;
+      }
     }
   }
+
+
   return FINISH;
 
 }

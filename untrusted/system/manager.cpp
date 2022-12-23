@@ -23,6 +23,15 @@ void Manager::init() {
 	for (uint32_t i = 0; i < g_thread_cnt; i++) 
 		all_ts[i] = (ts_t *) _mm_malloc(sizeof(ts_t), 64);
 
+	_all_txns = new re_txn_man * [g_thread_cnt];
+	for (UInt32 i = 0; i < g_thread_cnt; i++) {
+		*all_ts[i] = UINT64_MAX;
+		_all_txns[i] = NULL;
+	}
+	_thd_txn_ids = new uint64_t [g_thread_cnt];
+	for (UInt32 i = 0; i < g_thread_cnt; i++) {
+		_thd_txn_ids[i] = 0;
+	}
 	for (UInt32 i = 0; i < BUCKET_CNT; i++)
 		pthread_mutex_init( &mutexes[i], NULL );
 }
@@ -63,6 +72,9 @@ Manager::get_ts(uint64_t thread_id) {
 }
 
 ts_t Manager::get_min_ts(uint64_t tid) {
+	
+	if (g_log_recover) return _min_ts;
+
 	uint64_t now = get_sys_clock();
 	uint64_t last_time = _last_min_ts_time; 
 	if (tid == 0 && now - last_time > MIN_TS_INTVL)
@@ -81,6 +93,20 @@ void Manager::add_ts(uint64_t thd_id, ts_t ts) {
 	assert( ts >= *all_ts[thd_id] || 
 		*all_ts[thd_id] == UINT64_MAX);
 	*all_ts[thd_id] = ts;
+	if (g_log_recover) {
+		pthread_mutex_lock( &ts_mutex );
+		uint64_t min = UINT64_MAX;
+	   	for (uint32_t i = 0; i < g_num_logger; i++) 
+   		 	if (min > *all_ts[i])
+   		    	min = *all_ts[i];
+		_min_ts = min;
+		pthread_mutex_unlock( &ts_mutex );
+	}
+}
+
+void Manager::set_txn_man(re_txn_man * txn) {
+	int thd_id = txn->get_thd_id();
+	_all_txns[thd_id] = txn;
 }
 
 
