@@ -142,15 +142,26 @@ int main(int argc, char* argv[])
 
 	pthread_t p_thds[all_thd_cnt];
 	m_thds = new thread_t[thd_cnt];
-	query_queue = (Query_queue *) _mm_malloc(sizeof(Query_queue), 64);
-	if (WORKLOAD != TEST)
-		query_queue->init(m_wl);
+	if (!g_log_recover)
+	{
+		query_queue = (Query_queue *) _mm_malloc(sizeof(Query_queue), 64);
+		if (WORKLOAD != TEST)
+			query_queue->init(m_wl);
+		printf("query_queue initialized!\n");
+	}
 	pthread_barrier_init( &warmup_bar, NULL, all_thd_cnt );
-	printf("query_queue initialized!\n");
+	pthread_barrier_init(&log_bar, NULL, all_thd_cnt);
+
 	warmup_finish = true;
 	// spawn and run txns again.
 	int64_t starttime = get_server_clock();
 	int id = 0;
+
+	if (g_log_recover) {
+		log_thds[0].init(id,g_node_id,m_wl);
+		pthread_create(&p_thds[id++], NULL, run_thread, (void *)&log_thds[0]);
+	}
+
 	for (uint32_t i = 0; i < thd_cnt; i++) {
 		uint64_t vid = i;
 		m_thds[vid].init(i, g_node_id, m_wl);
@@ -166,9 +177,11 @@ int main(int argc, char* argv[])
 		output_thds[j].init(id,g_node_id,m_wl);
 		pthread_create(&p_thds[id++], NULL, run_thread, (void *)&output_thds[j]);
 	}
-	log_thds[0].init(id,g_node_id,m_wl);
-	pthread_create(&p_thds[id++], NULL, run_thread, (void *)&log_thds[0]);
-	
+
+	if (!g_log_recover) {
+		log_thds[0].init(id,g_node_id,m_wl);
+		pthread_create(&p_thds[id++], NULL, run_thread, (void *)&log_thds[0]);
+	}
 
 	// m_thds[thd_cnt - 1]->init(i, g_node_id, m_wl);
 	// run_thread((void *)(m_thds[thd_cnt - 1]));
