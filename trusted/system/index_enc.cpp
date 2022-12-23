@@ -117,6 +117,9 @@ void IndexEnc::update_verify_hash(int part_id, uint64_t bkt_idx, uint64_t hash) 
 #include "base_row.h"
 #endif
 
+#include "common/index_hash.h"
+#include "common/base_row.h"
+
 void flush_out(std::string iname, int part_id, uint64_t bkt_idx, BucketHeader_ENC *c) {
     auto res = new BucketHeader;
     res->init();

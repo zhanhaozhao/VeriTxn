@@ -40,7 +40,7 @@ RC ycsb_txn_man::run_txn(base_query * query) {
 			} 
 #if INDEX_STRUCT == IDX_BTREE
 			else {
-				_wl->the_index->index_next(get_thd_id(), m_item);
+                m_item = index_next("MAIN_INDEX", m_item);
 				if (m_item == NULL)
 					break;
 			}

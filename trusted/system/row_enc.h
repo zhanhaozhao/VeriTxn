@@ -113,6 +113,7 @@ public:
 	char * data;
 	table_t * table;
 	void * from_page;
+	uint64_t offset;
     std::string encode();
     uint64_t hash();
     void decode(const std::string &e);

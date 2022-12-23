@@ -1,10 +1,9 @@
 #include "index_btree_enc.h"
 #include "mem_helper_enc.h"
 #include "row_enc.h"
-#include <index_hash.h>
-#include "index_btree.h"
-#include "base_row.h"
 #include "atomic"
+#include "common/index_btree.h"
+#include "common/base_row.h"
 
 RC IndexBTEnc::init(uint64_t part_cnt) {
     this->part_cnt = part_cnt;
@@ -96,7 +95,7 @@ void IndexBTEnc::flush_out(BTNode *c) {
                 new_row->data = new char[n + 1];
                 memcpy(new_row->data, old_row->data, sizeof(char) * n);
                 new_row->table = old_row->table;
-                new_row->init_manager(new_row);
+//                new_row->init_manager(new_row);
                 new_row->set_primary_key(old_row->get_primary_key());
                 new_row->set_row_id(old_row->get_row_id());
                 auto new_item = new itemid_t;
@@ -129,6 +128,79 @@ void IndexBTEnc::flush_out(BTNode *c) {
 //    if (cur % 1000 == 0) {
 //        printf("flushed: %lu\n", cur);
 //    }
+}
+
+BTNode* IndexBTEnc::load_next(BTNode *cur_node) {
+    assert(cur_node->is_leaf == true);
+    bt_node* origin_node = cur_node->origin->next;
+    uint64_t inner_node_id = cur_node->next;
+    if (origin_node == nullptr || inner_node_id == 0) {
+        return nullptr;
+    }
+    auto cur = (BTNode*) _cache->try_load(cur_node->part, inner_node_id);
+    if (cur != nullptr) {
+        return cur;
+    }
+    auto new_node = make_node(origin_node, cur_node->part);
+    assert(new_node->node_id = inner_node_id);
+    void* swapped = nullptr;
+    int sw_part = 0;
+    uint64_t sw_node_id = 0;
+    void *cur_void = nullptr;
+    auto rc = _cache->load_and_swap(cur_node->part, new_node->node_id, sizeof (*new_node), (void *) new_node, swapped, sw_part, sw_node_id, cur_void);
+    cur = (BTNode*)cur_void;
+    if (rc != RCOK) {
+        assert(false);
+    }
+    else if (swapped != nullptr) {
+//        assert(false);
+        auto flushed_node = (BTNode *)swapped;
+
+#ifdef READ_ONLY
+        uint64_t new_hash = flushed_node->get_hash();
+        if (new_hash == _verify_hash[flushed_node->part][flushed_node->node_id]) {
+            _cache->inc_lease(flushed_node->part, flushed_node->node_id);
+        } else {
+            _cache->reset_lease(flushed_node->part, flushed_node->node_id);
+            _verify_hash[flushed_node->part][flushed_node->node_id] = new_hash;
+        }
+#endif
+#if VERI_TYPE == PAGE_VERI
+        while (!latch_node(flushed_node, LATCH_EX)) {}
+        if (flushed_node->is_leaf) {
+            flush_out(flushed_node);
+        }
+        delete flushed_node;
+#elif VERI_TYPE == MERKLE_TREE
+        while (!latch_node(flushed_node, LATCH_EX)) {}
+        flush_out(flushed_node);
+        delete flushed_node;
+        //TODO: support merkle tree delayed hash update.
+        // because we use lock-free cache load, the flushed_node could be used by another thread concurrently.
+#endif
+    }
+#if VERI_TYPE == PAGE_VERI
+    if (cur != new_node) delete new_node;
+    else if (new_node->is_leaf) {
+        // only need to verify the leaf node.
+        if (_verify_hash[new_node->part][new_node->node_id] == _default_bt_veri_hash)
+            _verify_hash[new_node->part][new_node->node_id] = cur->get_hash();
+        else assert(_verify_hash[new_node->part][new_node->node_id] == cur->get_hash());
+    }
+#elif VERI_TYPE == MERKLE_TREE
+    if (cur != new_node) delete new_node;
+    else {
+        if (i == -1) {
+            // the merkle tree must goes from root to leaf to load data outside cache, the other direction is not safe and needs other verification.
+//            assert(cur->hash() == cur->merkle_hash);
+        } else {
+            // need to verify all nodes.
+            assert(cur->hash() == cur->merkle_hash);
+            assert(cur_node->child_merkle_hash[i] == cur->merkle_hash);
+        }
+    }
+#endif
+    return cur;
 }
 
 BTNode* IndexBTEnc::load_child(BTNode *cur_node, int i) {
@@ -305,6 +377,11 @@ BTNode* IndexBTEnc::make_node(bt_node* out, int64_t part) {
     new_node->num_keys = out->num_keys;
     new_node->node_id = out->node_id;
     new_node->from = this;
+    if (out->next == nullptr) {
+        new_node->next = 0;
+    } else {
+        new_node->next = out->next->node_id;
+    }
     if (out->parent == nullptr) {
         new_node->parent = 0;
     } else {
@@ -343,6 +420,7 @@ BTNode* IndexBTEnc::make_node(bt_node* out, int64_t part) {
                 auto old_row = (base_row_t *) pt->location;
                 auto new_row = new row_t;
                 new_row->from_page = (void*) new_node;
+                new_row->offset = i;
                 uint n = old_row->table->get_schema()->get_tuple_size();
                 new_row->data = new char[n + 1];
                 memcpy(new_row->data, old_row->data, sizeof (char ) * n);
@@ -533,6 +611,31 @@ RC IndexBTEnc::find_leaf(glob_param params, idx_key_t key, idx_acc_t access_type
     }
     leaf = c;
     assert (leaf->is_leaf);
+    return RCOK;
+}
+
+RC IndexBTEnc::index_next(itemid_t *&item, itemid_t *last, bool samekey) {
+    auto old = (row_t*) last->location;
+    BTNode* leaf = (BTNode*)old->from_page;
+    int idx = old->offset;
+    idx_key_t cur_key = leaf->keys[idx];
+
+    auto new_row = old;
+    new_row->offset ++;
+    if (new_row->offset >= leaf->num_keys) {
+        leaf = load_next(leaf);
+        new_row->from_page = (void*) leaf;
+        new_row->offset = 0;
+    }
+    if (leaf == NULL)
+        item = NULL;
+    else {
+        assert( leaf->is_leaf );
+        if ( samekey && leaf->keys[ new_row->offset ] != cur_key)
+            item = NULL;
+        else
+            item = (itemid_t *) leaf->data[ new_row->offset ];
+    }
     return RCOK;
 }
 

@@ -18,16 +18,16 @@
 // #include "common/mem_alloc.h"
 // #include "manager.h"
 
-RC 
-base_row_t::init(table_t * host_table, uint64_t part_id, uint64_t row_id) {
-	_row_id = row_id;
-	_part_id = part_id;
-	this->table = host_table;
-	Catalog * schema = host_table->get_schema();
-	int tuple_size = schema->get_tuple_size();
-	data = (char *) _mm_malloc(sizeof(char) * tuple_size, 64);
-	return RCOK;
-}
+//RC
+//base_row_t::init(table_t * host_table, uint64_t part_id, uint64_t row_id) {
+//	_row_id = row_id;
+//	_part_id = part_id;
+//	this->table = host_table;
+//	Catalog * schema = host_table->get_schema();
+//	int tuple_size = schema->get_tuple_size();
+//	data = (char *) _mm_malloc(sizeof(char) * tuple_size, 64);
+//	return RCOK;
+//}
 void 
 base_row_t::init(int size) 
 {
@@ -73,9 +73,9 @@ Catalog * base_row_t::get_schema() {
 const char* base_row_t::get_table_name() {
 	return get_table()->get_table_name(); 
 };
-uint64_t base_row_t::get_tuple_size() {
-	return table->get_schema()->get_tuple_size();
-}
+//uint64_t base_row_t::get_tuple_size() {
+//	return table->get_schema()->get_tuple_size();
+//}
 
 uint64_t base_row_t::get_field_cnt() { 
 	return get_schema()->field_cnt;
@@ -129,9 +129,9 @@ void base_row_t::copy(base_row_t * src) {
 	set_data(src->get_data(), src->get_tuple_size());
 }
 
-void base_row_t::set_row_id(uint64_t id) {
-    _row_id = id;
-}
+//void base_row_t::set_row_id(uint64_t id) {
+//    _row_id = id;
+//}
 
 void base_row_t::free_row() {
 	free(data);
@@ -159,17 +159,17 @@ std::string base_row_t::encode() {
     data_items.emplace_back(std::make_pair("data:", data_str));
     return encode_vec(data_items);
 }
-
-std::uint64_t base_row_t::hash() {
-    uint64_t res = 0;
-    res ^= _primary_key ^ _row_id;
-    auto siz = get_tuple_size();
-    for (unsigned i=0;i<siz;i++) {
-        auto val = (unsigned char) (data[i]);  // 256.
-        res ^= uint64_t (val);
-    }
-    return res;
-}
+//
+//std::uint64_t base_row_t::hash() {
+//    uint64_t res = 0;
+//    res ^= _primary_key ^ _row_id;
+//    auto siz = get_tuple_size();
+//    for (unsigned i=0;i<siz;i++) {
+//        auto val = (unsigned char) (data[i]);  // 256.
+//        res ^= uint64_t (val);
+//    }
+//    return res;
+//}
 
 void base_row_t::decode(const std::string& e) {
     std::vector<std::pair<std::string, std::string> > data_items = decode_vec(e);

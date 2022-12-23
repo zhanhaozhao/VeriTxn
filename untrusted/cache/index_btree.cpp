@@ -783,17 +783,17 @@ void index_btree::print_btree(bt_node * start) {
 
 
 #if VERI_TYPE == PAGE_VERI
-uint64_t bt_node::get_hash() {
-    uint64_t res = 0ULL;
-    for (UInt32 i=0;i<num_keys;i++) {
-        res ^= keys[i];
-    }
-    if (is_leaf) {
-        for (UInt32 i=0;i<num_keys;i++) {
-            auto tmp = (base_row_t*)(((itemid_t*) pointers[i])->location);
-            res ^= tmp->hash();
-        }
-    }
-    return num_keys;
-}
+//uint64_t bt_node::get_hash() {
+//    uint64_t res = 0ULL;
+//    for (UInt32 i=0;i<num_keys;i++) {
+//        res ^= keys[i];
+//    }
+//    if (is_leaf) {
+//        for (UInt32 i=0;i<num_keys;i++) {
+//            auto tmp = (base_row_t*)(((itemid_t*) pointers[i])->location);
+//            res ^= tmp->hash();
+//        }
+//    }
+//    return num_keys;
+//}
 #endif
