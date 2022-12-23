@@ -13,6 +13,7 @@
 // #include "common/mem_alloc.h"
 #include "common/base_query.h"
 #include "re_ycsb_txn.h"
+#include "kvengine.h"
 
 void re_ycsb_txn_man::init(thread_t * h_thd, workload * h_wl, uint64_t thd_id) {
 	re_txn_man::init(h_thd, h_wl, thd_id);
@@ -37,11 +38,17 @@ re_ycsb_txn_man::recover_txn(char * log_entry, uint64_t tid)
 		uint32_t table_id;
 		uint64_t key;
 		uint32_t data_length;
+		char * rockskey;
+		size_t rockskey_size = sizeof(table_id)+sizeof(key)+sizeof(data_length);
 		char * data;
 
-		UNPACK(log_entry, table_id, offset);
-		UNPACK(log_entry, key, offset);
-		UNPACK(log_entry, data_length, offset);
+		// UNPACK(log_entry, table_id, offset);
+		// UNPACK(log_entry, key, offset);
+		// UNPACK(log_entry, data_length, offset);
+
+		rockskey = (char *) malloc(rockskey_size);
+		UNPACK_SIZE(log_entry, rockskey, rockskey_size, offset);
+
 		data = log_entry + offset;
 		offset += data_length;
 		
@@ -49,6 +56,8 @@ re_ycsb_txn_man::recover_txn(char * log_entry, uint64_t tid)
 		// itemid_t * m_item = index_read(_wl->the_index, key, 0);
 		// base_row_t * row = ((base_row_t *)m_item->location);
 		// row->set_data(data, data_length);
+		std::cout << "key:" << key << ", data:" << data << std::endl;
+		eng->DBPut(rockskey, data);
 	}
 #elif LOG_TYPE == LOG_COMMAND
 	// Format

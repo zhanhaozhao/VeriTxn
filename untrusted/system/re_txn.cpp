@@ -101,9 +101,7 @@ void re_txn_man::recover() {
 		char * entry = default_entry;
 		uint64_t tt = get_sys_clock();
 		uint64_t lsn = logger.get_next_log_entry_non_atom(entry);
-		// std::cout<< "in loop"<<std::endl;
 		if (entry == NULL) {
-			// std::cout<< "emtry null1"<<std::endl;
 			if (logger.iseof()) {
 				lsn = logger.get_next_log_entry_non_atom(entry);
 				if (entry == NULL) {
@@ -113,14 +111,11 @@ void re_txn_man::recover() {
 			}
 			else { 
 				PAUSE //usleep(50);
-				// std::cout<< "sleep"<<std::endl;
-				usleep(50);
 				// INC_INT_STATS(time_wait_io, get_sys_clock() - tt);
 				continue;
 			}
 		}
 
-		std::cout<< "GOT entry"<<std::endl;
 		uint64_t tt2 = get_sys_clock();
 		// INC_INT_STATS(time_wait_io, tt2 - tt);
 		// Format for serial logging

@@ -30,6 +30,7 @@
 extern sgx_enclave_id_t enclave_id;
 #endif // USE_SGX
 
+#include "untrusted/system/kvengine.h"
 
 void * f(void *);
 void * run_thread(void * id);
@@ -142,13 +143,18 @@ int main(int argc, char* argv[])
 
 	pthread_t p_thds[all_thd_cnt];
 	m_thds = new thread_t[thd_cnt];
-	if (!g_log_recover)
+	if (g_log_recover)
 	{
+		eng = new kvengine();
+		eng->OpenDB("./storage/rocksdb");
+
+	} else {
 		query_queue = (Query_queue *) _mm_malloc(sizeof(Query_queue), 64);
 		if (WORKLOAD != TEST)
 			query_queue->init(m_wl);
 		printf("query_queue initialized!\n");
 	}
+
 	pthread_barrier_init( &warmup_bar, NULL, all_thd_cnt );
 	pthread_barrier_init(&log_bar, NULL, all_thd_cnt);
 
