@@ -60,7 +60,7 @@
 #define ENABLE_LATCH				true
 #define CENTRAL_INDEX				false
 #define CENTRAL_MANAGER 			false
-#define INDEX_STRUCT				IDX_HASH
+#define INDEX_STRUCT				IDX_BTREE
 #define BTREE_ORDER 				16
 #define INDEX_NAME_LENGTH       	16
 #define INDEX_NAME_LENGTH       	16
@@ -250,6 +250,12 @@ extern enum TestCases					g_test_case;
 #endif
 #define BUCKET_FACTOR 1
 //#define PRE_LOAD     1
+
+#if INDEX_STRUCT == IDX_HASH
+#define PAGE BucketHeader
+#else
+#define PAGE bt_node
+#endif
 
 
 // #define READ_ONLY 1
