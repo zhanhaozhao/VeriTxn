@@ -25,6 +25,7 @@ void ycsb_txn_man::init(thread_t * h_thd, workload * h_wl, uint64_t thd_id) {
 RC ycsb_txn_man::run_txn(base_query * query) {
 	RC rc;
 	ycsb_query * m_query = (ycsb_query *) query;
+	_query = m_query;
 	ycsb_wl * wl = (ycsb_wl *) h_wl;
 	itemid_t * m_item = NULL;
   	row_cnt = 0;
@@ -87,3 +88,18 @@ final:
 	return rc;
 }
 
+void 
+ycsb_txn_man::get_cmd_log_entry()
+{
+	// Format
+	//  | stored_procedure_id | num_keys | (key, type) * numk_eys
+	uint32_t sp_id = 0;
+	uint32_t num_keys = _query->request_cnt;
+
+	PACK(_log_entry, sp_id, _log_entry_size);
+	PACK(_log_entry, num_keys, _log_entry_size);
+	for (uint32_t i = 0; i < num_keys; i ++) {
+		PACK(_log_entry, _query->requests[i].key, _log_entry_size);
+		PACK(_log_entry, _query->requests[i].rtype, _log_entry_size);
+	}
+}

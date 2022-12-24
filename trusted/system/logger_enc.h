@@ -18,7 +18,7 @@ public:
     lsn = 0;
   }
   LogRecord ** createRecords(txn_man* txn_man);
-  LogRecord ** create_log_entry(txn_man* txn_man);
+  // LogRecord ** create_log_entry(txn_man* txn_man);
   char* log_to_buf(LogRecord** logs, int size, int *buf_size);
 private:
   pthread_mutex_t mtx;

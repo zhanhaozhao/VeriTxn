@@ -88,7 +88,6 @@ void re_txn_man::insert_row(row_t * row, table_t * table) {
 	insert_rows[insert_cnt ++] = row;
 }
 
-
 void re_txn_man::recover() {
 	char default_entry[16384]; // g_max_log_entry_size
 	// right now, only a single thread does the recovery job.

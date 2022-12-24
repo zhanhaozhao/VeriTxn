@@ -17,6 +17,7 @@
 #include "index_hash.h"
 #include "index_enc.h"
 #include "logger_enc.h"
+#include "helper.h"
 
 #include "api.h"
 
@@ -92,7 +93,8 @@ void txn_man::cleanup(RC rc) {
 	int size = 0, buf_size = 0;
 	// LogRecord** logs = log_generate.createRecords(this);
 	// log_generate.createRecords(this);
-	log_generate.create_log_entry(this);
+	// log_generate.create_log_entry(this);
+	create_log_entry();
 	size = wr_cnt + 1;
 	buf_size = size * sizeof(LogRecord);
 	// char* buf = log_generate.log_to_buf(logs, size, &buf_size);
@@ -321,4 +323,71 @@ itemid_t* txn_man::index_read(INDEX* index, idx_key_t key, int part_id) {
 
 void txn_man::index_read(INDEX* index, idx_key_t key, int part_id, itemid_t *& item) {
     index_read(std::string(index->index_name), key, part_id, item);
+}
+
+
+void txn_man::create_log_entry() {
+
+#if LOG_TYPE == LOG_DATA
+
+	// Format for serial logging
+	// | checksum:4 | size:4 | N:4 | (table_id:4 | primary_key:8 | data_length:4 | data:?) * N
+
+	uint32_t offset = 0;
+	uint32_t checksum = 0xbeef;  // we also use this to distinguish PSN items and log items
+
+	PACK(_log_entry, checksum, offset);
+
+	offset += sizeof(uint32_t); // make space for size;
+
+  PACK(_log_entry, row_cnt, offset);
+
+  for (uint32_t i = 0; i < row_cnt; i ++) {
+    Access * access = accesses[i];
+    if (access->type != WR) continue;
+		// row_t * orig_row = accesses[write_set[i]]->orig_row; 
+		// uint32_t table_id = access->orig_row->get_table()->get_table_id();
+    uint32_t table_id = 0;
+		uint64_t key = access->orig_row->get_primary_key();
+		uint32_t tuple_size = access->orig_row->get_tuple_size();
+		char * tuple_data = access->orig_row->data;
+		//assert(tuple_size!=0);
+
+		PACK(_log_entry, table_id, offset);
+		PACK(_log_entry, key, offset);
+		PACK(_log_entry, tuple_size, offset);
+		PACK_SIZE(_log_entry, tuple_data, tuple_size, offset);
+	}
+
+  	_log_entry_size = offset;
+	assert(_log_entry_size < 16384); // g_max_log_entry_size
+  // update size. 
+	memcpy(_log_entry + sizeof(uint32_t), &_log_entry_size, sizeof(uint32_t));
+  //cout << _log_entry_size << endl;
+
+#elif LOG_TYPE == LOG_COMMAND
+
+	// Format for serial logging
+	// 	| checksum | size | benchmark_specific_command | 
+
+	uint32_t offset = 0;
+	uint32_t checksum = 0xbeef;
+	uint32_t size = 0;
+	PACK(_log_entry, checksum, offset);
+	PACK(_log_entry, size, offset);
+
+  	_log_entry_size = offset;
+	// internally, the following function will update _log_entry_size and _log_entry
+	get_cmd_log_entry();
+	
+	assert(_log_entry_size < 16384); // g_max_log_entry_size
+	assert(_log_entry_size > sizeof(uint32_t) * 2);
+	memcpy(_log_entry + sizeof(uint32_t), &_log_entry_size, sizeof(uint32_t));
+  // INC_FLOAT_STATS(log_total_size, _log_entry_size);
+	// INC_INT_STATS_V0(num_log_entries, 1);
+
+#else
+	assert(false);
+#endif
+
 }

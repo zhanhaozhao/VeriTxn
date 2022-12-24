@@ -61,6 +61,9 @@ public:
 	void 			set_ts(ts_t timestamp);
 	ts_t 			get_ts();
 
+	virtual void 	get_cmd_log_entry() { assert(false); }
+	void			create_log_entry();
+
 	pthread_mutex_t txn_lock;
 	row_t * volatile cur_row;
 	#if WORKLOAD == YCSB
