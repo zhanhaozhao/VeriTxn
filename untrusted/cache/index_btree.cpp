@@ -261,6 +261,7 @@ RC index_btree::make_node(uint64_t part_id, bt_node *& node) {
 	bt_node * new_node = (bt_node *) mem_allocator.alloc(sizeof(bt_node), part_id);
 	assert (new_node != NULL);
 	new_node->pointers = NULL;
+	new_node->from = this;
 	new_node->node_id = new_node->node_id = ATOM_ADD_FETCH(btree_node_id, 1);
     new_node->keys = (idx_key_t *) mem_allocator.alloc((order - 1) * sizeof(idx_key_t), part_id);
 	new_node->pointers = (void **) mem_allocator.alloc(order * sizeof(void *), part_id);
@@ -296,87 +297,6 @@ RC index_btree::start_new_tree(glob_param params, idx_key_t key, itemid_t * item
 	root->parent = NULL;
 	root->num_keys++;
 	return RCOK;
-}
-
-bool index_btree::latch_node(bt_node * node, latch_t latch_type) {
-	// TODO latch is disabled 
-	if (!ENABLE_LATCH)
-		return true;
-	bool success = false;
-//		printf("%s : %d\n", __FILE__, __LINE__);
-//	if ( g_cc_alg != HSTORE ) 
-		while ( !ATOM_CAS(node->latch, false, true) ) {}
-//		pthread_mutex_lock(&node->locked);
-//		printf("%s : %d\n", __FILE__, __LINE__);
-
-	latch_t node_latch = node->latch_type;
-	if (node_latch == LATCH_NONE || 
-		(node_latch == LATCH_SH && latch_type == LATCH_SH)) { 
-		node->latch_type = latch_type;
-		if (node_latch == LATCH_NONE)
-			M_ASSERT( (node->share_cnt == 0), "share cnt none 0!" );
-		if (node->latch_type == LATCH_SH)
-			node->share_cnt ++;
-		success = true;
-	}
-	else // latch_type incompatible
-		success = false;
-//	if ( g_cc_alg != HSTORE ) 
-	bool ok = ATOM_CAS(node->latch, true, false);
-	assert(ok);
-//		pthread_mutex_unlock(&node->locked);
-//		assert(ATOM_CAS(node->locked, true, false));
-	return success;
-}
-
-latch_t index_btree::release_latch(bt_node * node) {
-	if (!ENABLE_LATCH)
-		return LATCH_SH;
-	latch_t type = node->latch_type;
-//	if ( g_cc_alg != HSTORE ) 
-		while ( !ATOM_CAS(node->latch, false, true) ) {}
-//		pthread_mutex_lock(&node->locked);
-//		while (!ATOM_CAS(node->locked, false, true)) {}
-	M_ASSERT((node->latch_type != LATCH_NONE), "release latch fault");
-	if (node->latch_type == LATCH_EX)
-		node->latch_type = LATCH_NONE;
-	else if (node->latch_type == LATCH_SH) {
-		node->share_cnt --;
-		if (node->share_cnt == 0)
-			node->latch_type = LATCH_NONE;
-	}
-//	if ( g_cc_alg != HSTORE ) 
-	bool ok = ATOM_CAS(node->latch, true, false);
-	assert(ok);
-//		pthread_mutex_unlock(&node->locked);
-//		assert(ATOM_CAS(node->locked, true, false));
-	return type;
-}
-
-RC index_btree::upgrade_latch(bt_node * node) {
-	if (!ENABLE_LATCH)
-		return RCOK;
-	bool success = false;
-//	if ( g_cc_alg != HSTORE ) 
-		while ( !ATOM_CAS(node->latch, false, true) ) {}
-//		pthread_mutex_lock(&node->locked);
-//		while (!ATOM_CAS(node->locked, false, true)) {}
-	M_ASSERT( (node->latch_type == LATCH_SH), "Error" );
-	if (node->share_cnt > 1) 
-		success = false;
-	else { // share_cnt == 1
-		success = true;
-		node->latch_type = LATCH_EX;
-		node->share_cnt = 0;
-	}
-	
-//	if ( g_cc_alg != HSTORE ) 
-	bool ok = ATOM_CAS(node->latch, true, false);
-	assert(ok);
-//		pthread_mutex_unlock(&node->locked);
-//		assert( ATOM_CAS(node->locked, true, false) );
-	if (success) return RCOK;
-	else return Abort;
 }
 
 RC index_btree::cleanup(bt_node * node, bt_node * last_ex) {

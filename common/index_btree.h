@@ -8,6 +8,7 @@
 // #include "common/helper.h"
 #include "base_row.h"
 
+class index_btree;
 
 typedef struct bt_node {
    	void ** pointers; // for non-leaf nodes, point to bt_nodes
@@ -21,6 +22,7 @@ typedef struct bt_node {
 	pthread_mutex_t locked;
 	latch_t latch_type;
 	UInt32 share_cnt;
+    index_btree* from;
 #if VERI_TYPE == MERKLE_TREE
     uint64_t merkle_hash;
     uint64_t *child_merkle_hash;
@@ -58,6 +60,77 @@ public:
 	RC 			index_next(uint64_t thd_id, itemid_t * &item, bool samekey = false);
     char*     index_name;
     bt_node ** 	roots; // each partition has a different root
+    bool 		latch_node(bt_node * node, latch_t latch_type) {
+        if (!ENABLE_LATCH)
+            return true;
+        bool success = false;
+        while ( !ATOM_CAS(node->latch, false, true) ) {}
+
+        latch_t node_latch = node->latch_type;
+        if (node_latch == LATCH_NONE ||
+            (node_latch == LATCH_SH && latch_type == LATCH_SH)) {
+            node->latch_type = latch_type;
+            if (node_latch == LATCH_NONE)
+                assert(node->share_cnt == 0);
+            if (node->latch_type == LATCH_SH)
+                node->share_cnt ++;
+            success = true;
+        }
+        else // latch_type incompatible
+            success = false;
+        bool ok = ATOM_CAS(node->latch, true, false);
+        assert(ok);
+        return success;
+    }
+    latch_t		release_latch(bt_node * node) {
+        if (!ENABLE_LATCH)
+            return LATCH_SH;
+        latch_t type = node->latch_type;
+//	if ( g_cc_alg != HSTORE )
+        while ( !ATOM_CAS(node->latch, false, true) ) {}
+//		pthread_mutex_lock(&node->locked);
+//		while (!ATOM_CAS(node->locked, false, true)) {}
+        assert(node->latch_type != LATCH_NONE);
+        if (node->latch_type == LATCH_EX)
+            node->latch_type = LATCH_NONE;
+        else if (node->latch_type == LATCH_SH) {
+            node->share_cnt --;
+            if (node->share_cnt == 0)
+                node->latch_type = LATCH_NONE;
+        }
+//	if ( g_cc_alg != HSTORE )
+        bool ok = ATOM_CAS(node->latch, true, false);
+        assert(ok);
+//		pthread_mutex_unlock(&node->locked);
+//		assert(ATOM_CAS(node->locked, true, false));
+        return type;
+    }
+    RC		 	upgrade_latch(bt_node * node) {
+        if (!ENABLE_LATCH)
+            return RCOK;
+        bool success = false;
+//	if ( g_cc_alg != HSTORE )
+        while ( !ATOM_CAS(node->latch, false, true) ) {}
+//		pthread_mutex_lock(&node->locked);
+//		while (!ATOM_CAS(node->locked, false, true)) {}
+        assert(node->latch_type == LATCH_SH);
+        if (node->share_cnt > 1)
+            success = false;
+        else { // share_cnt == 1
+            success = true;
+            node->latch_type = LATCH_EX;
+            node->share_cnt = 0;
+        }
+
+//	if ( g_cc_alg != HSTORE )
+        bool ok = ATOM_CAS(node->latch, true, false);
+        assert(ok);
+//		pthread_mutex_unlock(&node->locked);
+//		assert( ATOM_CAS(node->locked, true, false) );
+        if (success) return RCOK;
+        else return Abort;
+    }
+
 #if VERI_TYPE == MERKLE_TREE
     void        update_hash(bt_node * c);
     void up_to_root(bt_node *c);
@@ -92,10 +165,6 @@ private:
     uint64_t    **_verify_hash;
 #endif
 	bt_node *   find_root(uint64_t part_id);
-
-	bool 		latch_node(bt_node * node, latch_t latch_type);
-	latch_t		release_latch(bt_node * node);
-	RC		 	upgrade_latch(bt_node * node);
 	// clean up all the LATCH_EX up tp last_ex
 	RC 			cleanup(bt_node * node, bt_node * last_ex);
 

@@ -145,13 +145,19 @@ BTNode* IndexBTEnc::load_next(BTNode *cur_node) {
     if (cur != nullptr) {
         return cur;
     }
+    // get latch
+    while (!origin_node->from->latch_node(origin_node, LATCH_EX)) {};
     auto new_node = make_node(origin_node, cur_node->part);
     assert(new_node->node_id = inner_node_id);
     void* swapped = nullptr;
     int sw_part = 0;
     uint64_t sw_node_id = 0;
     void *cur_void = nullptr;
-    auto rc = _cache->load_and_swap(cur_node->part, new_node->node_id, sizeof (*new_node), (void *) new_node, swapped, sw_part, sw_node_id, cur_void);
+    RC rc = Abort;
+    while (rc != RCOK) {
+        rc = _cache->load_and_swap(cur_node->part, new_node->node_id, sizeof (*new_node), (void *) new_node, swapped, sw_part, sw_node_id, cur_void);
+    }
+    assert (origin_node->from->release_latch(origin_node) == LATCH_EX);
     cur = (BTNode*)cur_void;
     if (rc != RCOK) {
         assert(false);
@@ -231,6 +237,8 @@ BTNode* IndexBTEnc::load_child(BTNode *cur_node, int i) {
     if (cur != nullptr) {
         return cur;
     }
+    // get latch
+    while (!origin_node->from->latch_node(origin_node, LATCH_EX)) {};
     auto new_node = make_node(origin_node, cur_node->part);
     assert(new_node->node_id = inner_node_id);
     void* swapped = nullptr;
@@ -241,6 +249,7 @@ BTNode* IndexBTEnc::load_child(BTNode *cur_node, int i) {
     while (rc != RCOK) {
         rc = _cache->load_and_swap(cur_node->part, new_node->node_id, sizeof (*new_node), (void *) new_node, swapped, sw_part, sw_node_id, cur_void);
     }
+    origin_node->from->release_latch(origin_node);
     cur = (BTNode*)cur_void;
     if (rc != RCOK) {
         assert(false);

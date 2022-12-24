@@ -160,7 +160,7 @@ void flush_out(std::string iname, int part_id, uint64_t bkt_idx, BucketHeader_EN
         last_node = node;
     }
     auto idx = (IndexHash *) inner_index_map->_indexes[iname];
-    idx->get_latch(&idx->_buckets[part_id][bkt_idx]);
+    idx->get_latch(&idx->_buckets[part_id][bkt_idx]);   // no concurrent access allowed.
     idx->_buckets[part_id][bkt_idx] = *res;
     c->origin = &idx->_buckets[part_id][bkt_idx];
     assert(c->get_hash() == c->origin->get_hash());
@@ -171,7 +171,9 @@ BucketHeader_ENC* IndexEnc::load_bucket(std::string iname, int part_id, uint64_t
     if (cur == nullptr) {
         auto res_bucket = new BucketHeader_ENC;
         uint total_size = 0;
-        res_bucket->origin = &(((IndexHash *) inner_index_map->_indexes[iname])->_buckets[part_id][bkt_idx]);
+        auto idx = (IndexHash *) inner_index_map->_indexes[iname];
+        res_bucket->origin = &(idx->_buckets[part_id][bkt_idx]);
+        idx->get_latch(res_bucket->origin);
         res_bucket->init();
         res_bucket->from = this;
         res_bucket->bkt = bkt_idx;
@@ -224,7 +226,11 @@ BucketHeader_ENC* IndexEnc::load_bucket(std::string iname, int part_id, uint64_t
         int sw_pt = 0;
         uint64_t sw_bk = 0;
         void * cur_void;
-        RC rc = _cache->load_and_swap(part_id, bkt_idx, total_size, (void *) res_bucket, swapped, sw_pt, sw_bk, cur_void);
+        RC rc = Abort;
+        while (rc != RCOK) {
+            rc = _cache->load_and_swap(part_id, bkt_idx, total_size, (void *) res_bucket, swapped, sw_pt, sw_bk, cur_void);
+        }
+        idx->release_latch(res_bucket->origin);
         assert(rc == RCOK);
         cur = (BucketHeader_ENC*) cur_void;
         if (swapped != nullptr) {
@@ -241,8 +247,9 @@ BucketHeader_ENC* IndexEnc::load_bucket(std::string iname, int part_id, uint64_t
 #endif
 //            assert(false);
 // lazy update of verify hash.
-            get_latch(flushed_bkt);
-            _verify_hash[sw_pt][sw_bk] = flushed_bkt->get_hash();
+            get_latch(flushed_bkt); // TODO: cannot load this bucket when flushing out.
+//            _verify_hash[sw_pt][sw_bk] = flushed_bkt->get_hash();
+            _verify_hash[sw_pt][sw_bk] = _default_verify_hash;
             flush_out(iname, sw_pt, sw_bk, flushed_bkt);
             delete flushed_bkt;
         }
