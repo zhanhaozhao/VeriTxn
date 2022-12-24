@@ -46,12 +46,12 @@ int main(int argc, char* argv[])
 {
 
 #if USE_SGX == 1
-  sgx_launch_token_t t;
+    sgx_launch_token_t t;
   int updated = 0;
   memset(t, 0, sizeof(sgx_launch_token_t));
-  printf("Initializing Enclave.\n"); 
+  printf("Initializing Enclave.\n");
   sgx_status_t enclave_status = sgx_create_enclave(ENCLAVE_FILENAME,
-    // SGX_DEBUG_FLAG, &t, &updated, &enclave_id, NULL);
+//     SGX_DEBUG_FLAG, &t, &updated, &enclave_id, NULL);
    0, &t, &updated, &enclave_id, NULL);
   if (enclave_status != SGX_SUCCESS) {
     printf("Failed to create Enclave : error %d - %#x.\n", enclave_status,
@@ -60,17 +60,17 @@ int main(int argc, char* argv[])
   } //else printf("Enclave launched with id: %ld.\n", enclave_id);
 #endif // USE_SGX
 
-	parser(argc, argv);
-	
-	mem_allocator.init(g_part_cnt, MEM_SIZE / g_part_cnt); 
-	stats.init();
+    parser(argc, argv);
 
-	glob_manager = (Manager *) _mm_malloc(sizeof(Manager), 64);
-	glob_manager->init();
+    mem_allocator.init(g_part_cnt, MEM_SIZE / g_part_cnt);
+    stats.init();
 
-	global_init_ecall(&stats); // call enclave
-	// if (g_cc_alg == DL_DETECT) 
-	// 	dl_detector.init();
+    glob_manager = (Manager *) _mm_malloc(sizeof(Manager), 64);
+    glob_manager->init();
+
+    global_init_ecall(&stats); // call enclave
+    // if (g_cc_alg == DL_DETECT)
+    // 	dl_detector.init();
 //	printf("mem_allocator initialized!\n");
 
 	printf("Initializing trusted log generator... ");
@@ -98,48 +98,48 @@ int main(int argc, char* argv[])
 	#endif
 	printf("Done\n");
 
-	// if (NODE_CNT > 1) {
-	printf("Initializing message queue... ");
-	fflush(stdout);
-	msg_queue.init();
-	printf("Done\n");
+    // if (NODE_CNT > 1) {
+    printf("Initializing message queue... ");
+    fflush(stdout);
+    msg_queue.init();
+    printf("Done\n");
 
-	printf("Initializing transport manager... ");
-	fflush(stdout);
-	tport_man.init();
-	printf("Done\n");
+    printf("Initializing transport manager... ");
+    fflush(stdout);
+    tport_man.init();
+    printf("Done\n");
 
-	printf("Initializing simulation... ");
-	fflush(stdout);
-	simulation = new SimManager;
-	simulation->init();
-	printf("Done\n");
-	// }
-	
-	workload * m_wl;
-	switch (WORKLOAD) {
-		case YCSB :
-			m_wl = new ycsb_wl; break;
-		case TPCC :
-			m_wl = new tpcc_wl; break;
-		case TEST :
-			m_wl = new TestWorkload; 
-			((TestWorkload *)m_wl)->tick();
-			break;
-		default:
-			assert(false);
-	}
-	m_wl->init();
+    printf("Initializing simulation... ");
+    fflush(stdout);
+    simulation = new SimManager;
+    simulation->init();
+    printf("Done\n");
+    // }
+
+    workload * m_wl;
+    switch (WORKLOAD) {
+        case YCSB :
+            m_wl = new ycsb_wl; break;
+        case TPCC :
+            m_wl = new tpcc_wl; break;
+        case TEST :
+            m_wl = new TestWorkload;
+            ((TestWorkload *)m_wl)->tick();
+            break;
+        default:
+            assert(false);
+    }
+    m_wl->init();
 //	printf("workload initialized!\n");
 
-	uint64_t thd_cnt = g_thread_cnt;
-	uint64_t rthd_cnt = NODE_CNT > 1 ? INPUT_CNT : 0;
-	uint64_t sthd_cnt = NODE_CNT > 1 ? OUTPUT_CNT : 0;
-	uint64_t log_cnt = 1;
-	uint64_t all_thd_cnt = thd_cnt + rthd_cnt + sthd_cnt + log_cnt;
-	input_thds = new InputThread[rthd_cnt];
-	output_thds = new OutputThread[sthd_cnt];
-	log_thds = new LogThread[1];
+    uint64_t thd_cnt = g_thread_cnt;
+    uint64_t rthd_cnt = NODE_CNT > 1 ? INPUT_CNT : 0;
+    uint64_t sthd_cnt = NODE_CNT > 1 ? OUTPUT_CNT : 0;
+    uint64_t log_cnt = 1;
+    uint64_t all_thd_cnt = thd_cnt + rthd_cnt + sthd_cnt + log_cnt;
+    input_thds = new InputThread[rthd_cnt];
+    output_thds = new OutputThread[sthd_cnt];
+    log_thds = new LogThread[1];
 
 	pthread_t p_thds[all_thd_cnt];
 	m_thds = new thread_t[thd_cnt];
@@ -189,36 +189,36 @@ int main(int argc, char* argv[])
 		pthread_create(&p_thds[id++], NULL, run_thread, (void *)&log_thds[0]);
 	}
 
-	// m_thds[thd_cnt - 1]->init(i, g_node_id, m_wl);
-	// run_thread((void *)(m_thds[thd_cnt - 1]));
-	for (uint32_t i = 0; i < thd_cnt; i++) 
-		pthread_join(p_thds[i], NULL);
+    // m_thds[thd_cnt - 1]->init(i, g_node_id, m_wl);
+    // run_thread((void *)(m_thds[thd_cnt - 1]));
+    for (uint32_t i = 0; i < thd_cnt; i++)
+        pthread_join(p_thds[i], NULL);
 //	int64_t endtime = get_server_clock();
-	
-	if (WORKLOAD != TEST) {
+
+    if (WORKLOAD != TEST) {
 //		printf("PASS! SimTime = %ld\n", endtime - starttime);
-		if (STATS_ENABLE)
-			stats.print();
-	} else {
-		((TestWorkload *)m_wl)->summarize();
-	}
+        if (STATS_ENABLE)
+            stats.print();
+    } else {
+        ((TestWorkload *)m_wl)->summarize();
+    }
 
 #if USE_SGX == 1
-  enclave_status = sgx_destroy_enclave(enclave_id);
+    enclave_status = sgx_destroy_enclave(enclave_id);
   assert(enclave_status == SGX_SUCCESS);
 #endif // USE_SGX
 
-	return 0;
+    return 0;
 }
 
 void * f(void * id) {
-	uint64_t tid = (uint64_t)id;
-	m_thds[tid].run();
-	return NULL;
+    uint64_t tid = (uint64_t)id;
+    m_thds[tid].run();
+    return NULL;
 }
 
 void * run_thread(void * id) {
-	Thread * thd = (Thread *) id;
-	thd->run();
-	return NULL;
+    Thread * thd = (Thread *) id;
+    thd->run();
+    return NULL;
 }

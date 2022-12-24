@@ -110,6 +110,9 @@ public:
 	row_t * 		get_row(row_t * row, access_t type);
 protected:	
 	void 			insert_row(row_t * row, table_t * table);
+
+    itemid_t *index_next(std::string iname, itemid_t *last);
+
 private:
 	// insert rows
 	uint64_t 		insert_cnt;
@@ -133,6 +136,7 @@ private:
 #elif CC_ALG == HEKATON
 	RC 				validate_hekaton(RC rc);
 #endif
+
 };
 
 #endif

@@ -4,6 +4,7 @@
 // #include <cassert>
 // #include "global.h"
 // #include "global_common.h"
+//#include <mm_malloc.h>
 #include "table.h"
 #include "table_map.h"
 
@@ -40,7 +41,15 @@ class base_row_t
 {
 public:
 
-	RC init(table_t * host_table, uint64_t part_id, uint64_t row_id = 0);
+    RC init(table_t * host_table, uint64_t part_id, uint64_t row_id) {
+        _row_id = row_id;
+        _part_id = part_id;
+        this->table = host_table;
+        Catalog * schema = host_table->get_schema();
+        int tuple_size = schema->get_tuple_size();
+        data = (char *) malloc(sizeof(char) * tuple_size);
+        return RCOK;
+    }
 	void init(int size);
 	RC switch_schema(table_t * host_table);
 	// not every row has a manager
@@ -50,7 +59,9 @@ public:
 	Catalog * get_schema();
 	const char* get_table_name();
 	uint64_t get_field_cnt();
-	uint64_t get_tuple_size();
+    uint64_t get_tuple_size() {
+        return table->get_schema()->get_tuple_size();
+    }
 	uint64_t get_row_id() { return _row_id; };
 
 	void copy(base_row_t * src);
@@ -105,12 +116,26 @@ public:
 	char * data;
 	table_t * table;
     std::string encode();
+    std::uint64_t hash() {
+        uint64_t res = 0;
+        res ^= _primary_key ^ _row_id;
+        auto siz = get_tuple_size();
+        for (unsigned i=0;i<siz;i++) {
+            auto val = (unsigned char) (data[i]);  // 256.
+            res ^= uint64_t (val);
+        }
+        return res;
+    }
     void decode(const std::string &e);
+    void set_row_id(uint64_t id) {
+        _row_id = id;
+    }
 private:
 	// primary key should be calculated from the data stored in the row.
 	uint64_t 		_primary_key;
 	uint64_t		_part_id;
 	uint64_t 		_row_id;
+
 };
 
 #endif

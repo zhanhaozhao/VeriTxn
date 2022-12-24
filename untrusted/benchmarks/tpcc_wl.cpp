@@ -82,7 +82,7 @@ RC tpcc_wl::init_table() {
 	for (uint32_t i = 0; i < g_init_parallelism - 1; i++) 
 		pthread_join(p_thds[i], NULL);
 
-//	printf("TPCC Data Initialization Complete!\n");
+	printf("TPCC Data Initialization Complete!\n");
     for (auto it = indexes.begin(); it != indexes.end(); it++) {
         std::string iname = it->first;
         std::string tname = iname;
@@ -94,10 +94,13 @@ RC tpcc_wl::init_table() {
 #else
         index_init_ecall(g_part_cnt, (void *) (tables[tname]), iname, (void*)indexes[iname] ,
                          BTREE_NODE_NUM);
+        #ifdef BATCH_MERKLE
+        indexes[iname]->calculate_hash();
+        #endif
         index_load_ecall(g_part_cnt, (void *) (tables[tname]), iname, (void*)indexes[iname] ,
                          BTREE_NODE_NUM);
-    }
 #endif
+    }
 	return RCOK;
 }
 

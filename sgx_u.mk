@@ -4,7 +4,7 @@ PROJECT_ROOT_DIR ?= $(shell readlink -f .)
 SGX_SDK ?= /opt/intel/sgxsdk
 SGX_MODE ?= HW
 SGX_ARCH ?= x64
-# SGX_DEBUG ?= 0
+SGX_DEBUG ?= 0
 SGX_PRERELEASE ?= 1
 ifeq ($(shell getconf LONG_BIT), 32)
 	SGX_ARCH := x86
@@ -31,7 +31,7 @@ endif
 endif
 
 ifeq ($(SGX_DEBUG), 1)
-        SGX_COMMON_CFLAGS += -O0 -g3 -ggdb -DSGX_DEBUG
+        SGX_COMMON_CFLAGS += -O0 -g -DSGX_DEBUG
 else
         SGX_COMMON_CFLAGS += -O2
 endif
@@ -80,7 +80,7 @@ App_C_Cpp_Flags += -I$(PROJECT_ROOT_DIR)/common -I$(PROJECT_ROOT_DIR)/untrusted 
 
 ### Linking setting ###
 App_Link_Flags := -L$(SGX_LIBRARY_PATH)	-l$(Urts_Library_Name) \
-	-lpthread -lz -lm -lcrypto -lrt -lnanomsg
+	-lpthread -lz -lm -lcrypto -lrt -lnanomsg  -lrocksdb
 
 ## Add sgx_uae_service library to link ##
 ifneq ($(SGX_MODE), HW)

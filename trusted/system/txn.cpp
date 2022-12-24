@@ -89,6 +89,22 @@ void txn_man::cleanup(RC rc) {
 	return;
 #endif
 
+#if VERI_TYPE == MERKLE_TREE
+    for (int i = 0; i < row_cnt; i++) {
+        Access *access = accesses[i];
+        auto node = (PAGE_ENC*) access->orig_row->from_page;
+        if (access->type == WR)
+            node->from->merkle_update(node);
+        node->from->release_up_cache(node);
+    }
+#else
+    for (int i = 0; i < row_cnt; i++) {
+        Access *access = accesses[i];
+        auto node = (PAGE_ENC*) access->orig_row->from_page;
+        node->from->release_up_cache(node);
+    }
+#endif
+
 #if USE_LOG == 1
 	int size = 0, buf_size = 0;
 	// LogRecord** logs = log_generate.createRecords(this);
@@ -241,9 +257,30 @@ txn_man::index_read(std::string iname, idx_key_t key, int part_id) {
     index_enc->index_read(key, item, part_id, get_thd_id());
 #endif
     assert(((row_t*)item->location)->get_table());
-	// index->index_read(key, item, part_id, get_thd_id());
-//	INC_TMP_STATS_ENC(get_thd_id(), time_index, get_cur_time_ocall() - starttime);
+
 	return item;
+}
+
+itemid_t *
+txn_man::index_next(std::string iname, itemid_t* last) {
+//	uint64_t starttime = get_cur_time_ocall();
+//    assert(false);
+    itemid_t * item;
+    assert(last != nullptr);
+    // index --> en_index;
+    INDEX_ENC * index_enc = (INDEX_ENC *) tab_map->_indexes[iname];
+    if (index_enc == nullptr) {
+        assert(false);
+    }
+#if INDEX_STRUCT == IDX_HASH
+    assert(false);
+#else
+    index_enc->index_next(item, last);
+#endif
+    assert(((row_t*)item->location)->get_table());
+    // index->index_read(key, item, part_id, get_thd_id());
+//	INC_TMP_STATS_ENC(get_thd_id(), time_index, get_cur_time_ocall() - starttime);
+    return item;
 }
 
 void 

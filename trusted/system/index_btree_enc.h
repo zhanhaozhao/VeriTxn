@@ -13,6 +13,8 @@
 #include "common/helper.h"
 #include "common/lru_cache.h"
 
+class IndexBTEnc;
+
 struct BTNode {
     // TODO bad hack!
     bool is_leaf;
@@ -24,10 +26,14 @@ struct BTNode {
     UInt32  share_cnt;
 
     uint    part;
-    BTNode* parent;
+    uint64_t parent;
+    uint64_t *child;
+    uint64_t next;
     void** data;
     bt_node *origin;
     uint64_t node_id;
+    IndexBTEnc* from;
+
 #if VERI_TYPE == MERKLE_TREE
     uint64_t merkle_hash;
     uint64_t *child_merkle_hash;
@@ -41,28 +47,35 @@ class IndexBTEnc {
 public:
     RC			init(uint64_t part_cnt);
     RC          load_all(std::string index_name);
-    BTNode*     load_child(BTNode *cur_node, UInt32 i);
+    BTNode*     load_child(BTNode *cur_node, int i);
     RC			init(uint64_t part_cnt, table_t * table);
     RC	 		index_read(idx_key_t key, itemid_t * &item, int part_id = -1);
     RC	 		index_read(idx_key_t key, itemid_t * &item, int part_id=-1, int thd_id=0);
+    RC 			index_next(itemid_t * &item, itemid_t * old, bool samekey = false);
     RC          dfs(BTNode* c);
 
 #if VERI_TYPE == MERKLE_TREE
     void            update_hash(BTNode* c);
+    txnid_t         merkle_owner_thread;    // merkle tree contend on the root hash and thus no concurrency.
+    void clear(int thread_id);
+    RC merkle_update(BTNode *c);
+    void up_to_root(BTNode *c);
 #endif
     std::string     index_name;
     table_t*        table;
 
+    lru_cache   *_cache;
+    RC release_up_cache(BTNode *c);
+
 private:
     // index structures may have part_cnt = 1 or PART_CNT.
     uint64_t part_cnt;
-    BTNode*		make_node(bt_node* out, BTNode* parent, int64_t part);
+    BTNode*		make_node(bt_node* out, int64_t part);
 
     RC 			find_leaf(glob_param params, idx_key_t key, idx_acc_t access_type, BTNode *& leaf, BTNode  *& last_ex);
     RC 			find_leaf(glob_param params, idx_key_t key, idx_acc_t access_type, BTNode *& leaf);
     UInt32	 	order; // # of keys in a node(for both leaf and non-leaf)
     BTNode** 	roots; // each partition has a different root
-    lru_cache   **_cache;
 #if VERI_TYPE == PAGE_VERI
     uint64_t    **_verify_hash;
 #endif
@@ -74,7 +87,10 @@ private:
     // clean up all the LATCH_EX up tp last_ex
     RC 			cleanup(BTNode * node, BTNode * last_ex);
     uint64_t    _default_bt_veri_hash = 0;
-    uint64_t    enc_btree_node_id;
+
+    void flush_out(BTNode *c);
+
+    BTNode *load_next(BTNode *cur_node);
 };
 
 

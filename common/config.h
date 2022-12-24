@@ -15,8 +15,6 @@
 #define CL_SIZE						64
 // CPU_FREQ is used to get accurate timing info 
 #define CPU_FREQ 					2 	// in GHz/s
-#define BUCKET_FACTOR 1
-//#define PRE_LOAD                    1
 
 
 // # of transactions to run for warmup
@@ -59,11 +57,12 @@
 #define ABORT_BUFFER_SIZE			10
 #define ABORT_BUFFER_ENABLE			true
 // [ INDEX ]
-#define ENABLE_LATCH				false
+#define ENABLE_LATCH				true
 #define CENTRAL_INDEX				false
 #define CENTRAL_MANAGER 			false
-#define INDEX_STRUCT				IDX_BTREE
+#define INDEX_STRUCT				IDX_HASH
 #define BTREE_ORDER 				16
+#define INDEX_NAME_LENGTH       	16
 #define INDEX_NAME_LENGTH       	16
 #define BTREE_NODE_NUM              2000000
 
@@ -244,14 +243,27 @@ extern enum TestCases					g_test_case;
 #define TPORT_PORT 6000
 #define MAX_TPORT_NAME				128
 // turn on SGX
-// #define USE_SGX 0
+#define USE_SGX 1
 #define TPORT_TYPE tcp
 #define USE_NANOMSG 1
 #define USE_ASYNC_HASH 1
 #define USE_LOG 1
-#define VERIFIED_CACHE_SIZ (6 * 1024 * 1024)
-#define BASE_LEASE      1000
+
+// cache parameters
+#define VERIFIED_CACHE_SIZ      (1  * 1024 * 1024)  // 256MB
+//#define VERIFIED_CACHE_SIZ      (8 * 1024  * 1024 * 1024)  // 8GB
+#define BASE_LEASE      100
 #define VERI_TYPE     PAGE_VERI
+#if VERI_TYPE == MERKLE_TREE
+// calculate the merkle hash in batch to avoid too costly init table.
+#define BATCH_MERKLE 1
+// calculate the merkle hash online.
+// #define SEPARATE_MERKLE
+#endif
+#define BUCKET_FACTOR 1
+//#define PRE_LOAD     1
+
+
 // #define READ_ONLY 1
 
 // Log queue type
