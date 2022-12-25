@@ -3,6 +3,7 @@
 #include "msg_queue.h"
 #include "logger.h"
 #include "sim_manager.h"
+#include "kvengine.h"
 // #include "plock.h"
 // #include "occ.h"
 
@@ -20,6 +21,7 @@ Transport tport_man;
 MessageQueue msg_queue;
 Logger logger;
 SimManager * simulation;
+kvengine * eng;
 UInt32 g_node_id = 0;
 UInt32 g_node_cnt = NODE_CNT;
 #if LOG_QUEUE_TYPE == LOG_CIRCUL_BUFF
@@ -33,6 +35,7 @@ Logqueue **log_queues;
 bool volatile warmup_finish = false;
 bool volatile enable_thread_mem_pool = false;
 pthread_barrier_t warmup_bar;
+pthread_barrier_t log_bar;
 // #ifndef NOGRAPHITE
 // carbon_barrier_t enable_barrier;
 // #endif
@@ -69,6 +72,14 @@ UInt32 g_num_wh = NUM_WH;
 double g_perc_payment = PERC_PAYMENT;
 bool g_wh_update = WH_UPDATE;
 char * output_file = NULL;
+
+
+uint64_t g_log_buffer_size = LOG_BUFFER_SIZE;
+uint32_t g_max_log_entry_size = MAX_LOG_ENTRY_SIZE;
+bool g_log_recover = LOG_RECOVER;
+uint32_t g_num_logger = NUM_LOGGER;
+uint64_t g_flush_blocksize = FLUSH_BLOCK_SIZE;
+uint64_t g_read_blocksize = READ_BLOCK_SIZE;
 
 std::map<std::string, std::string> g_params;
 

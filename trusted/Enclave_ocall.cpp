@@ -40,8 +40,8 @@ void async_hash_value(std::string index_name, int part_id, uint64_t bkt_idx, uin
   oc_async_hash_value(index_name.c_str(), index_name.size(), part_id, bkt_idx, hash);
 }
 
-void send_logs(std::string logs, int size) {
-  oc_send_logs(logs.c_str(), logs.size());
+void send_logs(std::string logs, int size, uint64_t thd_id) {
+  oc_send_logs(logs.c_str(), logs.size(), thd_id);
 }
 
 #endif // USE_SGX

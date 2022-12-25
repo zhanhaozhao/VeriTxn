@@ -91,6 +91,26 @@
 	else { assert(entry == head); head = entry->next; } \
 }
 
+/////////////////////////////
+// packatize helper 
+/////////////////////////////
+#define PACK(buffer, var, offset) {\
+	memcpy(buffer + offset, &var, sizeof(var)); \
+	offset += sizeof(var); \
+}
+#define PACK_SIZE(buffer, ptr, size, offset) {\
+    if (size > 0) {\
+		memcpy(buffer + offset, ptr, size); \
+		offset += size; }}
+
+#define UNPACK(buffer, var, offset) {\
+	memcpy(&var, buffer + offset, sizeof(var)); \
+	offset += sizeof(var); \
+}
+#define UNPACK_SIZE(buffer, ptr, size, offset) {\
+    if (size > 0) {\
+		memcpy(ptr, buffer + offset, size); \
+		offset += size; }} 
 
 
 enum Data_type {DT_table, DT_page, DT_row };

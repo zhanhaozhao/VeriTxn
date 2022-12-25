@@ -16,7 +16,7 @@ void put_bucket_disk(void * index, int part_id, int bkt_idx, const std::string &
 void async_hash_value(std::string index_name, int part_id, uint64_t bkt_idx, uint64_t hash);
 void update_hash_value(std::string index_name, int part_id, uint64_t bkt_idx, uint64_t hash);
 
-void send_logs(std::string logs, int size);
+void send_logs(std::string logs, int size, uint64_t thd_id);
 void async_hash(std::string index_name, int part_id, uint64_t bkt_idx, uint64_t hash);
-void untrust_send_logs(std::string logs);
+void untrust_send_logs(std::string logs, uint64_t thd_id);
 #endif

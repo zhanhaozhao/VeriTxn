@@ -1,5 +1,5 @@
-#ifndef TXN_H_
-#define TXN_H_
+#ifndef RE_TXN_H_
+#define RE_TXN_H_
 
 
 // #include "global.h"
@@ -22,37 +22,18 @@ class row_t;
 // a txn_man corresponds to a single transaction.
 
 
-class Access {
-public:
-	access_t 	type;
-	row_t * 	orig_row;
-	row_t * 	data;
-	row_t * 	orig_data;
-	void cleanup();
-#if CC_ALG == TICTOC
-	ts_t 		wts;
-	ts_t 		rts;
-#elif CC_ALG == SILO
-	ts_t 		tid;
-	ts_t 		epoch;
-#elif CC_ALG == HEKATON
-	void * 		history_entry;	
-#endif
-
-};
-
-class txn_man
+class re_txn_man
 {
 public:
 	virtual void init(thread_t * h_thd, workload * h_wl, uint64_t part_id);
-	virtual ~txn_man() = default;
+	virtual ~re_txn_man() = default;
 	void release();
 	thread_t * h_thd;
 	workload * h_wl;
 	myrand * mrand;
 	uint64_t abort_cnt;
 
-	virtual RC 		run_txn(base_query * m_query) = 0;
+	// virtual RC 		run_txn(base_query * m_query) = 0;
 	uint64_t 		get_thd_id();
 	workload * 		get_wl();
 	void 			set_txn_id(txnid_t txn_id);
@@ -60,9 +41,6 @@ public:
 
 	void 			set_ts(ts_t timestamp);
 	ts_t 			get_ts();
-
-	virtual void 	get_cmd_log_entry() { assert(false); }
-	void			create_log_entry();
 
 	pthread_mutex_t txn_lock;
 	row_t * volatile cur_row;
@@ -100,7 +78,7 @@ public:
 	// following are public for OCC
 	int 			row_cnt;
 	int	 			wr_cnt;
-	Access **		accesses;
+	// Access **		accesses;
 	int 			num_accesses_alloc;
 
     itemid_t *		index_read(INDEX* index, idx_key_t key, int part_id);
@@ -108,11 +86,16 @@ public:
     void 			index_read(INDEX* index, idx_key_t key, int part_id, itemid_t *& item);
 	void 			index_read(std::string iname, idx_key_t key, int part_id, itemid_t *& item);
 	row_t * 		get_row(row_t * row, access_t type);
+
+	// for replay
+public:
+	void 			recover();
+protected:
+	virtual void 	recover_txn(char * log_entry, uint64_t tid = (uint64_t)-1)  
+	{ assert(false); }
+
 protected:	
 	void 			insert_row(row_t * row, table_t * table);
-
-    itemid_t *index_next(std::string iname, itemid_t *last);
-
 private:
 	// insert rows
 	uint64_t 		insert_cnt;
@@ -136,7 +119,6 @@ private:
 #elif CC_ALG == HEKATON
 	RC 				validate_hekaton(RC rc);
 #endif
-
 };
 
 #endif

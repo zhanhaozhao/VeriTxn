@@ -3,7 +3,6 @@
 #include <fstream>
 #include "helper.h"
 
-
 LogRecord** Logger_generate::createRecords(txn_man* txn) {
   // LogRecord ** records = (LogRecord**)malloc(sizeof(LogRecord*) * (txn->wr_cnt + 1));
   

@@ -8,6 +8,7 @@
 #include "common/helper.h"
 #include "common/config.h"
 #include "common/global_common.h"
+#include "kvengine.h"
 // #include "logger.h"
 // #ifndef NOGRAPHITE
 // #include "carbon_user.h"
@@ -48,6 +49,7 @@ extern Transport tport_man;
 extern MessageQueue msg_queue;
 extern Logger logger;
 extern SimManager * simulation;
+extern kvengine *eng;
 #if LOG_QUEUE_TYPE == LOG_CIRCUL_BUFF
 extern Logqueue **log_queues;
 #endif
@@ -58,6 +60,7 @@ extern UInt32 g_node_cnt;
 extern bool volatile warmup_finish;
 extern bool volatile enable_thread_mem_pool;
 extern pthread_barrier_t warmup_bar;
+extern pthread_barrier_t log_bar;
 // #ifndef NOGRAPHITE
 // extern carbon_barrier_t enable_barrier;
 // #endif
@@ -80,6 +83,14 @@ extern ts_t g_timeout;
 extern ts_t g_dl_loop_detect;
 extern bool g_ts_batch_alloc;
 extern UInt32 g_ts_batch_num;
+
+
+extern uint64_t g_log_buffer_size;
+extern uint32_t g_max_log_entry_size;
+extern bool g_log_recover;
+extern uint32_t g_num_logger;
+extern uint64_t g_flush_blocksize;
+extern uint64_t g_read_blocksize;
 
 extern std::map<std::string, std::string> g_params;
 

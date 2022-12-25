@@ -21,6 +21,9 @@
 // #include "thread_enc.h"
 #include "api.h"
 #include "msg_queue.h"
+#include "global_struct.h"
+#include "re_txn.h"
+#include "re_ycsb_txn.h"
 
 void thread_t::init(uint64_t thd_id, uint64_t node_id, workload * workload) {
 	_thd_id = thd_id;
@@ -77,6 +80,44 @@ RC thread_t::run() {
 
 	RC rc = RCOK;
 	UInt64 txn_cnt = 0;
+
+	if (g_log_recover) {
+		// thread_t * h_thd = (thread_t *) thd;
+		RC rc = RCOK;
+		re_txn_man * m_txn;
+		uint64_t thd_id = this->get_thd_id();
+
+		assert (glob_manager);
+		switch (WORKLOAD) {
+		case YCSB :
+			// m_txn = (ycsb_txn_man *) aligned_alloc(64, sizeof(ycsb_txn_man));
+			m_txn = (re_ycsb_txn_man *) malloc(sizeof(re_ycsb_txn_man));
+			new(m_txn) re_ycsb_txn_man();
+			break;
+		// case TPCC :
+		// 	// m_txn = (tpcc_txn_man *) aligned_alloc(64, sizeof(tpcc_txn_man));
+		// 	m_txn = (re_tpcc_txn_man *) malloc(sizeof(re_tpcc_txn_man));
+		// 	new(m_txn) re_tpcc_re_txn_man();
+		// 	break;
+		default:
+			assert(false);
+		}
+
+		m_txn->init(this, this->_wl, this->get_thd_id());
+		glob_manager->set_txn_man(m_txn);
+		assert (m_txn);
+
+		m_txn->set_txn_id(thd_id + glob_manager->get_thd_txn_id(thd_id) * g_thread_cnt);
+		glob_manager->set_thd_txn_id(thd_id);
+
+		//if (get_thd_id() == 0)
+		COMPILER_BARRIER
+		m_txn->recover();
+		COMPILER_BARRIER
+		// INC_FLOAT_STATS_V0(run_time, get_sys_clock() - starttime);
+		return FINISH;
+
+	}
 
 	while (true) {
 		starttime = get_sys_clock();

@@ -30,6 +30,7 @@
 extern sgx_enclave_id_t enclave_id;
 #endif // USE_SGX
 
+#include "untrusted/system/kvengine.h"
 
 void * f(void *);
 void * run_thread(void * id);
@@ -72,17 +73,30 @@ int main(int argc, char* argv[])
     // 	dl_detector.init();
 //	printf("mem_allocator initialized!\n");
 
-    printf("Initializing trusted log generator... ");
-    fflush(stdout);
-    logger.init("logfile.log");
-#if LOG_QUEUE_TYPE == LOG_CIRCUL_BUFF
-    log_queues = (Logqueue**) _mm_malloc(sizeof(Logqueue*), g_thread_cnt);
-    new Logqueue[g_thread_cnt];
-    for (int i = 0; i < g_thread_cnt; i++) {
-        log_queues[i] = (Logqueue*) malloc(sizeof(Logqueue));
-    }
+	printf("Initializing trusted log generator... ");
+	fflush(stdout);
+
+	std::string bench = "YCSB";
+	if (WORKLOAD == TPCC)
+	{
+		bench = "TPCC_" + std::to_string(g_perc_payment);
+	}
+	std::string dir = "./logs/";
+
+#if LOG_TYPE == LOG_DATA
+		logger.init(dir + "/SD_log" + std::to_string(0) + "_" + bench + "_S.data");
+#else
+		logger.init(dir + "/SC_log" + std::to_string(0) + "_" + bench + "_S.data");
 #endif
-    printf("Done\n");
+
+	#if LOG_QUEUE_TYPE == LOG_CIRCUL_BUFF
+	log_queues = (Logqueue**) _mm_malloc(sizeof(Logqueue*), g_thread_cnt);
+	new Logqueue[g_thread_cnt];
+	for (int i = 0; i < g_thread_cnt; i++) {
+		log_queues[i] = (Logqueue*) malloc(sizeof(Logqueue));
+	}
+	#endif
+	printf("Done\n");
 
     // if (NODE_CNT > 1) {
     printf("Initializing message queue... ");
@@ -127,35 +141,53 @@ int main(int argc, char* argv[])
     output_thds = new OutputThread[sthd_cnt];
     log_thds = new LogThread[1];
 
-    pthread_t p_thds[all_thd_cnt];
-    m_thds = new thread_t[thd_cnt];
-    query_queue = (Query_queue *) _mm_malloc(sizeof(Query_queue), 64);
-    if (WORKLOAD != TEST)
-        query_queue->init(m_wl);
-    pthread_barrier_init( &warmup_bar, NULL, all_thd_cnt );
-    printf("query_queue initialized!\n");
-    warmup_finish = true;
-    // spawn and run txns again.
-    int64_t starttime = get_server_clock();
-    int id = 0;
-    for (uint32_t i = 0; i < thd_cnt; i++) {
-        uint64_t vid = i;
-        m_thds[vid].init(i, g_node_id, m_wl);
-        pthread_create(&p_thds[id++], NULL, run_thread, (void *)&m_thds[vid]);
-    }
-    for (uint64_t j = 0; j < rthd_cnt ; j++) {
-        // assert(id >= thd_cnt && id < wthd_cnt + rthd_cnt);
-        input_thds[j].init(id,g_node_id,m_wl);
-        pthread_create(&p_thds[id++], NULL, run_thread, (void *)&input_thds[j]);
-    }
-    for (uint64_t j = 0; j < sthd_cnt; j++) {
-        // assert(id >= wthd_cnt + rthd_cnt && id < wthd_cnt + rthd_cnt + sthd_cnt);
-        output_thds[j].init(id,g_node_id,m_wl);
-        pthread_create(&p_thds[id++], NULL, run_thread, (void *)&output_thds[j]);
-    }
-    log_thds[0].init(id,g_node_id,m_wl);
-    pthread_create(&p_thds[id++], NULL, run_thread, (void *)&log_thds[0]);
+	pthread_t p_thds[all_thd_cnt];
+	m_thds = new thread_t[thd_cnt];
+	if (g_log_recover)
+	{
+		eng = new kvengine();
+		eng->OpenDB("./storage/rocksdb");
 
+	} else {
+		query_queue = (Query_queue *) _mm_malloc(sizeof(Query_queue), 64);
+		if (WORKLOAD != TEST)
+			query_queue->init(m_wl);
+		printf("query_queue initialized!\n");
+	}
+
+	pthread_barrier_init( &warmup_bar, NULL, all_thd_cnt );
+	pthread_barrier_init(&log_bar, NULL, all_thd_cnt);
+
+	warmup_finish = true;
+	// spawn and run txns again.
+	int64_t starttime = get_server_clock();
+	int id = 0;
+
+	if (g_log_recover) {
+		log_thds[0].init(id,g_node_id,m_wl);
+		pthread_create(&p_thds[id++], NULL, run_thread, (void *)&log_thds[0]);
+	}
+
+	for (uint32_t i = 0; i < thd_cnt; i++) {
+		uint64_t vid = i;
+		m_thds[vid].init(i, g_node_id, m_wl);
+		pthread_create(&p_thds[id++], NULL, run_thread, (void *)&m_thds[vid]);
+	}
+	for (uint64_t j = 0; j < rthd_cnt ; j++) {
+		// assert(id >= thd_cnt && id < wthd_cnt + rthd_cnt);
+		input_thds[j].init(id,g_node_id,m_wl);
+		pthread_create(&p_thds[id++], NULL, run_thread, (void *)&input_thds[j]);
+	}
+	for (uint64_t j = 0; j < sthd_cnt; j++) {
+		// assert(id >= wthd_cnt + rthd_cnt && id < wthd_cnt + rthd_cnt + sthd_cnt);
+		output_thds[j].init(id,g_node_id,m_wl);
+		pthread_create(&p_thds[id++], NULL, run_thread, (void *)&output_thds[j]);
+	}
+
+	if (!g_log_recover) {
+		log_thds[0].init(id,g_node_id,m_wl);
+		pthread_create(&p_thds[id++], NULL, run_thread, (void *)&log_thds[0]);
+	}
 
     // m_thds[thd_cnt - 1]->init(i, g_node_id, m_wl);
     // run_thread((void *)(m_thds[thd_cnt - 1]));
