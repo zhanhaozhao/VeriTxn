@@ -142,8 +142,8 @@ void IndexBTEnc::flush_out(BTNode *c) {
     assert(c->get_hash() == c->origin->get_hash());
     assert(c->origin->from->release_latch(c->origin) == LATCH_EX);
 #else
-    assert(c->hash() == c->origin->hash());
-    assert(c->origin->merkle_hash == c->origin->hash());
+//    assert(c->hash() == c->origin->hash());
+    assert(c->origin->merkle_hash == c->hash());
     assert(c->origin->from->release_latch(c->origin->from->roots[c->part]) == LATCH_EX);
 #endif
 //    if (cur % 1000 == 0) {
