@@ -238,10 +238,10 @@ extern enum TestCases					g_test_case;
 #define USE_LOG 1
 
 // cache parameters
-#define VERIFIED_CACHE_SIZ      (1  * 1024 * 1024)  // 256MB
-//#define VERIFIED_CACHE_SIZ      (8 * 1024  * 1024 * 1024)  // 8GB
+//#define VERIFIED_CACHE_SIZ      (1  * 1024 * 1024)  // 1MB
+#define VERIFIED_CACHE_SIZ      (1 * 1024  * 1024 * 1024)  // 1GB
 #define BASE_LEASE      100
-#define VERI_TYPE     PAGE_VERI
+#define VERI_TYPE     MERKLE_TREE
 #if VERI_TYPE == MERKLE_TREE
 // calculate the merkle hash in batch to avoid too costly init table.
 #define BATCH_MERKLE 1

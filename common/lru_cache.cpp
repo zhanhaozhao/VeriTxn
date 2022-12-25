@@ -119,6 +119,7 @@ RC lru_cache::load_and_swap(int part_id, uint64_t bkt_idx, uint bytes_size,  voi
         if (_cached_bytes + bytes_size > _limit) {
             auto rc = cache_free(swapped_part, swapped_idx, swapped);
             if (rc == Abort) {
+                release_latch();
                 return Abort;
             }
             if (swapped != nullptr) {

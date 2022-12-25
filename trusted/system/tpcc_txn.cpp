@@ -60,7 +60,10 @@ RC tpcc_txn_man::run_payment(tpcc_query * query) {
 	key = query->w_id;
 //	INDEX * index = _wl->i_warehouse;
 	item = index_read("WAREHOUSE_IDX", key, wh_to_part(w_id));
-	assert(item != NULL);
+    if (item == nullptr) {
+        return finish(Abort);
+    }
+    assert(item != NULL);
 	row_t * r_wh = ((row_t *)item->location);
 	row_t * r_wh_local;
 	if (g_wh_update_enc)
@@ -87,7 +90,10 @@ RC tpcc_txn_man::run_payment(tpcc_query * query) {
 	+=====================================================*/
 	key = distKey(query->d_id, query->d_w_id);
 	item = index_read("DISTRICT_IDX", key, wh_to_part(w_id));
-	assert(item != NULL);
+    if (item == nullptr) {
+        return finish(Abort);
+    }
+    assert(item != NULL);
 	row_t * r_dist = ((row_t *)item->location);
 	row_t * r_dist_local = get_row(r_dist, WR);
 	if (r_dist_local == NULL) {
@@ -131,7 +137,10 @@ RC tpcc_txn_man::run_payment(tpcc_query * query) {
 		// The performance won't be much different.
 //		INDEX * index = _wl->i_customer_last;
 		item = index_read("CUSTOMER_LAST_IDX", key, wh_to_part(c_w_id));
-		assert(item != NULL);
+        if (item == nullptr) {
+            return finish(Abort);
+        }
+        assert(item != NULL);
 		
 		int cnt = 0;
 		itemid_t * it = item;
@@ -169,7 +178,10 @@ RC tpcc_txn_man::run_payment(tpcc_query * query) {
 		key = custKey(query->c_id, query->c_d_id, query->c_w_id);
 //		INDEX * index = _wl->i_customer_id;
 		item = index_read("CUSTOMER_ID_IDX", key, wh_to_part(c_w_id));
-		assert(item != NULL);
+        if (item == nullptr) {
+            return finish(Abort);
+        }
+        assert(item != NULL);
 		r_cust = (row_t *) item->location;
 	}
 
@@ -264,7 +276,10 @@ RC tpcc_txn_man::run_new_order(tpcc_query * query) {
 	key = w_id;
 //	index = _wl->i_warehouse;
 	item = index_read("WAREHOUSE_IDX", key, wh_to_part(w_id));
-	assert(item != NULL);
+    if (item == nullptr) {
+        return finish(Abort);
+    }
+    assert(item != NULL);
 	row_t * r_wh = ((row_t *)item->location);
 	row_t * r_wh_local = get_row(r_wh, RD);
 	if (r_wh_local == NULL) {
@@ -277,7 +292,10 @@ RC tpcc_txn_man::run_new_order(tpcc_query * query) {
 	key = custKey(c_id, d_id, w_id);
 //	index = _wl->i_customer_id;
 	item = index_read("CUSTOMER_ID_IDX", key, wh_to_part(w_id));
-	assert(item != NULL);
+    if (item == nullptr) {
+        return finish(Abort);
+    }
+    assert(item != NULL);
 	row_t * r_cust = (row_t *) item->location;
 	row_t * r_cust_local = get_row(r_cust, RD);
 	if (r_cust_local == NULL) {
@@ -299,7 +317,10 @@ RC tpcc_txn_man::run_new_order(tpcc_query * query) {
 	+===================================================*/
 	key = distKey(d_id, w_id);
 	item = index_read("DISTRICT_IDX", key, wh_to_part(w_id));
-	assert(item != NULL);
+    if (item == nullptr) {
+        return finish(Abort);
+    }
+    assert(item != NULL);
 	row_t * r_dist = ((row_t *)item->location);
 	row_t * r_dist_local = get_row(r_dist, WR);
 	if (r_dist_local == NULL) {
@@ -351,6 +372,9 @@ RC tpcc_txn_man::run_new_order(tpcc_query * query) {
 		+===========================================*/
 		key = ol_i_id;
 		item = index_read("ITEM_IDX", key, 0);
+        if (item == nullptr) {
+            return finish(Abort);
+        }
 		assert(item != NULL);
 		row_t * r_item = ((row_t *)item->location);
 

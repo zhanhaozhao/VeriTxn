@@ -37,7 +37,11 @@ RC ycsb_txn_man::run_txn(base_query * query) {
 		while ( !finish_req ) {
 			if (iteration == 0) {
 				m_item = index_read("MAIN_INDEX", req->key, part_id);
-			} 
+                if (m_item == nullptr) {
+                    rc = Abort;
+                    goto final;
+                }
+            }
 #if INDEX_STRUCT == IDX_BTREE
 			else {
                 m_item = index_next("MAIN_INDEX", m_item);
