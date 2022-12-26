@@ -9,6 +9,7 @@
 #include "common/config.h"
 #include "common/global_common.h"
 #include "kvengine.h"
+#include "kvserver.h"
 // #include "logger.h"
 // #ifndef NOGRAPHITE
 // #include "carbon_user.h"
@@ -50,6 +51,7 @@ extern MessageQueue msg_queue;
 extern Logger logger;
 extern SimManager * simulation;
 extern kvengine *eng;
+extern kvserver *server;
 #if LOG_QUEUE_TYPE == LOG_CIRCUL_BUFF
 extern Logqueue **log_queues;
 #endif

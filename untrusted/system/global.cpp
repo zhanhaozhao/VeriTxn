@@ -4,6 +4,7 @@
 #include "logger.h"
 #include "sim_manager.h"
 #include "kvengine.h"
+#include "kvserver.h"
 // #include "plock.h"
 // #include "occ.h"
 
@@ -22,6 +23,7 @@ MessageQueue msg_queue;
 Logger logger;
 SimManager * simulation;
 kvengine * eng;
+kvserver * server;
 UInt32 g_node_id = 0;
 UInt32 g_node_cnt = NODE_CNT;
 #if LOG_QUEUE_TYPE == LOG_CIRCUL_BUFF
@@ -45,7 +47,7 @@ bool g_central_man = CENTRAL_MAN;
 UInt32 g_ts_alloc = TS_ALLOC;
 bool g_key_order = KEY_ORDER;
 bool g_no_dl = NO_DL;
-ts_t g_timeout = TIMEOUT;
+ts_t g_timeout = TIMEOUTDL;
 ts_t g_dl_loop_detect = DL_LOOP_DETECT;
 bool g_ts_batch_alloc = TS_BATCH_ALLOC;
 UInt32 g_ts_batch_num = TS_BATCH_NUM;

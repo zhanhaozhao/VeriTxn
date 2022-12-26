@@ -16,7 +16,7 @@ void print_usage() {
 	printf("\t-GtINT      ; TS_ALLOC\n");
 	printf("\t-GkINT      ; KEY_ORDER\n");
 	printf("\t-GnINT      ; NO_DL\n");
-	printf("\t-GoINT      ; TIMEOUT\n");
+	printf("\t-GoINT      ; TIMEOUTDL\n");
 	printf("\t-GlINT      ; DL_LOOP_DETECT\n");
 	
 	printf("\t-GbINT      ; TS_BATCH_ALLOC\n");

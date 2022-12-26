@@ -66,7 +66,7 @@
 #define DL_LOOP_DETECT				1000 	// 100 us
 #define DL_LOOP_TRIAL				100	// 1 us
 #define NO_DL						KEY_ORDER
-#define TIMEOUT						1000000 // 1ms
+#define TIMEOUTDL						1000000 // 1ms
 // [TIMESTAMP]
 #define TS_TWR						false
 #define TS_ALLOC					TS_CAS
