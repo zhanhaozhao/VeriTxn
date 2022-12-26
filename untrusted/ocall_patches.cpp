@@ -50,9 +50,9 @@ void oc_async_hash_value(const char* iname, size_t len, int part_id, uint64_t bk
   async_hash(std::string{iname, len}, part_id, bkt_idx, hash);
 }
 
-void oc_send_logs(const char* logs, size_t len) {
+void oc_send_logs(const char* logs, size_t len, int thd_id) {
   // LogRecord** records = (LogRecord**) logs; 
-  untrust_send_logs(std::string{logs, len});
+  untrust_send_logs(std::string{logs, len}, thd_id);
 }
 
 #endif // USE_SGX

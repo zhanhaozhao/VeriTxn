@@ -19,6 +19,6 @@ enclave {
     char* oc_get_bucket_ocall([in, size=len] const char* iname, size_t len, int part_id, int bkt_idx);
     void oc_debug_print([in, string] const char* str);
     void oc_async_hash_value([in, size=len] const char* iname, size_t len, int part_id, uint64_t bkt_idx, uint64_t hash);
-    void oc_send_logs([in, size=len] const char* iname, size_t len);
+    void oc_send_logs([in, size=len] const char* iname, size_t len, int thd_id);
   };
 };

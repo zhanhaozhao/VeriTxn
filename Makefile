@@ -41,18 +41,21 @@ App : $(OBJS)
 clean:
 	rm -f App ./trusted/*.o ./trusted/*.d ./trusted/system/*.o ./trusted/system/*.d ./trusted/concurrency_control/*.o trusted/concurrency_control/*.d ./untrusted/*.o ./untrusted/*.d ./untrusted/system/*.o ./untrusted/system/*.d ./untrusted/benchmarks/*.o ./untrusted/benchmarks/*.d ./untrusted/cache/*.o ./untrusted/cache/*.d ./common/*.o ./common/*.d $(OBJS) $(DEPS)
 
+no-sgx:
+	cp ./sgx_files/Makefile.no-sgx Makefile
+
 sgx-release:
 	cp ./sgx_files/release/main.cpp ./main.cpp
-	cp ./sgx_files/release/Makefile.sgx ./Makefile.sgx
+	cp ./sgx_files/release/Makefile.sgx ./sgx_files/Makefile.sgx
 	cp ./sgx_files/release/sgx_t.mk ./sgx_t.mk
 	cp ./sgx_files/release/sgx_u.mk ./sgx_u.mk
 	cp ./sgx_files/release/Enclave.config.xml ./trusted/Enclave.config.xml
-	cp Makefile.sgx Makefile
+	cp ./sgx_files/Makefile.sgx Makefile
 
 sgx-debug:
 	cp ./sgx_files/debug/main.cpp ./main.cpp
-	cp ./sgx_files/debug/Makefile.sgx ./Makefile.sgx
+	cp ./sgx_files/debug/Makefile.sgx ./sgx_files/Makefile.sgx
 	cp ./sgx_files/debug/sgx_t.mk ./sgx_t.mk
 	cp ./sgx_files/debug/sgx_u.mk ./sgx_u.mk
 	cp ./sgx_files/debug/Enclave.config.xml ./trusted/Enclave.config.xml
-	cp Makefile.sgx Makefile
+	cp ./sgx_files/Makefile.sgx Makefile
