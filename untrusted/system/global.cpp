@@ -3,7 +3,7 @@
 #include "msg_queue.h"
 #include "logger.h"
 #include "sim_manager.h"
-#include "kvengine.h"
+// #include "kvengine.h"
 // #include "plock.h"
 // #include "occ.h"
 
@@ -21,7 +21,9 @@ Transport tport_man;
 MessageQueue msg_queue;
 Logger logger;
 SimManager * simulation;
+#if USE_SGX != 1
 kvengine * eng;
+#endif
 UInt32 g_node_id = 0;
 UInt32 g_node_cnt = NODE_CNT;
 #if LOG_QUEUE_TYPE == LOG_CIRCUL_BUFF

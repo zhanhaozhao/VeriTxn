@@ -49,7 +49,9 @@ extern Transport tport_man;
 extern MessageQueue msg_queue;
 extern Logger logger;
 extern SimManager * simulation;
+#if USE_SGX != 1
 extern kvengine *eng;
+#endif
 #if LOG_QUEUE_TYPE == LOG_CIRCUL_BUFF
 extern Logqueue **log_queues;
 #endif

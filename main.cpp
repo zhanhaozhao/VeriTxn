@@ -145,9 +145,10 @@ int main(int argc, char* argv[])
 	m_thds = new thread_t[thd_cnt];
 	if (g_log_recover)
 	{
+#if USE_SGX != 1
 		eng = new kvengine();
 		eng->OpenDB("./storage/rocksdb");
-
+#endif
 	} else {
 		query_queue = (Query_queue *) _mm_malloc(sizeof(Query_queue), 64);
 		if (WORKLOAD != TEST)

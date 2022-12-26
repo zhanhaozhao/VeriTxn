@@ -253,7 +253,7 @@ extern enum TestCases					g_test_case;
 //#define VERIFIED_CACHE_SIZ      (1  * 1024 * 1024)  // 1MB
 #define VERIFIED_CACHE_SIZ      (1 * 1024  * 1024 * 1024)  // 1GB
 #define BASE_LEASE      100
-#define VERI_TYPE     MERKLE_TREE
+#define VERI_TYPE     PAGE_VERI
 #if VERI_TYPE == MERKLE_TREE
 // calculate the merkle hash in batch to avoid too costly init table.
 #define BATCH_MERKLE 1
@@ -261,7 +261,7 @@ extern enum TestCases					g_test_case;
 // #define SEPARATE_MERKLE
 #endif
 #define BUCKET_FACTOR 1
-//#define PRE_LOAD     1
+#define PRE_LOAD     1
 
 #if INDEX_STRUCT == IDX_HASH
 #define PAGE BucketHeader

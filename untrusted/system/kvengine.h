@@ -1,6 +1,9 @@
 #ifndef KVENGINE_H
 #define KVENGINE_H
 
+#include "config.h"
+
+#if USE_SGX != 1
 
 #include "rocksdb/db.h"
 #include "rocksdb/slice.h"
@@ -107,5 +110,6 @@ public:
 
 };
 
+#endif
 
 #endif
