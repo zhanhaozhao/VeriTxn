@@ -9,7 +9,6 @@
 #include "index_hash.h"
 #include "index_btree.h"
 #include "catalog.h"
-#include "manager_enc.h"
 // #include "common/mem_alloc.h"
 #include "common/base_query.h"
 #include "re_ycsb_txn.h"
@@ -123,7 +122,9 @@ re_ycsb_txn_man::recover_txn(char * log_entry, uint64_t tid)
 		// base_row_t * row = ((base_row_t *)m_item->location);
 		// row->set_data(data, data_length);
 		std::cout << "key:" << key << ", data:" << data << std::endl;
+#if USE_SGX != 1
 		eng->DBPut(rockskey, data);
+#endif
 	}
 #elif LOG_TYPE == LOG_COMMAND
 	// Format

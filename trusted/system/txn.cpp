@@ -81,6 +81,8 @@ ts_t txn_man::get_ts() {
 	return this->timestamp;
 }
 
+#include <algorithm>
+
 void txn_man::cleanup(RC rc) {
 #if CC_ALG == HEKATON
 	row_cnt = 0;
@@ -89,19 +91,27 @@ void txn_man::cleanup(RC rc) {
 	return;
 #endif
 
+    PAGE_ENC ** pages = new PAGE_ENC* [row_cnt];
+    for (int i = 0; i < row_cnt; i ++) {
+        Access *access = accesses[i];
+        pages[i] = (PAGE_ENC*) access->orig_row->from_page;
+    }
+    std::sort(pages, pages+row_cnt);    // cache friendly.
+
 #if VERI_TYPE == MERKLE_TREE
     for (int i = 0; i < row_cnt; i++) {
         Access *access = accesses[i];
-        auto node = (PAGE_ENC*) access->orig_row->from_page;
         if (access->type == WR)
-            node->from->merkle_update(node);
-        node->from->release_up_cache(node);
+            pages[i]->from->merkle_update(pages[i]);
+        pages[i]->from->release_up_cache(pages[i]);
+    }
+    for (int i = 0; i < row_cnt; i ++) {
+        pages[i]->from->release_root_latch(get_thd_id());
     }
 #else
     for (int i = 0; i < row_cnt; i++) {
-        Access *access = accesses[i];
-        auto node = (PAGE_ENC*) access->orig_row->from_page;
-        node->from->release_up_cache(node);
+//        if (i == 0 || pages[i] != pages[i-1])
+            pages[i]->from->release_up_cache(pages[i]);
     }
 #endif
 
@@ -242,7 +252,7 @@ void txn_man::insert_row(row_t * row, table_t * table) {
 itemid_t *
 txn_man::index_read(std::string iname, idx_key_t key, int part_id) {
 //	uint64_t starttime = get_cur_time_ocall();
-	itemid_t * item;
+	itemid_t * item = nullptr;
 	// index --> en_index;
     INDEX_ENC * index_enc = (INDEX_ENC *) tab_map->_indexes[iname];
 	if (index_enc == nullptr) {
@@ -252,10 +262,13 @@ txn_man::index_read(std::string iname, idx_key_t key, int part_id) {
 //        tab_map->_indexes[index->index_name] = index_enc;
 	}
 #if INDEX_STRUCT == IDX_HASH
-	index_enc->index_read(iname, key, item, part_id, get_thd_id());
+	RC rc = index_enc->index_read(iname, key, item, part_id, get_thd_id());
 #else
-    index_enc->index_read(key, item, part_id, get_thd_id());
+    RC rc = index_enc->index_read(key, item, part_id, get_thd_id());
 #endif
+    if (rc != RCOK) {
+        return nullptr;
+    }
     assert(((row_t*)item->location)->get_table());
 
 	return item;

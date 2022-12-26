@@ -22,7 +22,9 @@ Transport tport_man;
 MessageQueue msg_queue;
 Logger logger;
 SimManager * simulation;
+#if USE_SGX != 1
 kvengine * eng;
+#endif
 kvserver * server;
 UInt32 g_node_id = 0;
 UInt32 g_node_cnt = NODE_CNT;

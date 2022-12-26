@@ -31,8 +31,6 @@ extern sgx_enclave_id_t enclave_id;
 #endif // USE_SGX
 
 #include "untrusted/system/kvengine.h"
-#include "untrusted/system/kvserver.h"
-#include "untrusted/system/rpc_thread.h"
 
 void * f(void *);
 void * run_thread(void * id);
@@ -40,7 +38,6 @@ thread_t * m_thds;
 InputThread * input_thds;
 OutputThread * output_thds;
 LogThread * log_thds;
-RPCThread * rpc_thds;
 // defined in parser.cpp
 void parser(int argc, char * argv[]);
 
@@ -54,8 +51,8 @@ int main(int argc, char* argv[])
   memset(t, 0, sizeof(sgx_launch_token_t));
   printf("Initializing Enclave.\n");
   sgx_status_t enclave_status = sgx_create_enclave(ENCLAVE_FILENAME,
-//     SGX_DEBUG_FLAG, &t, &updated, &enclave_id, NULL);
-   0, &t, &updated, &enclave_id, NULL);
+    SGX_DEBUG_FLAG, &t, &updated, &enclave_id, NULL);
+//    0, &t, &updated, &enclave_id, NULL);
   if (enclave_status != SGX_SUCCESS) {
     printf("Failed to create Enclave : error %d - %#x.\n", enclave_status,
       enclave_status);
@@ -139,20 +136,19 @@ int main(int argc, char* argv[])
     uint64_t rthd_cnt = NODE_CNT > 1 ? INPUT_CNT : 0;
     uint64_t sthd_cnt = NODE_CNT > 1 ? OUTPUT_CNT : 0;
     uint64_t log_cnt = 1;
-	uint64_t rpc_cnt = 1;
-    uint64_t all_thd_cnt = thd_cnt + rthd_cnt + sthd_cnt + log_cnt + rpc_cnt;
+    uint64_t all_thd_cnt = thd_cnt + rthd_cnt + sthd_cnt + log_cnt;
     input_thds = new InputThread[rthd_cnt];
     output_thds = new OutputThread[sthd_cnt];
-    log_thds = new LogThread[log_cnt];
-	rpc_thds = new RPCThread[rpc_cnt];
+    log_thds = new LogThread[1];
 
 	pthread_t p_thds[all_thd_cnt];
 	m_thds = new thread_t[thd_cnt];
-
 	if (g_log_recover)
 	{
-		eng = new kvengine();
+#if USE_SGX != 1		
+        eng = new kvengine();
 		eng->OpenDB("./storage/rocksdb");
+#endif
 	} else {
 		query_queue = (Query_queue *) _mm_malloc(sizeof(Query_queue), 64);
 		if (WORKLOAD != TEST)
@@ -192,11 +188,6 @@ int main(int argc, char* argv[])
 	if (!g_log_recover) {
 		log_thds[0].init(id,g_node_id,m_wl);
 		pthread_create(&p_thds[id++], NULL, run_thread, (void *)&log_thds[0]);
-	}
-
-	if (g_log_recover) {
-		rpc_thds[0].init(id,g_node_id,m_wl);
-		pthread_create(&p_thds[id++], NULL, run_thread, (void *)&rpc_thds[0]);
 	}
 
     // m_thds[thd_cnt - 1]->init(i, g_node_id, m_wl);

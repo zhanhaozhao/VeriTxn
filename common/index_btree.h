@@ -19,10 +19,6 @@ typedef struct bt_node {
 	UInt32 num_keys;
 	bt_node * next;
 	bool latch;
-	pthread_mutex_t locked;
-	latch_t latch_type;
-	UInt32 share_cnt;
-    index_btree* from;
 #if VERI_TYPE == MERKLE_TREE
     uint64_t merkle_hash;
     uint64_t *child_merkle_hash;
@@ -42,6 +38,10 @@ typedef struct bt_node {
         return num_keys;
     }
 #endif
+    latch_t latch_type;
+    UInt32 share_cnt;
+    index_btree* from;
+    pthread_mutex_t locked;
 } bt_node;
 
 struct glob_param {

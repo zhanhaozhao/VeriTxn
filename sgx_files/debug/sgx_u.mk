@@ -75,11 +75,12 @@ endif
 
 App_C_Cpp_Flags := $(Common_C_Cpp_Flags) $(SGX_RA_TLS_Extra_Flags) -Iuntrusted -I$(SGX_SDK)/include -I$(PROJECT_ROOT_DIR) 
 App_C_Cpp_Flags += -I$(PROJECT_ROOT_DIR)/common -I$(PROJECT_ROOT_DIR)/untrusted -I$(PROJECT_ROOT_DIR)/untrusted/benchmark -I$(PROJECT_ROOT_DIR)/untrusted/cache -Iuntrusted/system
+App_C_Cpp_Flags += `pkg-config --cflags protobuf grpc`
 ### Project Settings ###
 
 ### Linking setting ###
 App_Link_Flags := -L$(SGX_LIBRARY_PATH)	-l$(Urts_Library_Name) \
-	-lpthread -lz -lm -lcrypto -lrt -lnanomsg  -lrocksdb
+	-lpthread -lz -lm -lcrypto -lrt -lnanomsg  -lrocksdb `pkg-config --libs protobuf grpc++ grpc`
 
 ## Add sgx_uae_service library to link ##
 ifneq ($(SGX_MODE), HW)
@@ -120,6 +121,10 @@ untrusted/Enclave_u.o: untrusted/Enclave_u.c
 
 ## build files needed from other directory
 
+%_u.o: %.cc
+	$(CXX) $(App_C_Cpp_Flags) -c $< -o $@
+	@echo "CXX  <=  $<"
+
 %_u.o: %.cpp
 	$(CXX) $(App_C_Cpp_Flags) -c $< -o $@
 	@echo "CXX  <=  $<"
@@ -138,6 +143,8 @@ App.o: main.cpp
 
 SRC_DIRS = ./common/ ./untrusted/system/ ./untrusted/cache/ ./untrusted/benchmarks/
 CPPS = $(foreach dir, $(SRC_DIRS), $(wildcard $(dir)*.cpp))
+CCS = $(foreach dir, $(SRC_DIRS), $(wildcard $(dir)*.cc))
+CCOBJS = $(CCS:.cc=.o)
 OBJS = $(CPPS:.cpp=_u.o)
 
 # libuntrusted.a: $(OBJS) untrusted/Enclave_u.o untrusted/Enclave_ecall.o
@@ -146,7 +153,7 @@ OBJS = $(CPPS:.cpp=_u.o)
 
 ## Build worker app ##
 # App: App.o libuntrusted.a 
-App: App.o $(OBJS) untrusted/Enclave_u.o untrusted/Enclave_ecall.o untrusted/ocall_patches.o
+App: App.o $(CCOBJS) $(OBJS) untrusted/Enclave_u.o untrusted/Enclave_ecall.o untrusted/ocall_patches.o
 	$(CXX) $^ -o $@ -L. $(App_Link_Flags)
 	@echo "LINK =>  $@"
 ### Sources ###

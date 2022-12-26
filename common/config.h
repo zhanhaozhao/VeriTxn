@@ -250,8 +250,8 @@ extern enum TestCases					g_test_case;
 #define USE_LOG 1
 
 // cache parameters
-#define VERIFIED_CACHE_SIZ      (1  * 1024 * 1024)  // 256MB
-//#define VERIFIED_CACHE_SIZ      (8 * 1024  * 1024 * 1024)  // 8GB
+//#define VERIFIED_CACHE_SIZ      (1  * 1024 * 1024)  // 1MB
+#define VERIFIED_CACHE_SIZ      (1 * 1024  * 1024 * 1024)  // 1GB
 #define BASE_LEASE      100
 #define VERI_TYPE     PAGE_VERI
 #if VERI_TYPE == MERKLE_TREE
@@ -261,7 +261,7 @@ extern enum TestCases					g_test_case;
 // #define SEPARATE_MERKLE
 #endif
 #define BUCKET_FACTOR 1
-//#define PRE_LOAD     1
+#define PRE_LOAD     1
 
 #if INDEX_STRUCT == IDX_HASH
 #define PAGE BucketHeader

@@ -23,7 +23,7 @@ RC IndexBTEnc::init(uint64_t part_cnt) {
         }
     }
 #else
-    merkle_owner_thread = -1;
+    root_owner_thread = -1;
 #endif
     return RCOK;
 }
@@ -73,17 +73,31 @@ void IndexBTEnc::flush_out(BTNode *c) {
     auto cur = ATOM_ADD_FETCH(flush_num, 1);
 #if VERI_TYPE == MERKLE_TREE
     // online updated hash.
+    while (!c->origin->from->latch_node(c->origin->from->roots[c->part], LATCH_EX));
+    c->merkle_hash = c->hash();
     c->origin->merkle_hash = c->merkle_hash;
+    auto pa = load_child(c, -1);
+    if (pa) {
+        UInt32 i;
+        for (i = 0; i < pa->num_keys; i++) {
+            if (c->keys[0] < pa->keys[i])
+                break;
+        }
+        assert(pa->child[i] == c->node_id);
+        pa->child_merkle_hash[i] = c->merkle_hash;
+        pa->merkle_hash = pa->hash();
+    }
 #elif VERI_TYPE == PAGE_VERI
     assert(c->is_leaf); // only need to keep leaf data on time, since no parent hash is maintained.
     _verify_hash[c->part][c->node_id] = c->get_hash();
+    while (!c->origin->from->latch_node(c->origin, LATCH_EX));
 #endif
     c->origin->num_keys = c->num_keys;
     c->origin->is_leaf = c->is_leaf;
     memcpy(c->origin->keys, c->keys, order * sizeof(idx_key_t));
-    c->origin->latch = false;
-    c->origin->latch_type = LATCH_NONE;
-    c->origin->share_cnt = 0;
+//    c->origin->latch = false;
+//    c->origin->latch_type = LATCH_NONE;
+//    c->origin->share_cnt = 0;
     auto ln = c->num_keys;
     if (!c->is_leaf) {
         ln++;
@@ -126,8 +140,11 @@ void IndexBTEnc::flush_out(BTNode *c) {
 
 #if VERI_TYPE == PAGE_VERI
     assert(c->get_hash() == c->origin->get_hash());
+    assert(c->origin->from->release_latch(c->origin) == LATCH_EX);
 #else
-    assert(c->hash() == c->origin->hash());
+//    assert(c->hash() == c->origin->hash());
+    assert(c->origin->merkle_hash == c->hash());
+    assert(c->origin->from->release_latch(c->origin->from->roots[c->part]) == LATCH_EX);
 #endif
 //    if (cur % 1000 == 0) {
 //        printf("flushed: %lu\n", cur);
@@ -199,16 +216,7 @@ BTNode* IndexBTEnc::load_next(BTNode *cur_node) {
     }
 #elif VERI_TYPE == MERKLE_TREE
     if (cur != new_node) delete new_node;
-    else {
-        if (i == -1) {
-            // the merkle tree must goes from root to leaf to load data outside cache, the other direction is not safe and needs other verification.
-//            assert(cur->hash() == cur->merkle_hash);
-        } else {
-            // need to verify all nodes.
-            assert(cur->hash() == cur->merkle_hash);
-            assert(cur_node->child_merkle_hash[i] == cur->merkle_hash);
-        }
-    }
+    assert(false);  // merkle tree current does not support next.
 #endif
     return cur;
 }
@@ -238,7 +246,11 @@ BTNode* IndexBTEnc::load_child(BTNode *cur_node, int i) {
         return cur;
     }
     // get latch
+#if VERI_TYPE == PAGE_VERI
     while (!origin_node->from->latch_node(origin_node, LATCH_EX)) {};
+#else
+    while (!origin_node->from->latch_node(origin_node->from->roots[cur_node->part], LATCH_EX));
+#endif
     auto new_node = make_node(origin_node, cur_node->part);
     assert(new_node->node_id = inner_node_id);
     void* swapped = nullptr;
@@ -249,7 +261,12 @@ BTNode* IndexBTEnc::load_child(BTNode *cur_node, int i) {
     while (rc != RCOK) {
         rc = _cache->load_and_swap(cur_node->part, new_node->node_id, sizeof (*new_node), (void *) new_node, swapped, sw_part, sw_node_id, cur_void);
     }
-    origin_node->from->release_latch(origin_node);
+#if VERI_TYPE == PAGE_VERI
+    assert (origin_node->from->release_latch(origin_node) == LATCH_EX);
+#else
+    assert (origin_node->from->release_latch(origin_node->from->roots[cur_node->part]) == LATCH_EX);
+#endif
+
     cur = (BTNode*)cur_void;
     if (rc != RCOK) {
         assert(false);
@@ -275,10 +292,10 @@ BTNode* IndexBTEnc::load_child(BTNode *cur_node, int i) {
         delete flushed_node;
 #elif VERI_TYPE == MERKLE_TREE
         while (!latch_node(flushed_node, LATCH_EX)) {}
+        // because we use lock-free cache load, the flushed_node could be used by another thread concurrently.
+        // delayed update in FastVer.
         flush_out(flushed_node);
         delete flushed_node;
-        //TODO: support merkle tree delayed hash update.
-        // because we use lock-free cache load, the flushed_node could be used by another thread concurrently.
 #endif
     }
 #if VERI_TYPE == PAGE_VERI
@@ -352,6 +369,13 @@ IndexBTEnc::index_read(idx_key_t key,
 RC IndexBTEnc::index_read(idx_key_t key, itemid_t *& item, int part_id, int thd_id)
 {
     RC rc = Abort;
+#if VERI_TYPE == MERKLE_TREE
+    rc = get_root_latch(thd_id);
+    if (rc != RCOK) {
+        return rc;
+    }
+#endif
+
     glob_param params;
     assert(part_id != -1);
     params.part_id = part_id;
@@ -359,14 +383,16 @@ RC IndexBTEnc::index_read(idx_key_t key, itemid_t *& item, int part_id, int thd_
 #if VERI_TYPE == PAGE_VERI
     find_leaf(params, key, INDEX_READ, leaf);
 #else
-    find_leaf(params, key, INDEX_EX, leaf);
+    find_leaf(params, key, INDEX_NONE, leaf);
 #endif
     if (leaf == NULL)
         M_ASSERT_ENC(false, "the leaf does not exist!");
     for (UInt32 i = 0; i < leaf->num_keys; i++)
         if (leaf->keys[i] == key) {
             item = (itemid_t *) leaf->data[i];
+#if VERI_TYPE == PAGE_VERI
             release_latch(leaf);
+#endif
             return RCOK;
         }
     M_ASSERT_ENC(false, "the key does not exist!");
@@ -383,8 +409,13 @@ RC IndexBTEnc::merkle_update(BTNode* c)
 
 RC IndexBTEnc::release_up_cache(BTNode* c)
 {
+    bool first = true;
     for (;c!= nullptr; c = load_child(c, -1)) {
-        _cache->release(c->part, c->node_id);
+        first = false;
+        if (c != roots[c->part]){
+            _cache->release(c->part, c->node_id);
+            if (!first) _cache->release(c->part, c->node_id);   // the load itself cause cache count++;
+        }
     }
 }
 
@@ -658,23 +689,47 @@ RC IndexBTEnc::index_next(itemid_t *&item, itemid_t *last, bool samekey) {
 
 #if VERI_TYPE == MERKLE_TREE
 void IndexBTEnc::update_hash(BTNode* c) {
-    if (!c->is_leaf) {
-        for (int i=0;i<=c->num_keys;i++) {
-            auto child = load_child(c, i);
-            c->child_merkle_hash[i] = child->merkle_hash;
-        }
-    }
     c->merkle_hash = c->hash();
+    if (c->parent != 0) {
+        auto pa = load_child(c, -1);
+        UInt32 i;
+        for (i = 0; i < pa->num_keys; i++) {
+            if (c->keys[0] < pa->keys[i])
+                break;
+        }
+        assert(load_child(pa, i) == c);
+        pa -> child_merkle_hash[i] = c->merkle_hash;
+        _cache->release(pa->part, pa->node_id);
+    }
 }
 
 void IndexBTEnc::up_to_root(BTNode* c) {
+    bool first = true;
     for (;c!= nullptr; c = load_child(c, -1)) {
         update_hash(c);
-        _cache->release(c->part, c->node_id);
+        if (!first) {
+            _cache->release(c->part, c->node_id);
+        }
+        first = false;
     }
 }
 
-void IndexBTEnc::clear(int thread_id) {
-    assert(ATOM_CAS(merkle_owner_thread, thread_id, -1));
+RC IndexBTEnc::get_root_latch(int thread_id) {
+    while (!ATOM_CAS(latch, false, true));
+    if (root_owner_thread == thread_id || root_owner_thread == -1) {
+        root_owner_thread = thread_id;
+        assert(ATOM_CAS(latch, true, false));
+        return RCOK;
+    }
+    assert(ATOM_CAS(latch, true, false));
+    return Abort;
+}
+
+void IndexBTEnc::release_root_latch(int thread_id) {
+    while (!ATOM_CAS(latch, false, true));
+    // could release for multiple times.
+//    assert (root_owner_thread == thread_id || root_owner_thread == -1);
+    root_owner_thread = -1;
+    assert(ATOM_CAS(latch, true, false));
 }
 #endif

@@ -55,9 +55,12 @@ public:
     RC          dfs(BTNode* c);
 
 #if VERI_TYPE == MERKLE_TREE
+    //
     void            update_hash(BTNode* c);
-    txnid_t         merkle_owner_thread;    // merkle tree contend on the root hash and thus no concurrency.
-    void clear(int thread_id);
+    bool            latch;
+    int             root_owner_thread;    // merkle tree contend on the root hash and thus no concurrency.
+    RC   get_root_latch(int thread_id);
+    void release_root_latch(int thread_id);
     RC merkle_update(BTNode *c);
     void up_to_root(BTNode *c);
 #endif

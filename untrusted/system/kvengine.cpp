@@ -2,6 +2,8 @@
 #include <thread>
 #include "kvengine.h"
 
+#if USE_SGX != 1
+
 using namespace rocksdb;
 
 std::string kDBPath = "./storage/rocksdb";
@@ -217,3 +219,5 @@ bool kvengine::CheckoutBackupDB(const std::string& dst_dir) {
 //   std::cout << "Backup Checkout failed: " << s.ToString() << std::endl;
   return false;
 }
+
+#endif
