@@ -403,6 +403,15 @@ void txn_man::create_log_entry() {
 		char * tuple_data = access->orig_row->data;
 		//assert(tuple_size!=0);
 
+#if INDEX_STRUCT == IDX_HASH
+        PACK(_log_entry, ((PAGE_ENC*)access->orig_row->from_page)->part, offset);        // part.
+        PACK(_log_entry, ((PAGE_ENC*)access->orig_row->from_page)->bkt, offset);        // page id.
+        PACK(_log_entry, access->orig_row->offset, offset); // invalid data.
+#else
+        PACK(_log_entry, ((PAGE_ENC*)access->orig_row->from_page)->part, offset);        // part.
+        PACK(_log_entry, ((PAGE_ENC*)access->orig_row->from_page)->node_id, offset);        // page id.
+        PACK(_log_entry, access->orig_row->offset, offset); // the offset of the item_t in data.
+#endif
 		PACK(_log_entry, table_id, offset);
 		PACK(_log_entry, key, offset);
 		PACK(_log_entry, tuple_size, offset);
