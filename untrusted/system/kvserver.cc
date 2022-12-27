@@ -2,7 +2,9 @@
 #include <memory>
 #include <string>
 
+#include "global.h"
 #include "kvserver.h"
+#include "rocksdb/db.h"
 #include <grpcpp/grpcpp.h>
 #include "storage.grpc.pb.h"
 
@@ -14,6 +16,10 @@ using grpc::Status;
 using helloworld::HelloRequest;
 using helloworld::HelloReply;
 using helloworld::Greeter;
+using helloworld::GetPageRequest;
+using helloworld::GetPageReply;
+using helloworld::Item;
+using helloworld::PageLoader;
 
 // Logic and data behind the server's behavior.
 class GreeterServiceImpl final : public Greeter::Service {
@@ -25,10 +31,28 @@ class GreeterServiceImpl final : public Greeter::Service {
     }
 };
 
+class PageLoaderServiceImpl final : public PageLoader::Service {
+    Status GetPage(ServerContext* context, const GetPageRequest* request,
+                    GetPageReply* reply) override {
+        std::string page_id = request->page_id();
+        // read from rocksdb
+        // std::map<std::string> items;
+        auto f_proc_entry = [this, reply](const rocksdb::Iterator * it) {
+            Item* item = reply->add_dataitem();
+            item->set_key(it->key().data());
+            item->set_value(it->value().data());
+            // items.emplace_back(it->value().data());
+        };
+        eng->DBPrefixScan(page_id, f_proc_entry);
+
+        return Status::OK;
+    }
+};
 
 void kvserver::RunServer() {
   std::string server_address("0.0.0.0:50051");
-  GreeterServiceImpl service;
+//   GreeterServiceImpl service;
+  PageLoaderServiceImpl service;
 
   ServerBuilder builder;
   // Listen on the given address without any authentication mechanism.

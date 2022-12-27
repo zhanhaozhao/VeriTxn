@@ -31,6 +31,21 @@ fmt_title=["NODE_CNT","CC_ALG","WRITE_PERC","PERC_PAYMENT","MODE","MAX_TXN_IN_FL
 # PLOTS
 ##############################
 
+def ycsb_debug():
+    wl = 'YCSB'
+    nnodes = [1]
+    algos=['OCC']
+    # algos=['NO_WAIT']
+    # base_table_size=1048576*10
+    base_table_size=1048576
+    write_perc = [0.5]
+    load = [10000]
+    tcnt = [4]
+    skew = [0.6]
+    fmt = ["WORKLOAD","NODE_CNT","CC_ALG","SYNTH_TABLE_SIZE","WRITE_PERC","READ_PERC","MAX_TXN_IN_FLIGHT","ZIPF_THETA","THREAD_CNT"]
+    exp = [[wl,n,algo,base_table_size,wr_perc,1-wr_perc,ld,sk,thr] for thr,wr_perc,ld,n,sk,algo in itertools.product(tcnt,write_perc,load,nnodes,skew,algos)]
+    return fmt,exp
+
 def ycsb_scaling():
     wl = 'YCSB'
     #nnodes = [1,2,4,8,16,32,64]
@@ -143,6 +158,7 @@ def tpcc_scaling_whset():
 ##############################
 
 experiment_map = {
+    'ycsb_debug': ycsb_debug,
     'ycsb_scaling': ycsb_scaling,
     'ycsb_writes': ycsb_writes,
     'ycsb_skew': ycsb_skew,
@@ -162,7 +178,8 @@ configs = {
     "WORKLOAD" : "YCSB",
     "CC_ALG" : "WAIT_DIE",
     "TPORT_PORT":"18000",
-    "PART_CNT": "NODE_CNT",
+    # "PART_CNT": "NODE_CNT",
+    "PART_CNT": 1,
     "PART_PER_TXN": 2,
     "MAX_TXN_IN_FLIGHT": 10000,
     "ABORT_PENALTY": "10 * 1000000UL   // in ns.",
