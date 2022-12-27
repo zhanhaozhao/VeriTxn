@@ -45,6 +45,7 @@ public:
 	uint64_t o_carrier_id;
 	uint64_t ol_delivery_d;
 	// for order-status
+    uint64_t threshold;
 
 
 private:
@@ -53,6 +54,8 @@ private:
 	void gen_payment(uint64_t thd_id);
 	void gen_new_order(uint64_t thd_id);
 	void gen_order_status(uint64_t thd_id);
+    void gen_delivery(uint64_t thd_id);
+    void gen_stocklevel(uint64_t thd_id);
 };
 
 #endif
