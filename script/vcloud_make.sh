@@ -8,10 +8,15 @@ NODE_CNT="$3"
 count=0
 
 for HOSTNAME in ${HOSTS}; do
+    if [ $count -eq 0 ]; then
+        SCRIPT="cd ${PATHE}script; ./storage_compile.sh"
+        echo "${HOSTNAME}: make Storage"
+        ssh -p 5000 -l ${USERNAME} ${USERNAME}@${HOSTNAME} "${SCRIPT}"
+    fi
     SCRIPT="cd ${PATHE}; make clean; make -j10"
     echo "${HOSTNAME}: make App"
     ssh -p 5000 -l ${USERNAME} ${USERNAME}@${HOSTNAME} "${SCRIPT}"
     # BatchMode=yes -o StrictHostKeyChecking=no -p 5000 -l ${USERNAME} ${USERNAME}@${HOSTNAME} "${SCRIPT}" &
     echo $SCRIPT
-    # count=`expr $count + 1`
+    count=`expr $count + 1`
 done

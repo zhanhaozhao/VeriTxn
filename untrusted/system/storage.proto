@@ -22,3 +22,21 @@ message HelloRequest {
 message HelloReply {
   string message = 1;
 }
+
+service PageLoader {
+  // Sends a greeting
+  rpc GetPage (GetPageRequest) returns (GetPageReply) {}
+}
+
+message GetPageRequest {
+  string page_id = 1;
+}
+
+message Item {
+  string key = 1;
+  string value = 2;
+}
+
+message GetPageReply {
+  repeated Item dataitem = 1;
+}

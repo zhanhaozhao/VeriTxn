@@ -13,11 +13,16 @@ for HOSTNAME in ${HOSTS}; do
         # SCRIPT="source /etc/profile;env SCHEMA_PATH=\"$2\" timeout -k 15m 15m ${PATHE}App -nid${count} -r100 -w0 > ${PATHE}dbresults.out 2>&1"
         SCRIPT="cd ${PATHE}; ./App -nid${count} -r100 -w0 > ${PATHE}dbresults${count}.out 2>&1"
         echo "${HOSTNAME}: App r ${count}"
+        ssh -n -o BatchMode=yes -o StrictHostKeyChecking=no -p 5000 -l ${USERNAME} ${USERNAME}@${HOSTNAME} "${SCRIPT}" &
     else
+    # elif [ $count -eq 1 ]; then
         SCRIPT="cd ${PATHE}; ./App -nid${count} > ${PATHE}dbresults${count}.out 2>&1"
         echo "${HOSTNAME}: App r/w ${count}"
+        ssh -n -o BatchMode=yes -o StrictHostKeyChecking=no -p 5000 -l ${USERNAME} ${USERNAME}@${HOSTNAME} "${SCRIPT}" &
+        SCRIPT="cd ${PATHE}; ./Store > ${PATHE}storageresults${count}.out 2>&1"
+        echo "${HOSTNAME}: Store ${count}"
+        ssh -n -o BatchMode=yes -o StrictHostKeyChecking=no -p 5000 -l ${USERNAME} ${USERNAME}@${HOSTNAME} "${SCRIPT}" &
     fi
-    ssh -n -o BatchMode=yes -o StrictHostKeyChecking=no -p 5000 -l ${USERNAME} ${USERNAME}@${HOSTNAME} "${SCRIPT}" &
     echo $SCRIPT
     count=`expr $count + 1`
 done

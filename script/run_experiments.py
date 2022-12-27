@@ -112,30 +112,30 @@ for exp in exps:
                     for m in machines:
                         f_ifcfg.write(m + "\n")
             
-                for m in machines:
-                    cmd = 'scp -P {} {}/{} {}:/{}'.format(5000,PATH, "Makefile.enc", m, uname)
-                print cmd
-                os.system(cmd)
+                # for m in machines:
+                #     cmd = 'scp -P {} {}/{} {}:/{}'.format(5000,PATH, "Makefile.enc", m, uname)
+                # print cmd
+                # os.system(cmd)
 
                 cmd = 'sh script/vcloud_makeclean.sh \'{}\' /{}/ {} {} {}'.format(' '.join(machines), uname, cfgs["NODE_CNT"], perfTime, uname2)
                 print cmd
                 os.system(cmd)
 
-                for m in machines:
-                    cmd = 'scp -P {} {}/{} {}:/{}'.format(5000,PATH, "Makefile.no-sgx", m, uname)
-                print cmd
-                os.system(cmd)
+                # for m in machines:
+                #     cmd = 'scp -P {} {}/{} {}:/{}'.format(5000,PATH, "Makefile.no-sgx", m, uname)
+                # print cmd
+                # os.system(cmd)
 
-                cmd = 'sh script/vcloud_makeclean.sh \'{}\' /{}/ {} {} {}'.format(' '.join(machines), uname, cfgs["NODE_CNT"], perfTime, uname2)
-                print cmd
-                os.system(cmd)
+                # cmd = 'sh script/vcloud_makeclean.sh \'{}\' /{}/ {} {} {}'.format(' '.join(machines), uname, cfgs["NODE_CNT"], perfTime, uname2)
+                # print cmd
+                # os.system(cmd)
 
-        if sgx:
-            cmd = "cp Makefile.enc Makefile"
-        else:
-            cmd = "cp Makefile.no-sgx Makefile"
-        print cmd
-        os.system(cmd)
+        # if sgx:
+        #     cmd = "cp Makefile.enc Makefile"
+        # else:
+        #     cmd = "cp Makefile.no-sgx Makefile"
+        # print cmd
+        # os.system(cmd)
 
         if remote_make:
             if execute:

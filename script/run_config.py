@@ -26,12 +26,12 @@ istc_machines=[
 ]
 username = "root"
 port = "5000"
-vcloud_uname = 'opt/intel/sgxsdk/DBx1000'
+vcloud_uname = 'opt/intel/sgxsdk/DBx1000/DBx1000'
 
 #identity = "/usr0/data1/dvanaken/.ssh/id_rsa_vcloud"
 vcloud_machines = [
-"10.0.0.6",
-"10.0.0.5",
+"127.0.0.1",
+"127.0.0.1",
 "10.0.0.7",
 "10.0.0.8",
 # "20.25.120.160",

@@ -11,6 +11,10 @@ using grpc::Status;
 using helloworld::HelloRequest;
 using helloworld::HelloReply;
 using helloworld::Greeter;
+using helloworld::GetPageRequest;
+using helloworld::GetPageReply;
+using helloworld::Item;
+using helloworld::PageLoader;
 
 class GreeterClient {
  public:
@@ -47,6 +51,48 @@ class GreeterClient {
   std::unique_ptr<Greeter::Stub> stub_;
 };
 
+
+class PageLoaderClient {
+ public:
+  PageLoaderClient(std::shared_ptr<Channel> channel)
+      : stub_(Greeter::NewStub(channel)) {}
+
+  // Assembles the client's payload, sends it and presents the response back
+  // from the server.
+  std::string LoadPage(const std::string& page_id) {
+    // Data we are sending to the server.
+    GetPageRequest request;
+    request.set_page_id(page_id);
+
+    // Container for the data we expect from the server.
+    GetPageReply reply;
+    // Context for the client. It could be used to convey extra information to
+    // the server and/or tweak certain RPC behaviors.
+    ClientContext context;
+
+    // The actual RPC.
+    Status status = stub_->GetPage(&context, request, &reply);
+
+    // Act upon its status.
+    if (status.ok()) {
+      int size = reply.dataitem_size();
+      for (int i = 0; i < size; i++) {
+        Item item = reply.dataitem(i);
+        // TODO: orgainize to a page
+      }
+      return "Get Page success";
+    } else {
+      std::cout << status.error_code() << ": " << status.error_message()
+                << std::endl;
+      return "RPC failed";
+    }
+  }
+
+ private:
+  std::unique_ptr<Greeter::Stub> stub_;
+};
+
+
 class RemoteStorage {
     // storage the value of c to key <iname, part_id, bkt_idx>
     void flush_out_disk(std::string iname, int part_id, uint64_t pg_id, PAGE *c) {
@@ -58,11 +104,13 @@ class RemoteStorage {
         // are created. This channel models a connection to an endpoint (in this case,
         // localhost at port 50051). We indicate that the channel isn't authenticated
         // (use of InsecureChannelCredentials()).
-        GreeterClient greeter(grpc::CreateChannel(
+        LoadPageClient pageloader(grpc::CreateChannel(
             "localhost:50051", grpc::InsecureChannelCredentials()));
-        std::string user("world");
-        std::string reply = greeter.SayHello(user);
-        std::cout << "Greeter received: " << reply << std::endl;
+        std::string page_id("world");
+        std::string reply = pageloader.LoadPage(page_id);
+
+        std::cout << reply << std::endl;
+        // std::cout << "Greeter received: " << reply << std::endl;
 
         return nullptr;
     }
