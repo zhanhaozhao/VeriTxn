@@ -50,6 +50,9 @@ RC tpcc_wl::init_schema(const char * schema_file) {
 	i_customer_id = indexes["CUSTOMER_ID_IDX"];
 	i_customer_last = indexes["CUSTOMER_LAST_IDX"];
 	i_stock = indexes["STOCK_IDX"];
+    i_order = indexes["ORDER_IDX"];
+    i_neworder = indexes["NEW-ORDER_IDX"];
+    i_orderline = indexes["ORDER-LINE_IDX"];
     return RCOK;
 }
 
@@ -169,11 +172,12 @@ void tpcc_wl::init_tab_wh(uint32_t wid) {
 }
 
 void tpcc_wl::init_tab_dist(uint64_t wid) {
-	for (uint64_t did = 1; did <= DIST_PER_WARE; did++) {
+	for (uint64_t did   = 1; did <= DIST_PER_WARE; did++) {
 		base_row_t * row;
 		uint64_t row_id;
-		t_district->get_new_row(row, 0, row_id);
-		row->set_primary_key(did);
+		auto key = distKey(did, wid);
+        t_district->get_new_row(row, 0, row_id);
+		row->set_primary_key(key);
 		
 		row->set_value(D_ID, did);
 		row->set_value(D_W_ID, wid);
@@ -208,8 +212,9 @@ void tpcc_wl::init_tab_stock(uint64_t wid) {
 	for (UInt32 sid = 1; sid <= g_max_items; sid++) {
 		base_row_t * row;
 		uint64_t row_id;
+		auto key = stockKey(sid, wid);
 		t_stock->get_new_row(row, 0, row_id);
-		row->set_primary_key(sid);
+		row->set_primary_key(key);
 		row->set_value(S_I_ID, sid);
 		row->set_value(S_W_ID, wid);
 		row->set_value(S_QUANTITY, URand(10, 100, wid-1));
@@ -249,7 +254,7 @@ void tpcc_wl::init_tab_cust(uint64_t did, uint64_t wid) {
 		base_row_t * row;
 		uint64_t row_id;
 		t_customer->get_new_row(row, 0, row_id);
-		row->set_primary_key(cid);
+		row->set_primary_key(custKey(cid, did, wid));
 
 		row->set_value(C_ID, cid);		
 		row->set_value(C_D_ID, did);
@@ -335,7 +340,7 @@ void tpcc_wl::init_tab_order(uint64_t did, uint64_t wid) {
 		base_row_t * row;
 		uint64_t row_id;
 		t_order->get_new_row(row, 0, row_id);
-		row->set_primary_key(oid);
+		row->set_primary_key(orderPrimaryKey(wid, did, oid));
 		uint64_t o_ol_cnt = 1;
 		uint64_t cid = perm[oid - 1]; //get_permutation();
 		row->set_value(O_ID, oid);
@@ -351,7 +356,11 @@ void tpcc_wl::init_tab_order(uint64_t did, uint64_t wid) {
 		o_ol_cnt = URand(5, 15, wid-1);
 		row->set_value(O_OL_CNT, o_ol_cnt);
 		row->set_value(O_ALL_LOCAL, 1);
-		
+#if FULL_TPCC
+        index_insert(i_order, orderPrimaryKey(wid, did, oid), row, wh_to_part(wid));
+//		index_insert(i_order_cust, orderCustKey(oid, cid, did, wid), row,
+//					wh_to_part(wid));
+#endif
 		// ORDER-LINE	
 #if !TPCC_SMALL
 		for (uint32_t ol = 1; ol <= o_ol_cnt; ol++) {
@@ -381,6 +390,13 @@ void tpcc_wl::init_tab_order(uint64_t did, uint64_t wid) {
 			row->set_value(NO_O_ID, oid);
 			row->set_value(NO_D_ID, did);
 			row->set_value(NO_W_ID, wid);
+            uint64_t n_oid;
+            row->get_value(NO_O_ID, n_oid);
+            assert(n_oid <= g_cust_per_dist);
+#if FULL_TPCC
+            index_insert(i_neworder, orderPrimaryKey(wid, did, oid), row,
+						wh_to_part(wid));
+#endif
 		}
 	}
 }

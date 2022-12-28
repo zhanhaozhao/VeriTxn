@@ -108,15 +108,15 @@ public:
     void 			index_read(INDEX* index, idx_key_t key, int part_id, itemid_t *& item);
 	void 			index_read(std::string iname, idx_key_t key, int part_id, itemid_t *& item);
 	row_t * 		get_row(row_t * row, access_t type);
-protected:	
-	void 			insert_row(row_t * row, table_t * table);
+protected:
+    RC insert_row(base_row_t *row, std::string iname);
 
     itemid_t *index_next(std::string iname, itemid_t *last);
 
 private:
 	// insert rows
 	uint64_t 		insert_cnt;
-	row_t * 		insert_rows[MAX_ROW_PER_TXN];
+	base_row_t *    insert_rows[MAX_ROW_PER_TXN];
 	txnid_t 		txn_id;
 	ts_t 			timestamp;
 

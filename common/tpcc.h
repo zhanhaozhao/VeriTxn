@@ -32,9 +32,11 @@ public:
 	INDEX * 	i_customer_id;
 	INDEX * 	i_customer_last;
 	INDEX * 	i_stock;
-	INDEX * 	i_order; // key = (w_id, d_id, o_id)
+    INDEX * 	i_order; // key = (w_id, d_id, o_id)
+    INDEX * 	i_neworder;
 	INDEX * 	i_orderline; // key = (w_id, d_id, o_id)
-	INDEX * 	i_orderline_wd; // key = (w_id, d_id). 
+	INDEX * 	i_orderline_wd; // key = (w_id, d_id).
+	// TODO: do not verify the cache for secondary indexes.
 	
 	bool ** delivering;
 	uint32_t next_tid;

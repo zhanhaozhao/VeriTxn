@@ -163,7 +163,7 @@ void txn_man::cleanup(RC rc) {
 
 	if (rc == Abort) {
 		for (UInt32 i = 0; i < insert_cnt; i ++) {
-			row_t * row = insert_rows[i];
+			base_row_t * row = insert_rows[i];
 			assert(g_part_alloc_enc == false);
 #if CC_ALG != HSTORE && CC_ALG != OCC
 			free(row->manager);
@@ -242,11 +242,28 @@ row_t * txn_man::get_row(row_t * row, access_t type) {
 	return accesses[row_cnt - 1]->data;
 }
 
-void txn_man::insert_row(row_t * row, table_t * table) {
+RC txn_man::insert_row(base_row_t * row, std::string iname) {
 	if (CC_ALG == HSTORE)
-		return;
+		return RCOK;
+#if INDEX_STRUCT != IDX_BTREE
+    assert(insert_cnt < MAX_ROW_PER_TXN);
+	insert_rows[insert_cnt ++] = row;
+	return RCOK;
+    assert(false);
+#endif
+//    assert(row);
+    auto * item = new itemid_t(DT_row, row);
+    // index --> en_index;
+//    auto idx = (IndexHash *) inner_index_map->_indexes[iname];
+//    assert(idx);
+//    idx->index_insert(row->get_primary_key(), item, row->get_part_id());
+    INDEX_ENC * index_enc = (INDEX_ENC *) tab_map->_indexes[iname];
+    index_enc->index_insert(row->get_primary_key(), item, row->get_part_id());
+//    auto new_row = (row_t*)item->location;
+//    index_enc->release_up_cache((PAGE_ENC*)new_row->from_page);
 	assert(insert_cnt < MAX_ROW_PER_TXN);
 	insert_rows[insert_cnt ++] = row;
+    return Abort;
 }
 
 itemid_t *
