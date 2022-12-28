@@ -38,14 +38,14 @@ namespace protobuf_storage_2eproto {
 struct TableStruct {
   static const ::google::protobuf::internal::ParseTableField entries[];
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
-  static const ::google::protobuf::internal::ParseTable schema[5];
+  static const ::google::protobuf::internal::ParseTable schema[7];
   static const ::google::protobuf::internal::FieldMetadata field_metadata[];
   static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static const ::google::protobuf::uint32 offsets[];
 };
 void AddDescriptors();
 }  // namespace protobuf_storage_2eproto
-namespace helloworld {
+namespace kvstore {
 class GetPageReply;
 class GetPageReplyDefaultTypeInternal;
 extern GetPageReplyDefaultTypeInternal _GetPageReply_default_instance_;
@@ -61,21 +61,29 @@ extern HelloRequestDefaultTypeInternal _HelloRequest_default_instance_;
 class Item;
 class ItemDefaultTypeInternal;
 extern ItemDefaultTypeInternal _Item_default_instance_;
-}  // namespace helloworld
+class ShutdownReply;
+class ShutdownReplyDefaultTypeInternal;
+extern ShutdownReplyDefaultTypeInternal _ShutdownReply_default_instance_;
+class ShutdownRequest;
+class ShutdownRequestDefaultTypeInternal;
+extern ShutdownRequestDefaultTypeInternal _ShutdownRequest_default_instance_;
+}  // namespace kvstore
 namespace google {
 namespace protobuf {
-template<> ::helloworld::GetPageReply* Arena::CreateMaybeMessage<::helloworld::GetPageReply>(Arena*);
-template<> ::helloworld::GetPageRequest* Arena::CreateMaybeMessage<::helloworld::GetPageRequest>(Arena*);
-template<> ::helloworld::HelloReply* Arena::CreateMaybeMessage<::helloworld::HelloReply>(Arena*);
-template<> ::helloworld::HelloRequest* Arena::CreateMaybeMessage<::helloworld::HelloRequest>(Arena*);
-template<> ::helloworld::Item* Arena::CreateMaybeMessage<::helloworld::Item>(Arena*);
+template<> ::kvstore::GetPageReply* Arena::CreateMaybeMessage<::kvstore::GetPageReply>(Arena*);
+template<> ::kvstore::GetPageRequest* Arena::CreateMaybeMessage<::kvstore::GetPageRequest>(Arena*);
+template<> ::kvstore::HelloReply* Arena::CreateMaybeMessage<::kvstore::HelloReply>(Arena*);
+template<> ::kvstore::HelloRequest* Arena::CreateMaybeMessage<::kvstore::HelloRequest>(Arena*);
+template<> ::kvstore::Item* Arena::CreateMaybeMessage<::kvstore::Item>(Arena*);
+template<> ::kvstore::ShutdownReply* Arena::CreateMaybeMessage<::kvstore::ShutdownReply>(Arena*);
+template<> ::kvstore::ShutdownRequest* Arena::CreateMaybeMessage<::kvstore::ShutdownRequest>(Arena*);
 }  // namespace protobuf
 }  // namespace google
-namespace helloworld {
+namespace kvstore {
 
 // ===================================================================
 
-class HelloRequest : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:helloworld.HelloRequest) */ {
+class HelloRequest : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:kvstore.HelloRequest) */ {
  public:
   HelloRequest();
   virtual ~HelloRequest();
@@ -176,7 +184,7 @@ class HelloRequest : public ::google::protobuf::Message /* @@protoc_insertion_po
   ::std::string* release_name();
   void set_allocated_name(::std::string* name);
 
-  // @@protoc_insertion_point(class_scope:helloworld.HelloRequest)
+  // @@protoc_insertion_point(class_scope:kvstore.HelloRequest)
  private:
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
@@ -186,7 +194,7 @@ class HelloRequest : public ::google::protobuf::Message /* @@protoc_insertion_po
 };
 // -------------------------------------------------------------------
 
-class HelloReply : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:helloworld.HelloReply) */ {
+class HelloReply : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:kvstore.HelloReply) */ {
  public:
   HelloReply();
   virtual ~HelloReply();
@@ -287,7 +295,7 @@ class HelloReply : public ::google::protobuf::Message /* @@protoc_insertion_poin
   ::std::string* release_message();
   void set_allocated_message(::std::string* message);
 
-  // @@protoc_insertion_point(class_scope:helloworld.HelloReply)
+  // @@protoc_insertion_point(class_scope:kvstore.HelloReply)
  private:
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
@@ -297,7 +305,7 @@ class HelloReply : public ::google::protobuf::Message /* @@protoc_insertion_poin
 };
 // -------------------------------------------------------------------
 
-class GetPageRequest : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:helloworld.GetPageRequest) */ {
+class GetPageRequest : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:kvstore.GetPageRequest) */ {
  public:
   GetPageRequest();
   virtual ~GetPageRequest();
@@ -398,7 +406,7 @@ class GetPageRequest : public ::google::protobuf::Message /* @@protoc_insertion_
   ::std::string* release_page_id();
   void set_allocated_page_id(::std::string* page_id);
 
-  // @@protoc_insertion_point(class_scope:helloworld.GetPageRequest)
+  // @@protoc_insertion_point(class_scope:kvstore.GetPageRequest)
  private:
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
@@ -408,7 +416,7 @@ class GetPageRequest : public ::google::protobuf::Message /* @@protoc_insertion_
 };
 // -------------------------------------------------------------------
 
-class Item : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:helloworld.Item) */ {
+class Item : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:kvstore.Item) */ {
  public:
   Item();
   virtual ~Item();
@@ -523,7 +531,7 @@ class Item : public ::google::protobuf::Message /* @@protoc_insertion_point(clas
   ::std::string* release_value();
   void set_allocated_value(::std::string* value);
 
-  // @@protoc_insertion_point(class_scope:helloworld.Item)
+  // @@protoc_insertion_point(class_scope:kvstore.Item)
  private:
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
@@ -534,7 +542,7 @@ class Item : public ::google::protobuf::Message /* @@protoc_insertion_point(clas
 };
 // -------------------------------------------------------------------
 
-class GetPageReply : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:helloworld.GetPageReply) */ {
+class GetPageReply : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:kvstore.GetPageReply) */ {
  public:
   GetPageReply();
   virtual ~GetPageReply();
@@ -621,23 +629,245 @@ class GetPageReply : public ::google::protobuf::Message /* @@protoc_insertion_po
 
   // accessors -------------------------------------------------------
 
-  // repeated .helloworld.Item dataitem = 1;
+  // repeated .kvstore.Item dataitem = 1;
   int dataitem_size() const;
   void clear_dataitem();
   static const int kDataitemFieldNumber = 1;
-  ::helloworld::Item* mutable_dataitem(int index);
-  ::google::protobuf::RepeatedPtrField< ::helloworld::Item >*
+  ::kvstore::Item* mutable_dataitem(int index);
+  ::google::protobuf::RepeatedPtrField< ::kvstore::Item >*
       mutable_dataitem();
-  const ::helloworld::Item& dataitem(int index) const;
-  ::helloworld::Item* add_dataitem();
-  const ::google::protobuf::RepeatedPtrField< ::helloworld::Item >&
+  const ::kvstore::Item& dataitem(int index) const;
+  ::kvstore::Item* add_dataitem();
+  const ::google::protobuf::RepeatedPtrField< ::kvstore::Item >&
       dataitem() const;
 
-  // @@protoc_insertion_point(class_scope:helloworld.GetPageReply)
+  // @@protoc_insertion_point(class_scope:kvstore.GetPageReply)
  private:
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
-  ::google::protobuf::RepeatedPtrField< ::helloworld::Item > dataitem_;
+  ::google::protobuf::RepeatedPtrField< ::kvstore::Item > dataitem_;
+  mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  friend struct ::protobuf_storage_2eproto::TableStruct;
+};
+// -------------------------------------------------------------------
+
+class ShutdownRequest : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:kvstore.ShutdownRequest) */ {
+ public:
+  ShutdownRequest();
+  virtual ~ShutdownRequest();
+
+  ShutdownRequest(const ShutdownRequest& from);
+
+  inline ShutdownRequest& operator=(const ShutdownRequest& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  #if LANG_CXX11
+  ShutdownRequest(ShutdownRequest&& from) noexcept
+    : ShutdownRequest() {
+    *this = ::std::move(from);
+  }
+
+  inline ShutdownRequest& operator=(ShutdownRequest&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const ShutdownRequest& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const ShutdownRequest* internal_default_instance() {
+    return reinterpret_cast<const ShutdownRequest*>(
+               &_ShutdownRequest_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    5;
+
+  void Swap(ShutdownRequest* other);
+  friend void swap(ShutdownRequest& a, ShutdownRequest& b) {
+    a.Swap(&b);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline ShutdownRequest* New() const final {
+    return CreateMaybeMessage<ShutdownRequest>(NULL);
+  }
+
+  ShutdownRequest* New(::google::protobuf::Arena* arena) const final {
+    return CreateMaybeMessage<ShutdownRequest>(arena);
+  }
+  void CopyFrom(const ::google::protobuf::Message& from) final;
+  void MergeFrom(const ::google::protobuf::Message& from) final;
+  void CopyFrom(const ShutdownRequest& from);
+  void MergeFrom(const ShutdownRequest& from);
+  void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) final;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const final;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(ShutdownRequest* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // string signal = 1;
+  void clear_signal();
+  static const int kSignalFieldNumber = 1;
+  const ::std::string& signal() const;
+  void set_signal(const ::std::string& value);
+  #if LANG_CXX11
+  void set_signal(::std::string&& value);
+  #endif
+  void set_signal(const char* value);
+  void set_signal(const char* value, size_t size);
+  ::std::string* mutable_signal();
+  ::std::string* release_signal();
+  void set_allocated_signal(::std::string* signal);
+
+  // @@protoc_insertion_point(class_scope:kvstore.ShutdownRequest)
+ private:
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::google::protobuf::internal::ArenaStringPtr signal_;
+  mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  friend struct ::protobuf_storage_2eproto::TableStruct;
+};
+// -------------------------------------------------------------------
+
+class ShutdownReply : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:kvstore.ShutdownReply) */ {
+ public:
+  ShutdownReply();
+  virtual ~ShutdownReply();
+
+  ShutdownReply(const ShutdownReply& from);
+
+  inline ShutdownReply& operator=(const ShutdownReply& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  #if LANG_CXX11
+  ShutdownReply(ShutdownReply&& from) noexcept
+    : ShutdownReply() {
+    *this = ::std::move(from);
+  }
+
+  inline ShutdownReply& operator=(ShutdownReply&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const ShutdownReply& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const ShutdownReply* internal_default_instance() {
+    return reinterpret_cast<const ShutdownReply*>(
+               &_ShutdownReply_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    6;
+
+  void Swap(ShutdownReply* other);
+  friend void swap(ShutdownReply& a, ShutdownReply& b) {
+    a.Swap(&b);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline ShutdownReply* New() const final {
+    return CreateMaybeMessage<ShutdownReply>(NULL);
+  }
+
+  ShutdownReply* New(::google::protobuf::Arena* arena) const final {
+    return CreateMaybeMessage<ShutdownReply>(arena);
+  }
+  void CopyFrom(const ::google::protobuf::Message& from) final;
+  void MergeFrom(const ::google::protobuf::Message& from) final;
+  void CopyFrom(const ShutdownReply& from);
+  void MergeFrom(const ShutdownReply& from);
+  void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) final;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const final;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(ShutdownReply* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // string signalret = 1;
+  void clear_signalret();
+  static const int kSignalretFieldNumber = 1;
+  const ::std::string& signalret() const;
+  void set_signalret(const ::std::string& value);
+  #if LANG_CXX11
+  void set_signalret(::std::string&& value);
+  #endif
+  void set_signalret(const char* value);
+  void set_signalret(const char* value, size_t size);
+  ::std::string* mutable_signalret();
+  ::std::string* release_signalret();
+  void set_allocated_signalret(::std::string* signalret);
+
+  // @@protoc_insertion_point(class_scope:kvstore.ShutdownReply)
+ private:
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::google::protobuf::internal::ArenaStringPtr signalret_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   friend struct ::protobuf_storage_2eproto::TableStruct;
 };
@@ -657,41 +887,41 @@ inline void HelloRequest::clear_name() {
   name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline const ::std::string& HelloRequest::name() const {
-  // @@protoc_insertion_point(field_get:helloworld.HelloRequest.name)
+  // @@protoc_insertion_point(field_get:kvstore.HelloRequest.name)
   return name_.GetNoArena();
 }
 inline void HelloRequest::set_name(const ::std::string& value) {
   
   name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:helloworld.HelloRequest.name)
+  // @@protoc_insertion_point(field_set:kvstore.HelloRequest.name)
 }
 #if LANG_CXX11
 inline void HelloRequest::set_name(::std::string&& value) {
   
   name_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:helloworld.HelloRequest.name)
+  // @@protoc_insertion_point(field_set_rvalue:kvstore.HelloRequest.name)
 }
 #endif
 inline void HelloRequest::set_name(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   
   name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:helloworld.HelloRequest.name)
+  // @@protoc_insertion_point(field_set_char:kvstore.HelloRequest.name)
 }
 inline void HelloRequest::set_name(const char* value, size_t size) {
   
   name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:helloworld.HelloRequest.name)
+  // @@protoc_insertion_point(field_set_pointer:kvstore.HelloRequest.name)
 }
 inline ::std::string* HelloRequest::mutable_name() {
   
-  // @@protoc_insertion_point(field_mutable:helloworld.HelloRequest.name)
+  // @@protoc_insertion_point(field_mutable:kvstore.HelloRequest.name)
   return name_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* HelloRequest::release_name() {
-  // @@protoc_insertion_point(field_release:helloworld.HelloRequest.name)
+  // @@protoc_insertion_point(field_release:kvstore.HelloRequest.name)
   
   return name_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -702,7 +932,7 @@ inline void HelloRequest::set_allocated_name(::std::string* name) {
     
   }
   name_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), name);
-  // @@protoc_insertion_point(field_set_allocated:helloworld.HelloRequest.name)
+  // @@protoc_insertion_point(field_set_allocated:kvstore.HelloRequest.name)
 }
 
 // -------------------------------------------------------------------
@@ -714,41 +944,41 @@ inline void HelloReply::clear_message() {
   message_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline const ::std::string& HelloReply::message() const {
-  // @@protoc_insertion_point(field_get:helloworld.HelloReply.message)
+  // @@protoc_insertion_point(field_get:kvstore.HelloReply.message)
   return message_.GetNoArena();
 }
 inline void HelloReply::set_message(const ::std::string& value) {
   
   message_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:helloworld.HelloReply.message)
+  // @@protoc_insertion_point(field_set:kvstore.HelloReply.message)
 }
 #if LANG_CXX11
 inline void HelloReply::set_message(::std::string&& value) {
   
   message_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:helloworld.HelloReply.message)
+  // @@protoc_insertion_point(field_set_rvalue:kvstore.HelloReply.message)
 }
 #endif
 inline void HelloReply::set_message(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   
   message_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:helloworld.HelloReply.message)
+  // @@protoc_insertion_point(field_set_char:kvstore.HelloReply.message)
 }
 inline void HelloReply::set_message(const char* value, size_t size) {
   
   message_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:helloworld.HelloReply.message)
+  // @@protoc_insertion_point(field_set_pointer:kvstore.HelloReply.message)
 }
 inline ::std::string* HelloReply::mutable_message() {
   
-  // @@protoc_insertion_point(field_mutable:helloworld.HelloReply.message)
+  // @@protoc_insertion_point(field_mutable:kvstore.HelloReply.message)
   return message_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* HelloReply::release_message() {
-  // @@protoc_insertion_point(field_release:helloworld.HelloReply.message)
+  // @@protoc_insertion_point(field_release:kvstore.HelloReply.message)
   
   return message_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -759,7 +989,7 @@ inline void HelloReply::set_allocated_message(::std::string* message) {
     
   }
   message_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), message);
-  // @@protoc_insertion_point(field_set_allocated:helloworld.HelloReply.message)
+  // @@protoc_insertion_point(field_set_allocated:kvstore.HelloReply.message)
 }
 
 // -------------------------------------------------------------------
@@ -771,41 +1001,41 @@ inline void GetPageRequest::clear_page_id() {
   page_id_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline const ::std::string& GetPageRequest::page_id() const {
-  // @@protoc_insertion_point(field_get:helloworld.GetPageRequest.page_id)
+  // @@protoc_insertion_point(field_get:kvstore.GetPageRequest.page_id)
   return page_id_.GetNoArena();
 }
 inline void GetPageRequest::set_page_id(const ::std::string& value) {
   
   page_id_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:helloworld.GetPageRequest.page_id)
+  // @@protoc_insertion_point(field_set:kvstore.GetPageRequest.page_id)
 }
 #if LANG_CXX11
 inline void GetPageRequest::set_page_id(::std::string&& value) {
   
   page_id_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:helloworld.GetPageRequest.page_id)
+  // @@protoc_insertion_point(field_set_rvalue:kvstore.GetPageRequest.page_id)
 }
 #endif
 inline void GetPageRequest::set_page_id(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   
   page_id_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:helloworld.GetPageRequest.page_id)
+  // @@protoc_insertion_point(field_set_char:kvstore.GetPageRequest.page_id)
 }
 inline void GetPageRequest::set_page_id(const char* value, size_t size) {
   
   page_id_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:helloworld.GetPageRequest.page_id)
+  // @@protoc_insertion_point(field_set_pointer:kvstore.GetPageRequest.page_id)
 }
 inline ::std::string* GetPageRequest::mutable_page_id() {
   
-  // @@protoc_insertion_point(field_mutable:helloworld.GetPageRequest.page_id)
+  // @@protoc_insertion_point(field_mutable:kvstore.GetPageRequest.page_id)
   return page_id_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* GetPageRequest::release_page_id() {
-  // @@protoc_insertion_point(field_release:helloworld.GetPageRequest.page_id)
+  // @@protoc_insertion_point(field_release:kvstore.GetPageRequest.page_id)
   
   return page_id_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -816,7 +1046,7 @@ inline void GetPageRequest::set_allocated_page_id(::std::string* page_id) {
     
   }
   page_id_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), page_id);
-  // @@protoc_insertion_point(field_set_allocated:helloworld.GetPageRequest.page_id)
+  // @@protoc_insertion_point(field_set_allocated:kvstore.GetPageRequest.page_id)
 }
 
 // -------------------------------------------------------------------
@@ -828,41 +1058,41 @@ inline void Item::clear_key() {
   key_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline const ::std::string& Item::key() const {
-  // @@protoc_insertion_point(field_get:helloworld.Item.key)
+  // @@protoc_insertion_point(field_get:kvstore.Item.key)
   return key_.GetNoArena();
 }
 inline void Item::set_key(const ::std::string& value) {
   
   key_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:helloworld.Item.key)
+  // @@protoc_insertion_point(field_set:kvstore.Item.key)
 }
 #if LANG_CXX11
 inline void Item::set_key(::std::string&& value) {
   
   key_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:helloworld.Item.key)
+  // @@protoc_insertion_point(field_set_rvalue:kvstore.Item.key)
 }
 #endif
 inline void Item::set_key(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   
   key_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:helloworld.Item.key)
+  // @@protoc_insertion_point(field_set_char:kvstore.Item.key)
 }
 inline void Item::set_key(const char* value, size_t size) {
   
   key_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:helloworld.Item.key)
+  // @@protoc_insertion_point(field_set_pointer:kvstore.Item.key)
 }
 inline ::std::string* Item::mutable_key() {
   
-  // @@protoc_insertion_point(field_mutable:helloworld.Item.key)
+  // @@protoc_insertion_point(field_mutable:kvstore.Item.key)
   return key_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* Item::release_key() {
-  // @@protoc_insertion_point(field_release:helloworld.Item.key)
+  // @@protoc_insertion_point(field_release:kvstore.Item.key)
   
   return key_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -873,7 +1103,7 @@ inline void Item::set_allocated_key(::std::string* key) {
     
   }
   key_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), key);
-  // @@protoc_insertion_point(field_set_allocated:helloworld.Item.key)
+  // @@protoc_insertion_point(field_set_allocated:kvstore.Item.key)
 }
 
 // string value = 2;
@@ -881,41 +1111,41 @@ inline void Item::clear_value() {
   value_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline const ::std::string& Item::value() const {
-  // @@protoc_insertion_point(field_get:helloworld.Item.value)
+  // @@protoc_insertion_point(field_get:kvstore.Item.value)
   return value_.GetNoArena();
 }
 inline void Item::set_value(const ::std::string& value) {
   
   value_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:helloworld.Item.value)
+  // @@protoc_insertion_point(field_set:kvstore.Item.value)
 }
 #if LANG_CXX11
 inline void Item::set_value(::std::string&& value) {
   
   value_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:helloworld.Item.value)
+  // @@protoc_insertion_point(field_set_rvalue:kvstore.Item.value)
 }
 #endif
 inline void Item::set_value(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   
   value_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:helloworld.Item.value)
+  // @@protoc_insertion_point(field_set_char:kvstore.Item.value)
 }
 inline void Item::set_value(const char* value, size_t size) {
   
   value_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:helloworld.Item.value)
+  // @@protoc_insertion_point(field_set_pointer:kvstore.Item.value)
 }
 inline ::std::string* Item::mutable_value() {
   
-  // @@protoc_insertion_point(field_mutable:helloworld.Item.value)
+  // @@protoc_insertion_point(field_mutable:kvstore.Item.value)
   return value_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* Item::release_value() {
-  // @@protoc_insertion_point(field_release:helloworld.Item.value)
+  // @@protoc_insertion_point(field_release:kvstore.Item.value)
   
   return value_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -926,41 +1156,155 @@ inline void Item::set_allocated_value(::std::string* value) {
     
   }
   value_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set_allocated:helloworld.Item.value)
+  // @@protoc_insertion_point(field_set_allocated:kvstore.Item.value)
 }
 
 // -------------------------------------------------------------------
 
 // GetPageReply
 
-// repeated .helloworld.Item dataitem = 1;
+// repeated .kvstore.Item dataitem = 1;
 inline int GetPageReply::dataitem_size() const {
   return dataitem_.size();
 }
 inline void GetPageReply::clear_dataitem() {
   dataitem_.Clear();
 }
-inline ::helloworld::Item* GetPageReply::mutable_dataitem(int index) {
-  // @@protoc_insertion_point(field_mutable:helloworld.GetPageReply.dataitem)
+inline ::kvstore::Item* GetPageReply::mutable_dataitem(int index) {
+  // @@protoc_insertion_point(field_mutable:kvstore.GetPageReply.dataitem)
   return dataitem_.Mutable(index);
 }
-inline ::google::protobuf::RepeatedPtrField< ::helloworld::Item >*
+inline ::google::protobuf::RepeatedPtrField< ::kvstore::Item >*
 GetPageReply::mutable_dataitem() {
-  // @@protoc_insertion_point(field_mutable_list:helloworld.GetPageReply.dataitem)
+  // @@protoc_insertion_point(field_mutable_list:kvstore.GetPageReply.dataitem)
   return &dataitem_;
 }
-inline const ::helloworld::Item& GetPageReply::dataitem(int index) const {
-  // @@protoc_insertion_point(field_get:helloworld.GetPageReply.dataitem)
+inline const ::kvstore::Item& GetPageReply::dataitem(int index) const {
+  // @@protoc_insertion_point(field_get:kvstore.GetPageReply.dataitem)
   return dataitem_.Get(index);
 }
-inline ::helloworld::Item* GetPageReply::add_dataitem() {
-  // @@protoc_insertion_point(field_add:helloworld.GetPageReply.dataitem)
+inline ::kvstore::Item* GetPageReply::add_dataitem() {
+  // @@protoc_insertion_point(field_add:kvstore.GetPageReply.dataitem)
   return dataitem_.Add();
 }
-inline const ::google::protobuf::RepeatedPtrField< ::helloworld::Item >&
+inline const ::google::protobuf::RepeatedPtrField< ::kvstore::Item >&
 GetPageReply::dataitem() const {
-  // @@protoc_insertion_point(field_list:helloworld.GetPageReply.dataitem)
+  // @@protoc_insertion_point(field_list:kvstore.GetPageReply.dataitem)
   return dataitem_;
+}
+
+// -------------------------------------------------------------------
+
+// ShutdownRequest
+
+// string signal = 1;
+inline void ShutdownRequest::clear_signal() {
+  signal_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline const ::std::string& ShutdownRequest::signal() const {
+  // @@protoc_insertion_point(field_get:kvstore.ShutdownRequest.signal)
+  return signal_.GetNoArena();
+}
+inline void ShutdownRequest::set_signal(const ::std::string& value) {
+  
+  signal_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:kvstore.ShutdownRequest.signal)
+}
+#if LANG_CXX11
+inline void ShutdownRequest::set_signal(::std::string&& value) {
+  
+  signal_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:kvstore.ShutdownRequest.signal)
+}
+#endif
+inline void ShutdownRequest::set_signal(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  
+  signal_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:kvstore.ShutdownRequest.signal)
+}
+inline void ShutdownRequest::set_signal(const char* value, size_t size) {
+  
+  signal_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:kvstore.ShutdownRequest.signal)
+}
+inline ::std::string* ShutdownRequest::mutable_signal() {
+  
+  // @@protoc_insertion_point(field_mutable:kvstore.ShutdownRequest.signal)
+  return signal_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* ShutdownRequest::release_signal() {
+  // @@protoc_insertion_point(field_release:kvstore.ShutdownRequest.signal)
+  
+  return signal_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void ShutdownRequest::set_allocated_signal(::std::string* signal) {
+  if (signal != NULL) {
+    
+  } else {
+    
+  }
+  signal_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), signal);
+  // @@protoc_insertion_point(field_set_allocated:kvstore.ShutdownRequest.signal)
+}
+
+// -------------------------------------------------------------------
+
+// ShutdownReply
+
+// string signalret = 1;
+inline void ShutdownReply::clear_signalret() {
+  signalret_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline const ::std::string& ShutdownReply::signalret() const {
+  // @@protoc_insertion_point(field_get:kvstore.ShutdownReply.signalret)
+  return signalret_.GetNoArena();
+}
+inline void ShutdownReply::set_signalret(const ::std::string& value) {
+  
+  signalret_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:kvstore.ShutdownReply.signalret)
+}
+#if LANG_CXX11
+inline void ShutdownReply::set_signalret(::std::string&& value) {
+  
+  signalret_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:kvstore.ShutdownReply.signalret)
+}
+#endif
+inline void ShutdownReply::set_signalret(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  
+  signalret_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:kvstore.ShutdownReply.signalret)
+}
+inline void ShutdownReply::set_signalret(const char* value, size_t size) {
+  
+  signalret_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:kvstore.ShutdownReply.signalret)
+}
+inline ::std::string* ShutdownReply::mutable_signalret() {
+  
+  // @@protoc_insertion_point(field_mutable:kvstore.ShutdownReply.signalret)
+  return signalret_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* ShutdownReply::release_signalret() {
+  // @@protoc_insertion_point(field_release:kvstore.ShutdownReply.signalret)
+  
+  return signalret_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void ShutdownReply::set_allocated_signalret(::std::string* signalret) {
+  if (signalret != NULL) {
+    
+  } else {
+    
+  }
+  signalret_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), signalret);
+  // @@protoc_insertion_point(field_set_allocated:kvstore.ShutdownReply.signalret)
 }
 
 #ifdef __GNUC__
@@ -974,10 +1318,14 @@ GetPageReply::dataitem() const {
 
 // -------------------------------------------------------------------
 
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
 
 // @@protoc_insertion_point(namespace_scope)
 
-}  // namespace helloworld
+}  // namespace kvstore
 
 // @@protoc_insertion_point(global_scope)
 

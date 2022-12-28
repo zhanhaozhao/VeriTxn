@@ -11,9 +11,11 @@
 class kvserver {
 public:
     // kvserver();
-    // ~kvserver() = default;
+    ~kvserver() {
+        server_->Shutdown();
+    }
     void RunServer();
-    std::unique_ptr<grpc::Server> server;
+    std::unique_ptr<grpc::Server> server_;
 };
 
 #endif

@@ -13,8 +13,9 @@ cd ../
 pwd
 cp sgx_files/Makefile.storage Makefile
 make clean && make -j10
-make no-sgx
 
+### cleanup
+make no-sgx
 cd common/
 pwd
 sed -i '119c #define LOG_RECOVER                 false' config.h

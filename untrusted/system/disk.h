@@ -5,37 +5,26 @@
 #include <grpcpp/grpcpp.h>
 #include "storage.grpc.pb.h"
 
-using grpc::Channel;
-using grpc::ClientContext;
-using grpc::Status;
-using helloworld::HelloRequest;
-using helloworld::HelloReply;
-using helloworld::Greeter;
-using helloworld::GetPageRequest;
-using helloworld::GetPageReply;
-using helloworld::Item;
-using helloworld::PageLoader;
-
 class GreeterClient {
  public:
-  GreeterClient(std::shared_ptr<Channel> channel)
-      : stub_(Greeter::NewStub(channel)) {}
+  GreeterClient(std::shared_ptr<grpc::Channel> channel)
+      : stub_(kvstore::Greeter::NewStub(channel)) {}
 
   // Assembles the client's payload, sends it and presents the response back
   // from the server.
   std::string SayHello(const std::string& user) {
     // Data we are sending to the server.
-    HelloRequest request;
+    kvstore::HelloRequest request;
     request.set_name(user);
 
     // Container for the data we expect from the server.
-    HelloReply reply;
+    kvstore::HelloReply reply;
     // Context for the client. It could be used to convey extra information to
     // the server and/or tweak certain RPC behaviors.
-    ClientContext context;
+    grpc::ClientContext context;
 
     // The actual RPC.
-    Status status = stub_->SayHello(&context, request, &reply);
+    grpc::Status status = stub_->SayHello(&context, request, &reply);
 
     // Act upon its status.
     if (status.ok()) {
@@ -48,36 +37,36 @@ class GreeterClient {
   }
 
  private:
-  std::unique_ptr<Greeter::Stub> stub_;
+  std::unique_ptr<kvstore::Greeter::Stub> stub_;
 };
 
 
 class PageLoaderClient {
  public:
-  PageLoaderClient(std::shared_ptr<Channel> channel)
-      : stub_(Greeter::NewStub(channel)) {}
+  PageLoaderClient(std::shared_ptr<grpc::Channel> channel)
+      : stub_(kvstore::PageLoader::NewStub(channel)) {}
 
   // Assembles the client's payload, sends it and presents the response back
   // from the server.
   std::string LoadPage(const std::string& page_id) {
     // Data we are sending to the server.
-    GetPageRequest request;
+    kvstore::GetPageRequest request;
     request.set_page_id(page_id);
 
     // Container for the data we expect from the server.
-    GetPageReply reply;
+    kvstore::GetPageReply reply;
     // Context for the client. It could be used to convey extra information to
     // the server and/or tweak certain RPC behaviors.
-    ClientContext context;
+    grpc::ClientContext context;
 
     // The actual RPC.
-    Status status = stub_->GetPage(&context, request, &reply);
+    grpc::Status status = stub_->GetPage(&context, request, &reply);
 
     // Act upon its status.
     if (status.ok()) {
       int size = reply.dataitem_size();
       for (int i = 0; i < size; i++) {
-        Item item = reply.dataitem(i);
+        kvstore::Item item = reply.dataitem(i);
         // TODO: orgainize to a page
       }
       return "Get Page success";
@@ -88,12 +77,34 @@ class PageLoaderClient {
     }
   }
 
- private:
-  std::unique_ptr<Greeter::Stub> stub_;
+  void ShutdownServer() {
+    kvstore::ShutdownRequest request;
+    request.set_signal("1");
+    // Container for the data we expect from the server.
+    kvstore::ShutdownReply reply;
+    // Context for the client. It could be used to convey extra information to
+    // the server and/or tweak certain RPC behaviors.
+    grpc::ClientContext context;
+
+    // The actual RPC.
+    grpc::Status status = stub_->ShutdownServer(&context, request, &reply);
+
+    if (status.ok()) {
+      std::cout << "shutdown returns ok" << std::endl;
+    } else {
+      std::cout << status.error_code() << ": " << status.error_message()
+            << std::endl;
+    }
+  }
+
+private:
+  std::unique_ptr<kvstore::PageLoader::Stub> stub_;
 };
 
 
 class RemoteStorage {
+
+public:
     // storage the value of c to key <iname, part_id, bkt_idx>
     void flush_out_disk(std::string iname, int part_id, uint64_t pg_id, PAGE *c) {
     }
@@ -104,15 +115,21 @@ class RemoteStorage {
         // are created. This channel models a connection to an endpoint (in this case,
         // localhost at port 50051). We indicate that the channel isn't authenticated
         // (use of InsecureChannelCredentials()).
-        LoadPageClient pageloader(grpc::CreateChannel(
+        PageLoaderClient pageloader(grpc::CreateChannel(
             "localhost:50051", grpc::InsecureChannelCredentials()));
         std::string page_id("world");
         std::string reply = pageloader.LoadPage(page_id);
 
         std::cout << reply << std::endl;
-        // std::cout << "Greeter received: " << reply << std::endl;
+        // std::cout << "kvstore::Greeter received: " << reply << std::endl;
 
         return nullptr;
+    }
+
+    void shutdown_server() {
+      PageLoaderClient pageloader(grpc::CreateChannel(
+            "localhost:50051", grpc::InsecureChannelCredentials()));
+        pageloader.ShutdownServer();
     }
 };
 

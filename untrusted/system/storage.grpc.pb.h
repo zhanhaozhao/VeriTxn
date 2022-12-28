@@ -26,50 +26,50 @@ class ServerCompletionQueue;
 class ServerContext;
 }  // namespace grpc
 
-namespace helloworld {
+namespace kvstore {
 
 // The greeting service definition.
 class Greeter final {
  public:
   static constexpr char const* service_full_name() {
-    return "helloworld.Greeter";
+    return "kvstore.Greeter";
   }
   class StubInterface {
    public:
     virtual ~StubInterface() {}
     // Sends a greeting
-    virtual ::grpc::Status SayHello(::grpc::ClientContext* context, const ::helloworld::HelloRequest& request, ::helloworld::HelloReply* response) = 0;
-    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::helloworld::HelloReply>> AsyncSayHello(::grpc::ClientContext* context, const ::helloworld::HelloRequest& request, ::grpc::CompletionQueue* cq) {
-      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::helloworld::HelloReply>>(AsyncSayHelloRaw(context, request, cq));
+    virtual ::grpc::Status SayHello(::grpc::ClientContext* context, const ::kvstore::HelloRequest& request, ::kvstore::HelloReply* response) = 0;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::kvstore::HelloReply>> AsyncSayHello(::grpc::ClientContext* context, const ::kvstore::HelloRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::kvstore::HelloReply>>(AsyncSayHelloRaw(context, request, cq));
     }
-    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::helloworld::HelloReply>> PrepareAsyncSayHello(::grpc::ClientContext* context, const ::helloworld::HelloRequest& request, ::grpc::CompletionQueue* cq) {
-      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::helloworld::HelloReply>>(PrepareAsyncSayHelloRaw(context, request, cq));
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::kvstore::HelloReply>> PrepareAsyncSayHello(::grpc::ClientContext* context, const ::kvstore::HelloRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::kvstore::HelloReply>>(PrepareAsyncSayHelloRaw(context, request, cq));
     }
     class experimental_async_interface {
      public:
       virtual ~experimental_async_interface() {}
       // Sends a greeting
-      virtual void SayHello(::grpc::ClientContext* context, const ::helloworld::HelloRequest* request, ::helloworld::HelloReply* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void SayHello(::grpc::ClientContext* context, const ::kvstore::HelloRequest* request, ::kvstore::HelloReply* response, std::function<void(::grpc::Status)>) = 0;
     };
     virtual class experimental_async_interface* experimental_async() { return nullptr; }
   private:
-    virtual ::grpc::ClientAsyncResponseReaderInterface< ::helloworld::HelloReply>* AsyncSayHelloRaw(::grpc::ClientContext* context, const ::helloworld::HelloRequest& request, ::grpc::CompletionQueue* cq) = 0;
-    virtual ::grpc::ClientAsyncResponseReaderInterface< ::helloworld::HelloReply>* PrepareAsyncSayHelloRaw(::grpc::ClientContext* context, const ::helloworld::HelloRequest& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::kvstore::HelloReply>* AsyncSayHelloRaw(::grpc::ClientContext* context, const ::kvstore::HelloRequest& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::kvstore::HelloReply>* PrepareAsyncSayHelloRaw(::grpc::ClientContext* context, const ::kvstore::HelloRequest& request, ::grpc::CompletionQueue* cq) = 0;
   };
   class Stub final : public StubInterface {
    public:
     Stub(const std::shared_ptr< ::grpc::ChannelInterface>& channel);
-    ::grpc::Status SayHello(::grpc::ClientContext* context, const ::helloworld::HelloRequest& request, ::helloworld::HelloReply* response) override;
-    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::helloworld::HelloReply>> AsyncSayHello(::grpc::ClientContext* context, const ::helloworld::HelloRequest& request, ::grpc::CompletionQueue* cq) {
-      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::helloworld::HelloReply>>(AsyncSayHelloRaw(context, request, cq));
+    ::grpc::Status SayHello(::grpc::ClientContext* context, const ::kvstore::HelloRequest& request, ::kvstore::HelloReply* response) override;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::kvstore::HelloReply>> AsyncSayHello(::grpc::ClientContext* context, const ::kvstore::HelloRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::kvstore::HelloReply>>(AsyncSayHelloRaw(context, request, cq));
     }
-    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::helloworld::HelloReply>> PrepareAsyncSayHello(::grpc::ClientContext* context, const ::helloworld::HelloRequest& request, ::grpc::CompletionQueue* cq) {
-      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::helloworld::HelloReply>>(PrepareAsyncSayHelloRaw(context, request, cq));
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::kvstore::HelloReply>> PrepareAsyncSayHello(::grpc::ClientContext* context, const ::kvstore::HelloRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::kvstore::HelloReply>>(PrepareAsyncSayHelloRaw(context, request, cq));
     }
     class experimental_async final :
       public StubInterface::experimental_async_interface {
      public:
-      void SayHello(::grpc::ClientContext* context, const ::helloworld::HelloRequest* request, ::helloworld::HelloReply* response, std::function<void(::grpc::Status)>) override;
+      void SayHello(::grpc::ClientContext* context, const ::kvstore::HelloRequest* request, ::kvstore::HelloReply* response, std::function<void(::grpc::Status)>) override;
      private:
       friend class Stub;
       explicit experimental_async(Stub* stub): stub_(stub) { }
@@ -81,8 +81,8 @@ class Greeter final {
    private:
     std::shared_ptr< ::grpc::ChannelInterface> channel_;
     class experimental_async async_stub_{this};
-    ::grpc::ClientAsyncResponseReader< ::helloworld::HelloReply>* AsyncSayHelloRaw(::grpc::ClientContext* context, const ::helloworld::HelloRequest& request, ::grpc::CompletionQueue* cq) override;
-    ::grpc::ClientAsyncResponseReader< ::helloworld::HelloReply>* PrepareAsyncSayHelloRaw(::grpc::ClientContext* context, const ::helloworld::HelloRequest& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::kvstore::HelloReply>* AsyncSayHelloRaw(::grpc::ClientContext* context, const ::kvstore::HelloRequest& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::kvstore::HelloReply>* PrepareAsyncSayHelloRaw(::grpc::ClientContext* context, const ::kvstore::HelloRequest& request, ::grpc::CompletionQueue* cq) override;
     const ::grpc::internal::RpcMethod rpcmethod_SayHello_;
   };
   static std::unique_ptr<Stub> NewStub(const std::shared_ptr< ::grpc::ChannelInterface>& channel, const ::grpc::StubOptions& options = ::grpc::StubOptions());
@@ -92,7 +92,7 @@ class Greeter final {
     Service();
     virtual ~Service();
     // Sends a greeting
-    virtual ::grpc::Status SayHello(::grpc::ServerContext* context, const ::helloworld::HelloRequest* request, ::helloworld::HelloReply* response);
+    virtual ::grpc::Status SayHello(::grpc::ServerContext* context, const ::kvstore::HelloRequest* request, ::kvstore::HelloReply* response);
   };
   template <class BaseClass>
   class WithAsyncMethod_SayHello : public BaseClass {
@@ -106,11 +106,11 @@ class Greeter final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status SayHello(::grpc::ServerContext* context, const ::helloworld::HelloRequest* request, ::helloworld::HelloReply* response) override {
+    ::grpc::Status SayHello(::grpc::ServerContext* context, const ::kvstore::HelloRequest* request, ::kvstore::HelloReply* response) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    void RequestSayHello(::grpc::ServerContext* context, ::helloworld::HelloRequest* request, ::grpc::ServerAsyncResponseWriter< ::helloworld::HelloReply>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+    void RequestSayHello(::grpc::ServerContext* context, ::kvstore::HelloRequest* request, ::grpc::ServerAsyncResponseWriter< ::kvstore::HelloReply>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
       ::grpc::Service::RequestAsyncUnary(0, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
@@ -122,10 +122,10 @@ class Greeter final {
    public:
     ExperimentalWithCallbackMethod_SayHello() {
       ::grpc::Service::experimental().MarkMethodCallback(0,
-        new ::grpc::internal::CallbackUnaryHandler< ExperimentalWithCallbackMethod_SayHello<BaseClass>, ::helloworld::HelloRequest, ::helloworld::HelloReply>(
+        new ::grpc::internal::CallbackUnaryHandler< ExperimentalWithCallbackMethod_SayHello<BaseClass>, ::kvstore::HelloRequest, ::kvstore::HelloReply>(
           [this](::grpc::ServerContext* context,
-                 const ::helloworld::HelloRequest* request,
-                 ::helloworld::HelloReply* response,
+                 const ::kvstore::HelloRequest* request,
+                 ::kvstore::HelloReply* response,
                  ::grpc::experimental::ServerCallbackRpcController* controller) {
                    this->SayHello(context, request, response, controller);
                  }, this));
@@ -134,11 +134,11 @@ class Greeter final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status SayHello(::grpc::ServerContext* context, const ::helloworld::HelloRequest* request, ::helloworld::HelloReply* response) override {
+    ::grpc::Status SayHello(::grpc::ServerContext* context, const ::kvstore::HelloRequest* request, ::kvstore::HelloReply* response) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    virtual void SayHello(::grpc::ServerContext* context, const ::helloworld::HelloRequest* request, ::helloworld::HelloReply* response, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
+    virtual void SayHello(::grpc::ServerContext* context, const ::kvstore::HelloRequest* request, ::kvstore::HelloReply* response, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
   };
   typedef ExperimentalWithCallbackMethod_SayHello<Service > ExperimentalCallbackService;
   template <class BaseClass>
@@ -153,7 +153,7 @@ class Greeter final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status SayHello(::grpc::ServerContext* context, const ::helloworld::HelloRequest* request, ::helloworld::HelloReply* response) override {
+    ::grpc::Status SayHello(::grpc::ServerContext* context, const ::kvstore::HelloRequest* request, ::kvstore::HelloReply* response) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -170,7 +170,7 @@ class Greeter final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status SayHello(::grpc::ServerContext* context, const ::helloworld::HelloRequest* request, ::helloworld::HelloReply* response) override {
+    ::grpc::Status SayHello(::grpc::ServerContext* context, const ::kvstore::HelloRequest* request, ::kvstore::HelloReply* response) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -197,7 +197,7 @@ class Greeter final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status SayHello(::grpc::ServerContext* context, const ::helloworld::HelloRequest* request, ::helloworld::HelloReply* response) override {
+    ::grpc::Status SayHello(::grpc::ServerContext* context, const ::kvstore::HelloRequest* request, ::kvstore::HelloReply* response) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -210,18 +210,18 @@ class Greeter final {
    public:
     WithStreamedUnaryMethod_SayHello() {
       ::grpc::Service::MarkMethodStreamed(0,
-        new ::grpc::internal::StreamedUnaryHandler< ::helloworld::HelloRequest, ::helloworld::HelloReply>(std::bind(&WithStreamedUnaryMethod_SayHello<BaseClass>::StreamedSayHello, this, std::placeholders::_1, std::placeholders::_2)));
+        new ::grpc::internal::StreamedUnaryHandler< ::kvstore::HelloRequest, ::kvstore::HelloReply>(std::bind(&WithStreamedUnaryMethod_SayHello<BaseClass>::StreamedSayHello, this, std::placeholders::_1, std::placeholders::_2)));
     }
     ~WithStreamedUnaryMethod_SayHello() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable regular version of this method
-    ::grpc::Status SayHello(::grpc::ServerContext* context, const ::helloworld::HelloRequest* request, ::helloworld::HelloReply* response) override {
+    ::grpc::Status SayHello(::grpc::ServerContext* context, const ::kvstore::HelloRequest* request, ::kvstore::HelloReply* response) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     // replace default version of method with streamed unary
-    virtual ::grpc::Status StreamedSayHello(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::helloworld::HelloRequest,::helloworld::HelloReply>* server_unary_streamer) = 0;
+    virtual ::grpc::Status StreamedSayHello(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::kvstore::HelloRequest,::kvstore::HelloReply>* server_unary_streamer) = 0;
   };
   typedef WithStreamedUnaryMethod_SayHello<Service > StreamedUnaryService;
   typedef Service SplitStreamedService;
@@ -231,44 +231,62 @@ class Greeter final {
 class PageLoader final {
  public:
   static constexpr char const* service_full_name() {
-    return "helloworld.PageLoader";
+    return "kvstore.PageLoader";
   }
   class StubInterface {
    public:
     virtual ~StubInterface() {}
     // Sends a greeting
-    virtual ::grpc::Status GetPage(::grpc::ClientContext* context, const ::helloworld::GetPageRequest& request, ::helloworld::GetPageReply* response) = 0;
-    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::helloworld::GetPageReply>> AsyncGetPage(::grpc::ClientContext* context, const ::helloworld::GetPageRequest& request, ::grpc::CompletionQueue* cq) {
-      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::helloworld::GetPageReply>>(AsyncGetPageRaw(context, request, cq));
+    virtual ::grpc::Status GetPage(::grpc::ClientContext* context, const ::kvstore::GetPageRequest& request, ::kvstore::GetPageReply* response) = 0;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::kvstore::GetPageReply>> AsyncGetPage(::grpc::ClientContext* context, const ::kvstore::GetPageRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::kvstore::GetPageReply>>(AsyncGetPageRaw(context, request, cq));
     }
-    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::helloworld::GetPageReply>> PrepareAsyncGetPage(::grpc::ClientContext* context, const ::helloworld::GetPageRequest& request, ::grpc::CompletionQueue* cq) {
-      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::helloworld::GetPageReply>>(PrepareAsyncGetPageRaw(context, request, cq));
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::kvstore::GetPageReply>> PrepareAsyncGetPage(::grpc::ClientContext* context, const ::kvstore::GetPageRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::kvstore::GetPageReply>>(PrepareAsyncGetPageRaw(context, request, cq));
+    }
+    virtual ::grpc::Status ShutdownServer(::grpc::ClientContext* context, const ::kvstore::ShutdownRequest& request, ::kvstore::ShutdownReply* response) = 0;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::kvstore::ShutdownReply>> AsyncShutdownServer(::grpc::ClientContext* context, const ::kvstore::ShutdownRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::kvstore::ShutdownReply>>(AsyncShutdownServerRaw(context, request, cq));
+    }
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::kvstore::ShutdownReply>> PrepareAsyncShutdownServer(::grpc::ClientContext* context, const ::kvstore::ShutdownRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::kvstore::ShutdownReply>>(PrepareAsyncShutdownServerRaw(context, request, cq));
     }
     class experimental_async_interface {
      public:
       virtual ~experimental_async_interface() {}
       // Sends a greeting
-      virtual void GetPage(::grpc::ClientContext* context, const ::helloworld::GetPageRequest* request, ::helloworld::GetPageReply* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void GetPage(::grpc::ClientContext* context, const ::kvstore::GetPageRequest* request, ::kvstore::GetPageReply* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void ShutdownServer(::grpc::ClientContext* context, const ::kvstore::ShutdownRequest* request, ::kvstore::ShutdownReply* response, std::function<void(::grpc::Status)>) = 0;
     };
     virtual class experimental_async_interface* experimental_async() { return nullptr; }
   private:
-    virtual ::grpc::ClientAsyncResponseReaderInterface< ::helloworld::GetPageReply>* AsyncGetPageRaw(::grpc::ClientContext* context, const ::helloworld::GetPageRequest& request, ::grpc::CompletionQueue* cq) = 0;
-    virtual ::grpc::ClientAsyncResponseReaderInterface< ::helloworld::GetPageReply>* PrepareAsyncGetPageRaw(::grpc::ClientContext* context, const ::helloworld::GetPageRequest& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::kvstore::GetPageReply>* AsyncGetPageRaw(::grpc::ClientContext* context, const ::kvstore::GetPageRequest& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::kvstore::GetPageReply>* PrepareAsyncGetPageRaw(::grpc::ClientContext* context, const ::kvstore::GetPageRequest& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::kvstore::ShutdownReply>* AsyncShutdownServerRaw(::grpc::ClientContext* context, const ::kvstore::ShutdownRequest& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::kvstore::ShutdownReply>* PrepareAsyncShutdownServerRaw(::grpc::ClientContext* context, const ::kvstore::ShutdownRequest& request, ::grpc::CompletionQueue* cq) = 0;
   };
   class Stub final : public StubInterface {
    public:
     Stub(const std::shared_ptr< ::grpc::ChannelInterface>& channel);
-    ::grpc::Status GetPage(::grpc::ClientContext* context, const ::helloworld::GetPageRequest& request, ::helloworld::GetPageReply* response) override;
-    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::helloworld::GetPageReply>> AsyncGetPage(::grpc::ClientContext* context, const ::helloworld::GetPageRequest& request, ::grpc::CompletionQueue* cq) {
-      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::helloworld::GetPageReply>>(AsyncGetPageRaw(context, request, cq));
+    ::grpc::Status GetPage(::grpc::ClientContext* context, const ::kvstore::GetPageRequest& request, ::kvstore::GetPageReply* response) override;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::kvstore::GetPageReply>> AsyncGetPage(::grpc::ClientContext* context, const ::kvstore::GetPageRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::kvstore::GetPageReply>>(AsyncGetPageRaw(context, request, cq));
     }
-    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::helloworld::GetPageReply>> PrepareAsyncGetPage(::grpc::ClientContext* context, const ::helloworld::GetPageRequest& request, ::grpc::CompletionQueue* cq) {
-      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::helloworld::GetPageReply>>(PrepareAsyncGetPageRaw(context, request, cq));
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::kvstore::GetPageReply>> PrepareAsyncGetPage(::grpc::ClientContext* context, const ::kvstore::GetPageRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::kvstore::GetPageReply>>(PrepareAsyncGetPageRaw(context, request, cq));
+    }
+    ::grpc::Status ShutdownServer(::grpc::ClientContext* context, const ::kvstore::ShutdownRequest& request, ::kvstore::ShutdownReply* response) override;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::kvstore::ShutdownReply>> AsyncShutdownServer(::grpc::ClientContext* context, const ::kvstore::ShutdownRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::kvstore::ShutdownReply>>(AsyncShutdownServerRaw(context, request, cq));
+    }
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::kvstore::ShutdownReply>> PrepareAsyncShutdownServer(::grpc::ClientContext* context, const ::kvstore::ShutdownRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::kvstore::ShutdownReply>>(PrepareAsyncShutdownServerRaw(context, request, cq));
     }
     class experimental_async final :
       public StubInterface::experimental_async_interface {
      public:
-      void GetPage(::grpc::ClientContext* context, const ::helloworld::GetPageRequest* request, ::helloworld::GetPageReply* response, std::function<void(::grpc::Status)>) override;
+      void GetPage(::grpc::ClientContext* context, const ::kvstore::GetPageRequest* request, ::kvstore::GetPageReply* response, std::function<void(::grpc::Status)>) override;
+      void ShutdownServer(::grpc::ClientContext* context, const ::kvstore::ShutdownRequest* request, ::kvstore::ShutdownReply* response, std::function<void(::grpc::Status)>) override;
      private:
       friend class Stub;
       explicit experimental_async(Stub* stub): stub_(stub) { }
@@ -280,9 +298,12 @@ class PageLoader final {
    private:
     std::shared_ptr< ::grpc::ChannelInterface> channel_;
     class experimental_async async_stub_{this};
-    ::grpc::ClientAsyncResponseReader< ::helloworld::GetPageReply>* AsyncGetPageRaw(::grpc::ClientContext* context, const ::helloworld::GetPageRequest& request, ::grpc::CompletionQueue* cq) override;
-    ::grpc::ClientAsyncResponseReader< ::helloworld::GetPageReply>* PrepareAsyncGetPageRaw(::grpc::ClientContext* context, const ::helloworld::GetPageRequest& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::kvstore::GetPageReply>* AsyncGetPageRaw(::grpc::ClientContext* context, const ::kvstore::GetPageRequest& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::kvstore::GetPageReply>* PrepareAsyncGetPageRaw(::grpc::ClientContext* context, const ::kvstore::GetPageRequest& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::kvstore::ShutdownReply>* AsyncShutdownServerRaw(::grpc::ClientContext* context, const ::kvstore::ShutdownRequest& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::kvstore::ShutdownReply>* PrepareAsyncShutdownServerRaw(::grpc::ClientContext* context, const ::kvstore::ShutdownRequest& request, ::grpc::CompletionQueue* cq) override;
     const ::grpc::internal::RpcMethod rpcmethod_GetPage_;
+    const ::grpc::internal::RpcMethod rpcmethod_ShutdownServer_;
   };
   static std::unique_ptr<Stub> NewStub(const std::shared_ptr< ::grpc::ChannelInterface>& channel, const ::grpc::StubOptions& options = ::grpc::StubOptions());
 
@@ -291,7 +312,8 @@ class PageLoader final {
     Service();
     virtual ~Service();
     // Sends a greeting
-    virtual ::grpc::Status GetPage(::grpc::ServerContext* context, const ::helloworld::GetPageRequest* request, ::helloworld::GetPageReply* response);
+    virtual ::grpc::Status GetPage(::grpc::ServerContext* context, const ::kvstore::GetPageRequest* request, ::kvstore::GetPageReply* response);
+    virtual ::grpc::Status ShutdownServer(::grpc::ServerContext* context, const ::kvstore::ShutdownRequest* request, ::kvstore::ShutdownReply* response);
   };
   template <class BaseClass>
   class WithAsyncMethod_GetPage : public BaseClass {
@@ -305,15 +327,35 @@ class PageLoader final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status GetPage(::grpc::ServerContext* context, const ::helloworld::GetPageRequest* request, ::helloworld::GetPageReply* response) override {
+    ::grpc::Status GetPage(::grpc::ServerContext* context, const ::kvstore::GetPageRequest* request, ::kvstore::GetPageReply* response) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    void RequestGetPage(::grpc::ServerContext* context, ::helloworld::GetPageRequest* request, ::grpc::ServerAsyncResponseWriter< ::helloworld::GetPageReply>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+    void RequestGetPage(::grpc::ServerContext* context, ::kvstore::GetPageRequest* request, ::grpc::ServerAsyncResponseWriter< ::kvstore::GetPageReply>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
       ::grpc::Service::RequestAsyncUnary(0, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
-  typedef WithAsyncMethod_GetPage<Service > AsyncService;
+  template <class BaseClass>
+  class WithAsyncMethod_ShutdownServer : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service *service) {}
+   public:
+    WithAsyncMethod_ShutdownServer() {
+      ::grpc::Service::MarkMethodAsync(1);
+    }
+    ~WithAsyncMethod_ShutdownServer() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status ShutdownServer(::grpc::ServerContext* context, const ::kvstore::ShutdownRequest* request, ::kvstore::ShutdownReply* response) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    void RequestShutdownServer(::grpc::ServerContext* context, ::kvstore::ShutdownRequest* request, ::grpc::ServerAsyncResponseWriter< ::kvstore::ShutdownReply>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+      ::grpc::Service::RequestAsyncUnary(1, context, request, response, new_call_cq, notification_cq, tag);
+    }
+  };
+  typedef WithAsyncMethod_GetPage<WithAsyncMethod_ShutdownServer<Service > > AsyncService;
   template <class BaseClass>
   class ExperimentalWithCallbackMethod_GetPage : public BaseClass {
    private:
@@ -321,10 +363,10 @@ class PageLoader final {
    public:
     ExperimentalWithCallbackMethod_GetPage() {
       ::grpc::Service::experimental().MarkMethodCallback(0,
-        new ::grpc::internal::CallbackUnaryHandler< ExperimentalWithCallbackMethod_GetPage<BaseClass>, ::helloworld::GetPageRequest, ::helloworld::GetPageReply>(
+        new ::grpc::internal::CallbackUnaryHandler< ExperimentalWithCallbackMethod_GetPage<BaseClass>, ::kvstore::GetPageRequest, ::kvstore::GetPageReply>(
           [this](::grpc::ServerContext* context,
-                 const ::helloworld::GetPageRequest* request,
-                 ::helloworld::GetPageReply* response,
+                 const ::kvstore::GetPageRequest* request,
+                 ::kvstore::GetPageReply* response,
                  ::grpc::experimental::ServerCallbackRpcController* controller) {
                    this->GetPage(context, request, response, controller);
                  }, this));
@@ -333,13 +375,38 @@ class PageLoader final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status GetPage(::grpc::ServerContext* context, const ::helloworld::GetPageRequest* request, ::helloworld::GetPageReply* response) override {
+    ::grpc::Status GetPage(::grpc::ServerContext* context, const ::kvstore::GetPageRequest* request, ::kvstore::GetPageReply* response) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    virtual void GetPage(::grpc::ServerContext* context, const ::helloworld::GetPageRequest* request, ::helloworld::GetPageReply* response, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
+    virtual void GetPage(::grpc::ServerContext* context, const ::kvstore::GetPageRequest* request, ::kvstore::GetPageReply* response, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
   };
-  typedef ExperimentalWithCallbackMethod_GetPage<Service > ExperimentalCallbackService;
+  template <class BaseClass>
+  class ExperimentalWithCallbackMethod_ShutdownServer : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service *service) {}
+   public:
+    ExperimentalWithCallbackMethod_ShutdownServer() {
+      ::grpc::Service::experimental().MarkMethodCallback(1,
+        new ::grpc::internal::CallbackUnaryHandler< ExperimentalWithCallbackMethod_ShutdownServer<BaseClass>, ::kvstore::ShutdownRequest, ::kvstore::ShutdownReply>(
+          [this](::grpc::ServerContext* context,
+                 const ::kvstore::ShutdownRequest* request,
+                 ::kvstore::ShutdownReply* response,
+                 ::grpc::experimental::ServerCallbackRpcController* controller) {
+                   this->ShutdownServer(context, request, response, controller);
+                 }, this));
+    }
+    ~ExperimentalWithCallbackMethod_ShutdownServer() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status ShutdownServer(::grpc::ServerContext* context, const ::kvstore::ShutdownRequest* request, ::kvstore::ShutdownReply* response) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    virtual void ShutdownServer(::grpc::ServerContext* context, const ::kvstore::ShutdownRequest* request, ::kvstore::ShutdownReply* response, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
+  };
+  typedef ExperimentalWithCallbackMethod_GetPage<ExperimentalWithCallbackMethod_ShutdownServer<Service > > ExperimentalCallbackService;
   template <class BaseClass>
   class WithGenericMethod_GetPage : public BaseClass {
    private:
@@ -352,7 +419,24 @@ class PageLoader final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status GetPage(::grpc::ServerContext* context, const ::helloworld::GetPageRequest* request, ::helloworld::GetPageReply* response) override {
+    ::grpc::Status GetPage(::grpc::ServerContext* context, const ::kvstore::GetPageRequest* request, ::kvstore::GetPageReply* response) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+  };
+  template <class BaseClass>
+  class WithGenericMethod_ShutdownServer : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service *service) {}
+   public:
+    WithGenericMethod_ShutdownServer() {
+      ::grpc::Service::MarkMethodGeneric(1);
+    }
+    ~WithGenericMethod_ShutdownServer() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status ShutdownServer(::grpc::ServerContext* context, const ::kvstore::ShutdownRequest* request, ::kvstore::ShutdownReply* response) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -369,12 +453,32 @@ class PageLoader final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status GetPage(::grpc::ServerContext* context, const ::helloworld::GetPageRequest* request, ::helloworld::GetPageReply* response) override {
+    ::grpc::Status GetPage(::grpc::ServerContext* context, const ::kvstore::GetPageRequest* request, ::kvstore::GetPageReply* response) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     void RequestGetPage(::grpc::ServerContext* context, ::grpc::ByteBuffer* request, ::grpc::ServerAsyncResponseWriter< ::grpc::ByteBuffer>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
       ::grpc::Service::RequestAsyncUnary(0, context, request, response, new_call_cq, notification_cq, tag);
+    }
+  };
+  template <class BaseClass>
+  class WithRawMethod_ShutdownServer : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service *service) {}
+   public:
+    WithRawMethod_ShutdownServer() {
+      ::grpc::Service::MarkMethodRaw(1);
+    }
+    ~WithRawMethod_ShutdownServer() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status ShutdownServer(::grpc::ServerContext* context, const ::kvstore::ShutdownRequest* request, ::kvstore::ShutdownReply* response) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    void RequestShutdownServer(::grpc::ServerContext* context, ::grpc::ByteBuffer* request, ::grpc::ServerAsyncResponseWriter< ::grpc::ByteBuffer>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+      ::grpc::Service::RequestAsyncUnary(1, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
@@ -396,11 +500,36 @@ class PageLoader final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status GetPage(::grpc::ServerContext* context, const ::helloworld::GetPageRequest* request, ::helloworld::GetPageReply* response) override {
+    ::grpc::Status GetPage(::grpc::ServerContext* context, const ::kvstore::GetPageRequest* request, ::kvstore::GetPageReply* response) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     virtual void GetPage(::grpc::ServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
+  };
+  template <class BaseClass>
+  class ExperimentalWithRawCallbackMethod_ShutdownServer : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service *service) {}
+   public:
+    ExperimentalWithRawCallbackMethod_ShutdownServer() {
+      ::grpc::Service::experimental().MarkMethodRawCallback(1,
+        new ::grpc::internal::CallbackUnaryHandler< ExperimentalWithRawCallbackMethod_ShutdownServer<BaseClass>, ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
+          [this](::grpc::ServerContext* context,
+                 const ::grpc::ByteBuffer* request,
+                 ::grpc::ByteBuffer* response,
+                 ::grpc::experimental::ServerCallbackRpcController* controller) {
+                   this->ShutdownServer(context, request, response, controller);
+                 }, this));
+    }
+    ~ExperimentalWithRawCallbackMethod_ShutdownServer() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status ShutdownServer(::grpc::ServerContext* context, const ::kvstore::ShutdownRequest* request, ::kvstore::ShutdownReply* response) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    virtual void ShutdownServer(::grpc::ServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
   };
   template <class BaseClass>
   class WithStreamedUnaryMethod_GetPage : public BaseClass {
@@ -409,25 +538,45 @@ class PageLoader final {
    public:
     WithStreamedUnaryMethod_GetPage() {
       ::grpc::Service::MarkMethodStreamed(0,
-        new ::grpc::internal::StreamedUnaryHandler< ::helloworld::GetPageRequest, ::helloworld::GetPageReply>(std::bind(&WithStreamedUnaryMethod_GetPage<BaseClass>::StreamedGetPage, this, std::placeholders::_1, std::placeholders::_2)));
+        new ::grpc::internal::StreamedUnaryHandler< ::kvstore::GetPageRequest, ::kvstore::GetPageReply>(std::bind(&WithStreamedUnaryMethod_GetPage<BaseClass>::StreamedGetPage, this, std::placeholders::_1, std::placeholders::_2)));
     }
     ~WithStreamedUnaryMethod_GetPage() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable regular version of this method
-    ::grpc::Status GetPage(::grpc::ServerContext* context, const ::helloworld::GetPageRequest* request, ::helloworld::GetPageReply* response) override {
+    ::grpc::Status GetPage(::grpc::ServerContext* context, const ::kvstore::GetPageRequest* request, ::kvstore::GetPageReply* response) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     // replace default version of method with streamed unary
-    virtual ::grpc::Status StreamedGetPage(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::helloworld::GetPageRequest,::helloworld::GetPageReply>* server_unary_streamer) = 0;
+    virtual ::grpc::Status StreamedGetPage(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::kvstore::GetPageRequest,::kvstore::GetPageReply>* server_unary_streamer) = 0;
   };
-  typedef WithStreamedUnaryMethod_GetPage<Service > StreamedUnaryService;
+  template <class BaseClass>
+  class WithStreamedUnaryMethod_ShutdownServer : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service *service) {}
+   public:
+    WithStreamedUnaryMethod_ShutdownServer() {
+      ::grpc::Service::MarkMethodStreamed(1,
+        new ::grpc::internal::StreamedUnaryHandler< ::kvstore::ShutdownRequest, ::kvstore::ShutdownReply>(std::bind(&WithStreamedUnaryMethod_ShutdownServer<BaseClass>::StreamedShutdownServer, this, std::placeholders::_1, std::placeholders::_2)));
+    }
+    ~WithStreamedUnaryMethod_ShutdownServer() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable regular version of this method
+    ::grpc::Status ShutdownServer(::grpc::ServerContext* context, const ::kvstore::ShutdownRequest* request, ::kvstore::ShutdownReply* response) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    // replace default version of method with streamed unary
+    virtual ::grpc::Status StreamedShutdownServer(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::kvstore::ShutdownRequest,::kvstore::ShutdownReply>* server_unary_streamer) = 0;
+  };
+  typedef WithStreamedUnaryMethod_GetPage<WithStreamedUnaryMethod_ShutdownServer<Service > > StreamedUnaryService;
   typedef Service SplitStreamedService;
-  typedef WithStreamedUnaryMethod_GetPage<Service > StreamedService;
+  typedef WithStreamedUnaryMethod_GetPage<WithStreamedUnaryMethod_ShutdownServer<Service > > StreamedService;
 };
 
-}  // namespace helloworld
+}  // namespace kvstore
 
 
 #endif  // GRPC_storage_2eproto__INCLUDED

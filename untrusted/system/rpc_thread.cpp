@@ -27,10 +27,8 @@ RC RPCThread::run() {
 
   // pthread_barrier_wait(&log_bar);
   if (g_log_recover) {
-
     server = new kvserver();
 		server->RunServer();
-
   }
 
   return FINISH;
