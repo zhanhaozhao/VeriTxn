@@ -70,6 +70,8 @@ public:
     lru_cache   *_cache;
     RC release_up_cache(BTNode *c);
 
+    RC index_insert(idx_key_t key, itemid_t *item, int part_id);
+
 private:
     // index structures may have part_cnt = 1 or PART_CNT.
     uint64_t part_cnt;
@@ -94,6 +96,18 @@ private:
     void flush_out(BTNode *c);
 
     BTNode *load_next(BTNode *cur_node);
+
+    RC insert_into_leaf(glob_param params, BTNode *leaf, idx_key_t key, itemid_t *item);
+    RC split_lf_insert(glob_param params, BTNode *leaf, idx_key_t key, itemid_t *item);
+    RC insert_into_parent(glob_param params, BTNode *left, idx_key_t key, BTNode *right);
+    void release_cache(BTNode *c);
+    RC insert_into_new_root(glob_param params, BTNode *left, idx_key_t key, BTNode *right);
+    RC split_nl_insert(glob_param params, BTNode *old_node, UInt32 left_index, idx_key_t key, BTNode *right);
+    UInt32 cut(UInt32 length);
+    int leaf_has_key(BTNode *leaf, idx_key_t key);
+    RC make_node(uint64_t part_id, BTNode *&node);
+    RC make_nl(uint64_t part_id, BTNode *&node);
+    RC make_lf(uint64_t part_id, BTNode *&node);
 };
 
 

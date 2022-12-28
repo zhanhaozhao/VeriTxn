@@ -733,3 +733,368 @@ void IndexBTEnc::release_root_latch(int thread_id) {
     assert(ATOM_CAS(latch, true, false));
 }
 #endif
+
+#ifdef FULL_TPCC
+RC IndexBTEnc::index_insert(idx_key_t key, itemid_t * item, int part_id) {
+    glob_param params;
+    if (WORKLOAD == TPCC) assert(part_id != -1);
+    assert(part_id != -1);
+    params.part_id = part_id;
+    // create a tree if there does not exist one already
+    RC rc = RCOK;
+    BTNode * root = find_root(params.part_id);
+    assert(root != NULL);
+    int depth = 0;
+    // TODO tree depth < 100
+    BTNode * ex_list[100];
+    BTNode * leaf = NULL;
+    BTNode * last_ex = NULL;
+    rc = find_leaf(params, key, INDEX_INSERT, leaf, last_ex);
+    assert(rc == RCOK);
+
+    BTNode * tmp_node = leaf;
+    if (last_ex != NULL) {
+        while (tmp_node != last_ex) {
+            //		assert( tmp_node->latch_type == LATCH_EX );
+            ex_list[depth++] = tmp_node;
+            tmp_node = load_child(tmp_node, -1);
+            assert (depth < 100);
+        }
+        ex_list[depth ++] = last_ex;
+    } else
+        ex_list[depth++] = leaf;
+    // from this point, the required data structures are all latched,
+    // so the system should not abort anymore.
+//	M_ASSERT(!index_exist(key), "the index does not exist!");
+    // insert into btree if the leaf is not full
+    if (leaf->num_keys < order - 1 || leaf_has_key(leaf, key) >= 0) {
+        rc = insert_into_leaf(params, leaf, key, item);
+        // only the leaf should be ex latched.
+//		assert( release_latch(leaf) == LATCH_EX );
+        for (int i = 0; i < depth; i++)
+            release_latch(ex_list[i]);
+//			assert( release_latch(ex_list[i]) == LATCH_EX );
+    }
+    else { // split the nodes when necessary
+        rc = split_lf_insert(params, leaf, key, item);
+        for (int i = 0; i < depth; i++)
+            release_latch(ex_list[i]);
+//			assert( release_latch(ex_list[i]) == LATCH_EX );
+    }
+//	assert(leaf->latch_type == LATCH_NONE);
+    return rc;
+}
+
+RC IndexBTEnc::insert_into_leaf(glob_param params, BTNode * leaf, idx_key_t key, itemid_t * item) {
+    UInt32 i, insertion_point;
+    insertion_point = 0;
+    int idx = leaf_has_key(leaf, key);
+    if (idx >= 0) {
+        item->next = (itemid_t *)leaf->data[idx];
+        leaf->data[idx] = (void *) item;
+#ifdef SEPARATE_MERKLE
+        up_to_root(leaf);
+#endif
+        return RCOK;
+    }
+    while (insertion_point < leaf->num_keys && leaf->keys[insertion_point] < key)
+        insertion_point++;
+    for (i = leaf->num_keys; i > insertion_point; i--) {
+        leaf->keys[i] = leaf->keys[i - 1];
+        leaf->data[i] = leaf->data[i - 1];
+    }
+    leaf->keys[insertion_point] = key;
+    leaf->data[insertion_point] = (void *)item;
+    leaf->num_keys++;
+    M_ASSERT_ENC( (leaf->num_keys < order), "too many keys in leaf" );
+#ifdef SEPARATE_MERKLE
+    up_to_root(leaf);
+#endif
+    return RCOK;
+}
+
+RC IndexBTEnc::split_lf_insert(glob_param params, BTNode * leaf, idx_key_t key, itemid_t * item) {
+    RC rc;
+    UInt32 insertion_index, split, i, j;
+    idx_key_t new_key;
+
+    uint64_t part_id = params.part_id;
+    BTNode * new_leaf;
+//	printf("will make_lf(). part_id=%lld, key=%lld\n", part_id, key);
+//	pthread_t id = pthread_self();
+//	printf("%08x\n", id);
+    rc = make_lf(part_id, new_leaf);
+    if (rc != RCOK) return rc;
+
+    M_ASSERT_ENC(leaf->num_keys == order - 1, "trying to split non-full leaf!");
+
+    idx_key_t temp_keys[BTREE_ORDER];
+    itemid_t * temp_pointers[BTREE_ORDER];
+    insertion_index = 0;
+    while (insertion_index < order - 1 && leaf->keys[insertion_index] < key)
+        insertion_index++;
+
+    for (i = 0, j = 0; i < leaf->num_keys; i++, j++) {
+        if (j == insertion_index) j++;
+//		new_leaf->keys[j] = leaf->keys[i];
+//		new_leaf->pointers[j] = (itemid_t *)leaf->pointers[i];
+        temp_keys[j] = leaf->keys[i];
+        temp_pointers[j] = (itemid_t *)leaf->data[i];
+    }
+//	new_leaf->keys[insertion_index] = key;
+//	new_leaf->pointers[insertion_index] = item;
+    temp_keys[insertion_index] = key;
+    temp_pointers[insertion_index] = item;
+
+    // leaf is on the left of new_leaf
+    split = cut(order - 1);
+    leaf->num_keys = 0;
+    for (i = 0; i < split; i++) {
+//		leaf->pointers[i] = new_leaf->pointers[i];
+//		leaf->keys[i] = new_leaf->keys[i];
+        leaf->data[i] = temp_pointers[i];
+        leaf->keys[i] = temp_keys[i];
+        leaf->num_keys++;
+        M_ASSERT_ENC( (leaf->num_keys < order), "too many keys in leaf" );
+    }
+    for (i = split, j = 0; i < order; i++, j++) {
+//		new_leaf->pointers[j] = new_leaf->pointers[i];
+//		new_leaf->keys[j] = new_leaf->keys[i];
+        new_leaf->data[j] = temp_pointers[i];
+        new_leaf->keys[j] = temp_keys[i];
+        new_leaf->num_keys++;
+        M_ASSERT_ENC( (leaf->num_keys < order), "too many keys in leaf" );
+    }
+
+//	delete temp_pointers;
+//	delete temp_keys;
+
+    new_leaf->next = leaf->next;
+    leaf->next = new_leaf->node_id;
+
+//	new_leaf->pointers[order - 1] = leaf->pointers[order - 1];
+//	leaf->pointers[order - 1] = new_leaf;
+
+    for (i = leaf->num_keys; i < order - 1; i++)
+        leaf->data[i] = NULL;
+    for (i = new_leaf->num_keys; i < order - 1; i++)
+        new_leaf->data[i] = NULL;
+
+    new_leaf->parent = leaf->parent;
+    new_key = new_leaf->keys[0];
+
+    rc = insert_into_parent(params, leaf, new_key, new_leaf);
+    return rc;
+}
+
+void IndexBTEnc::release_cache(BTNode* c) {
+    assert(c);
+    _cache->release(c->part, c->node_id);
+}
+
+RC IndexBTEnc::insert_into_parent(
+        glob_param params,
+        BTNode * left,
+        idx_key_t key,
+        BTNode * right) {
+
+    BTNode * parent = load_child(left, -1);
+    release_cache(parent);
+
+    /* Case: new root. */
+    if (parent == NULL)
+        return insert_into_new_root(params, left, key, right);
+
+    UInt32 insert_idx = 0;
+    while (parent->keys[insert_idx] < key && insert_idx < parent->num_keys)
+        insert_idx ++;
+    // the parent has enough space, just insert into it
+    if (parent->num_keys < order - 1) {
+        for (int i = parent->num_keys-1; i >= int(insert_idx); i--) {
+            parent->keys[i + 1] = parent->keys[i];
+            parent->child[i+2] = parent->child[i+1];
+        }
+        parent->num_keys ++;
+        parent->keys[insert_idx] = key;
+        parent->child[insert_idx + 1] = right->node_id;
+        return RCOK;
+    }
+
+    /* Harder case:  split a node in order
+     * to preserve the B+ tree properties.
+     */
+
+    return split_nl_insert(params, parent, insert_idx, key, right);
+}
+
+RC IndexBTEnc::insert_into_new_root(
+        glob_param params, BTNode * left, idx_key_t key, BTNode * right)
+{
+    RC rc;
+    uint64_t part_id = params.part_id;
+    BTNode * new_root;
+//	printf("will make_nl(). part_id=%lld. key=%lld\n", part_id, key);
+    rc = make_nl(part_id, new_root);
+    if (rc != RCOK) return rc;
+    new_root->keys[0] = key;
+    new_root->child[0] = left->node_id;
+    new_root->child[1] = right->node_id;
+    new_root->num_keys++;
+
+    M_ASSERT_ENC( (new_root->num_keys < order), "too many keys in leaf" );
+    new_root->parent = NULL;
+    left->parent = new_root->node_id;
+    right->parent = new_root->node_id;
+    left->next = right->node_id;
+
+    this->roots[part_id] = new_root;
+    return RCOK;
+}
+
+RC IndexBTEnc::split_nl_insert(
+        glob_param params,
+        BTNode * old_node,
+        UInt32 left_index,
+        idx_key_t key,
+        BTNode * right)
+{
+    RC rc;
+    uint64_t i, j, split, k_prime;
+    BTNode * new_node, * child;
+//	idx_key_t * temp_keys;
+//	btUInt32 temp_pointers;
+    uint64_t part_id = params.part_id;
+    rc = make_node(part_id, new_node);
+
+    /* First create a temporary set of keys and pointers
+     * to hold everything in order, including
+     * the new key and pointer, inserted in their
+     * correct places.
+     * Then create a new node and copy half of the
+     * keys and pointers to the old node and
+     * the other half to the new.
+     */
+
+    idx_key_t temp_keys[BTREE_ORDER];
+    uint64_t temp_pointers[BTREE_ORDER + 1];
+    for (i = 0, j = 0; i < old_node->num_keys + 1; i++, j++) {
+        if (j == left_index + 1) j++;
+        temp_pointers[j] = old_node->child[i];
+    }
+
+    for (i = 0, j = 0; i < old_node->num_keys; i++, j++) {
+        if (j == left_index) j++;
+        temp_keys[j] = old_node->keys[i];
+    }
+
+    temp_pointers[left_index + 1] = right->node_id;
+    temp_keys[left_index] = key;
+
+    /* Create the new node and copy
+     * half the keys and pointers to the
+     * old and half to the new.
+     */
+    split = cut(order);
+//	printf("will make_node(). part_id=%lld, key=%lld\n", part_id, key);
+    if (rc != RCOK) return rc;
+
+    old_node->num_keys = 0;
+    for (i = 0; i < split - 1; i++) {
+//		old_node->pointers[i] = new_node->pointers[i];
+//		old_node->keys[i] = new_node->keys[i];
+        old_node->child[i] = temp_pointers[i];
+        old_node->keys[i] = temp_keys[i];
+        old_node->num_keys++;
+        M_ASSERT_ENC( (old_node->num_keys < order), "too many keys in leaf" );
+    }
+
+    new_node->next = old_node->next;
+    old_node->next = new_node->node_id;
+
+    old_node->child[i] = temp_pointers[i];
+    k_prime = temp_keys[split - 1];
+//	old_node->pointers[i] = new_node->pointers[i];
+//	k_prime = new_node->keys[split - 1];
+    for (++i, j = 0; i < order; i++, j++) {
+        new_node->child[j] = temp_pointers[i];
+        new_node->keys[j] = temp_keys[i];
+//		new_node->pointers[j] = new_node->pointers[i];
+//		new_node->keys[j] = new_node->keys[i];
+        new_node->num_keys++;
+        M_ASSERT_ENC( (old_node->num_keys < order), "too many keys in leaf" );
+    }
+    new_node->child[j] = temp_pointers[i];
+//	new_node->pointers[j] = new_node->pointers[i];
+//	delete temp_pointers;
+//	delete temp_keys;
+    new_node->parent = old_node->parent;
+    for (i = 0; i <= new_node->num_keys; i++) {
+        child = load_child(new_node, i);
+        child->parent = new_node->node_id;
+        release_cache(child);
+    }
+
+
+    /* Insert a new key into the parent of the two
+     * nodes resulting from the split, with
+     * the old node to the left and the new to the right.
+     */
+    return insert_into_parent(params, old_node, k_prime, new_node);
+}
+
+int IndexBTEnc::leaf_has_key(BTNode * leaf, idx_key_t key) {
+    for (int i = 0; i < int(leaf->num_keys); i++)
+        if (leaf->keys[i] == key) {
+            return i;
+        }
+    return -1;
+}
+
+UInt32 IndexBTEnc::cut(UInt32 length) {
+    if (length % 2 == 0)
+        return length/2;
+    else
+        return length/2 + 1;
+}
+
+RC IndexBTEnc::make_lf(uint64_t part_id, BTNode *& node) {
+    RC rc = make_node(part_id, node);
+    if (rc != RCOK) return rc;
+    node->is_leaf = true;
+    return RCOK;
+}
+
+RC IndexBTEnc::make_nl(uint64_t part_id, BTNode *& node) {
+    RC rc = make_node(part_id, node);
+    if (rc != RCOK) return rc;
+    node->is_leaf = false;
+    return RCOK;
+}
+
+RC IndexBTEnc::make_node(uint64_t part_id, BTNode *& node) {
+//	printf("make_node(). part_id=%lld\n", part_id);
+    BTNode * new_node = (BTNode *) malloc(sizeof(BTNode));
+    assert (new_node != NULL);
+    new_node->child = NULL;
+    new_node->from = this;
+    new_node->node_id = new_node->node_id = ATOM_ADD_FETCH(roots[0]->origin->from->btree_node_id, 1);
+    new_node->keys = (idx_key_t *) malloc((order - 1) * sizeof(idx_key_t));
+    new_node->child = (uint64_t *) malloc(order * sizeof(uint64_t));
+    new_node->share_cnt = 0;
+    new_node->latch = false;
+    new_node->latch_type = LATCH_NONE;
+#if VERI_TYPE == MERKLE_TREE
+    assert(false);
+#endif
+    assert (new_node->keys != NULL && new_node->child != NULL);
+    new_node->is_leaf = false;
+    new_node->num_keys = 0;
+    new_node->parent = NULL;
+    new_node->next = NULL;
+    new_node->latch = false;
+    new_node->latch_type = LATCH_NONE;
+    node = new_node;
+    return RCOK;
+}
+
+#endif

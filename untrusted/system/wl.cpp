@@ -125,6 +125,8 @@ RC workload::init_schema(std::string schema_file) {
             global_table_map->_indexes[iname] = index;
 #endif
 			indexes[iname] = index;
+			index->index_name = (char*) malloc(sizeof (char) * (iname.length()+1));
+			memcpy(index->index_name, iname.c_str(), iname.length());
 		}
     }
 	fin.close();

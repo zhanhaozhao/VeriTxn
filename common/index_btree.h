@@ -139,11 +139,12 @@ public:
     RC dfs(bt_node *c);
     RC calculate_hash();
 
+    uint64_t btree_node_id;
 private:
 	// index structures may have part_cnt = 1 or PART_CNT.
 	uint64_t part_cnt;
-    uint64_t btree_node_id;
-	RC			make_lf(uint64_t part_id, bt_node *& node);
+
+    RC			make_lf(uint64_t part_id, bt_node *& node);
 	RC			make_nl(uint64_t part_id, bt_node *& node);
 	RC		 	make_node(uint64_t part_id, bt_node *& node);
 	

@@ -182,6 +182,21 @@ RC tpcc_txn_man::run_payment(tpcc_query * query) {
             return finish(Abort);
         }
         assert(item != NULL);
+        while (item != NULL) {
+            r_cust = (row_t*) item -> location;
+            r_cust->get_value(C_FIRST);
+            r_cust->get_value(C_MIDDLE);
+            r_cust->get_value(C_LAST);
+            r_cust->get_value(C_STREET_1);
+            r_cust->get_value(C_STREET_2);
+            r_cust->get_value(C_CITY);
+            r_cust->get_value(C_CREDIT);
+            r_cust->get_value(C_CREDIT_LIM);
+            r_cust->get_value(C_DISCOUNT);
+            r_cust->get_value(C_BALANCE);
+            r_cust->get_value(C_SINCE);
+            item = item->next;
+        }
 		r_cust = (row_t *) item->location;
 	}
 
@@ -214,12 +229,12 @@ RC tpcc_txn_man::run_payment(tpcc_query * query) {
 			FROM customer
 			WHERE c_w_id=:c_w_id AND c_d_id=:c_d_id AND c_id=:c_id;
 		+=====================================================*/
-//	  	char c_new_data[501];
-//	  	sprintf(c_new_data,"| %4d %2d %4d %2d %4d $%7.2f",
-//	      	c_id, c_d_id, c_w_id, d_id, w_id, query->h_amount);
-//		char * c_data = r_cust->get_value("C_DATA");
-//	  	strncat(c_new_data, c_data, 500 - strlen(c_new_data));
-//		r_cust->set_value("C_DATA", c_new_data);
+	  	char c_new_data[501];
+	  	sprintf(c_new_data,"| %4lu %2lu %4lu %2lu %4lu $%7.2f",
+	      	query->c_id, query->c_d_id, c_w_id, query->d_id, w_id, query->h_amount);
+		char * c_data = r_cust->get_value(C_DATA);
+	  	strncat(c_new_data, c_data, 500 - strlen(c_new_data));
+		r_cust->set_value("C_DATA", c_new_data);
 			
 	}
 	
@@ -236,19 +251,19 @@ RC tpcc_txn_man::run_payment(tpcc_query * query) {
 	  history (h_c_d_id, h_c_w_id, h_c_id, h_d_id, h_w_id, h_date, h_amount, h_data)
 	  VALUES (:c_d_id, :c_w_id, :c_id, :d_id, :w_id, :datetime, :h_amount, :h_data);
 	  +=============================================================================*/
-//	row_t * r_hist;
-//	uint64_t row_id;
-//	_wl->t_history->get_new_row(r_hist, 0, row_id);
-//	r_hist->set_value(H_C_ID, c_id);
-//	r_hist->set_value(H_C_D_ID, c_d_id);
-//	r_hist->set_value(H_C_W_ID, c_w_id);
-//	r_hist->set_value(H_D_ID, d_id);
-//	r_hist->set_value(H_W_ID, w_id);
-//	int64_t date = 2013;		
-//	r_hist->set_value(H_DATE, date);
-//	r_hist->set_value(H_AMOUNT, h_amount);
+	base_row_t *r_hist;
+	uint64_t row_id;
+	_wl->t_history->get_new_row(r_hist, 0, row_id);
+	r_hist->set_value(H_C_ID, query->c_id);
+	r_hist->set_value(H_C_D_ID, query->c_d_id);
+	r_hist->set_value(H_C_W_ID, query->c_w_id);
+	r_hist->set_value(H_D_ID, query->d_id);
+	r_hist->set_value(H_W_ID, query->w_id);
+	int64_t date = 2013;
+	r_hist->set_value(H_DATE, date);
+	r_hist->set_value(H_AMOUNT, query->h_amount);
 #if !TPCC_SMALL
-//	r_hist->set_value(H_DATA, h_data);
+	r_hist->set_value(H_DATA, h_data);
 #endif
 //	insert_row(r_hist, _wl->t_history);
 
@@ -302,11 +317,11 @@ RC tpcc_txn_man::run_new_order(tpcc_query * query) {
 		return finish(Abort); 
 	}
 	uint64_t c_discount;
-	//char * c_last;
-	//char * c_credit;
+	char * c_last;
+	char * c_credit;
 	r_cust_local->get_value(C_DISCOUNT, c_discount);
-	//c_last = r_cust_local->get_value(C_LAST);
-	//c_credit = r_cust_local->get_value(C_CREDIT);
+	c_last = r_cust_local->get_value(C_LAST);
+	c_credit = r_cust_local->get_value(C_CREDIT);
  	
 	/*==================================================+
 	EXEC SQL SELECT d_next_o_id, d_tax
@@ -337,28 +352,28 @@ RC tpcc_txn_man::run_new_order(tpcc_query * query) {
 	EXEC SQL INSERT INTO ORDERS (o_id, o_d_id, o_w_id, o_c_id, o_entry_d, o_ol_cnt, o_all_local)
 		VALUES (:o_id, :d_id, :w_id, :c_id, :datetime, :o_ol_cnt, :o_all_local);
 	+========================================================================================*/
-//	row_t * r_order;
-//	uint64_t row_id;
-//	_wl->t_order->get_new_row(r_order, 0, row_id);
-//	r_order->set_value(O_ID, o_id);
-//	r_order->set_value(O_C_ID, c_id);
-//	r_order->set_value(O_D_ID, d_id);
-//	r_order->set_value(O_W_ID, w_id);
-//	r_order->set_value(O_ENTRY_D, o_entry_d);
-//	r_order->set_value(O_OL_CNT, ol_cnt);
-//	int64_t all_local = (remote? 0 : 1);
-//	r_order->set_value(O_ALL_LOCAL, all_local);
-//	insert_row(r_order, _wl->t_order);
+	base_row_t * r_order;
+	uint64_t row_id;
+	_wl->t_order->get_new_row(r_order, 0, row_id);
+	r_order->set_value(O_ID, o_id);
+	r_order->set_value(O_C_ID, c_id);
+	r_order->set_value(O_D_ID, d_id);
+	r_order->set_value(O_W_ID, w_id);
+	r_order->set_value(O_ENTRY_D, query->o_entry_d);
+	r_order->set_value(O_OL_CNT, ol_cnt);
+	int64_t all_local = (remote? 0 : 1);
+	r_order->set_value(O_ALL_LOCAL, all_local);
+	insert_row(r_order, "ORDER_IDX");
 	/*=======================================================+
     EXEC SQL INSERT INTO NEW_ORDER (no_o_id, no_d_id, no_w_id)
         VALUES (:o_id, :d_id, :w_id);
     +=======================================================*/
-//	row_t * r_no;
-//	_wl->t_neworder->get_new_row(r_no, 0, row_id);
-//	r_no->set_value(NO_O_ID, o_id);
-//	r_no->set_value(NO_D_ID, d_id);
-//	r_no->set_value(NO_W_ID, w_id);
-//	insert_row(r_no, _wl->t_neworder);
+	base_row_t * r_no;
+	_wl->t_neworder->get_new_row(r_no, 0, row_id);
+	r_no->set_value(NO_O_ID, o_id);
+	r_no->set_value(NO_D_ID, d_id);
+	r_no->set_value(NO_W_ID, w_id);
+	insert_row(r_no, "NEW-ORDER_IDX");
 	for (UInt32 ol_number = 0; ol_number < ol_cnt; ol_number++) {
 
 		uint64_t ol_i_id = query->items[ol_number].ol_i_id;
@@ -383,11 +398,11 @@ RC tpcc_txn_man::run_new_order(tpcc_query * query) {
 			return finish(Abort);
 		}
 		int64_t i_price;
-		//char * i_name;
-		//char * i_data;
+		char * i_name;
+		char * i_data;
 		r_item_local->get_value(I_PRICE, i_price);
-		//i_name = r_item_local->get_value(I_NAME);
-		//i_data = r_item_local->get_value(I_DATA);
+		i_name = r_item_local->get_value(I_NAME);
+		i_data = r_item_local->get_value(I_DATA);
 
 		/*===================================================================+
 		EXEC SQL SELECT s_quantity, s_data,
@@ -421,12 +436,12 @@ RC tpcc_txn_man::run_new_order(tpcc_query * query) {
 #if !TPCC_SMALL
 		int64_t s_ytd;
 		int64_t s_order_cnt;
-		//char * s_data = "test";
+		char * s_data = "test";
 		r_stock_local->get_value(S_YTD, s_ytd);
 		r_stock_local->set_value(S_YTD, s_ytd + ol_quantity);
 		r_stock_local->get_value(S_ORDER_CNT, s_order_cnt);
 		r_stock_local->set_value(S_ORDER_CNT, s_order_cnt + 1);
-		//s_data = r_stock_local->get_value(S_DATA);
+		s_data = r_stock_local->get_value(S_DATA);
 #endif
 		if (remote) {
 			s_remote_cnt = *(int64_t*)r_stock_local->get_value(S_REMOTE_CNT);
@@ -451,22 +466,22 @@ RC tpcc_txn_man::run_new_order(tpcc_query * query) {
 				:ol_quantity, :ol_amount, :ol_dist_info);
 		+====================================================*/
 		// XXX district info is not inserted.
-//		row_t * r_ol;
-//		uint64_t row_id;
-//		_wl->t_orderline->get_new_row(r_ol, 0, row_id);
-//		r_ol->set_value(OL_O_ID, &o_id);
-//		r_ol->set_value(OL_D_ID, &d_id);
-//		r_ol->set_value(OL_W_ID, &w_id);
-//		r_ol->set_value(OL_NUMBER, &ol_number);
-//		r_ol->set_value(OL_I_ID, &ol_i_id);
+		base_row_t * r_ol;
+		uint64_t row_id;
+		_wl->t_orderline->get_new_row(r_ol, 0, row_id);
+		r_ol->set_value(OL_O_ID, &o_id);
+		r_ol->set_value(OL_D_ID, &d_id);
+		r_ol->set_value(OL_W_ID, &w_id);
+		r_ol->set_value(OL_NUMBER, &ol_number);
+		r_ol->set_value(OL_I_ID, &ol_i_id);
 #if !TPCC_SMALL
-//		int w_tax=1, d_tax=1;
-//		int64_t ol_amount = ol_quantity * i_price * (1 + w_tax + d_tax) * (1 - c_discount);
-//		r_ol->set_value(OL_SUPPLY_W_ID, &ol_supply_w_id);
-//		r_ol->set_value(OL_QUANTITY, &ol_quantity);
-//		r_ol->set_value(OL_AMOUNT, &ol_amount);
+		int w_tax=1, d_tax=1;
+		int64_t ol_amount = ol_quantity * i_price * (1 + w_tax + d_tax) * (1 - c_discount);
+		r_ol->set_value(OL_SUPPLY_W_ID, &ol_supply_w_id);
+		r_ol->set_value(OL_QUANTITY, &ol_quantity);
+		r_ol->set_value(OL_AMOUNT, &ol_amount);
 #endif
-//		insert_row(r_ol, _wl->t_orderline);
+		insert_row(r_ol, "ORDER-LINE_IDX");
 	}
 	assert( rc == RCOK );
 	return finish(rc);
@@ -635,11 +650,9 @@ tpcc_txn_man::run_stock_level(tpcc_query * query) {
 #else
 		return finish(RCOK);
 #endif
-#else
+#endif
     assert(false);
     return finish(RCOK);
-#endif
-	return RCOK;
 }
 
 row_t* tpcc_txn_man::stock_level_getOId(uint64_t d_w_id, uint64_t d_id) {
