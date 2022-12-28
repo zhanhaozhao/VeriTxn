@@ -26,6 +26,7 @@ SimManager * simulation;
 kvengine * eng;
 #endif
 kvserver * server;
+RemoteStorage * remotestorage;
 UInt32 g_node_id = 0;
 UInt32 g_node_cnt = NODE_CNT;
 #if LOG_QUEUE_TYPE == LOG_CIRCUL_BUFF

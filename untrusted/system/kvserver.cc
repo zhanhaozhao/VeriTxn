@@ -1,6 +1,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <thread>
 
 #include "global.h"
 #include "kvserver.h"
@@ -13,13 +14,15 @@ using grpc::Server;
 using grpc::ServerBuilder;
 using grpc::ServerContext;
 using grpc::Status;
-using helloworld::HelloRequest;
-using helloworld::HelloReply;
-using helloworld::Greeter;
-using helloworld::GetPageRequest;
-using helloworld::GetPageReply;
-using helloworld::Item;
-using helloworld::PageLoader;
+using kvstore::HelloRequest;
+using kvstore::HelloReply;
+using kvstore::Greeter;
+using kvstore::GetPageRequest;
+using kvstore::GetPageReply;
+using kvstore::Item;
+using kvstore::PageLoader;
+using kvstore::ShutdownRequest;
+using kvstore::ShutdownReply;
 
 // Logic and data behind the server's behavior.
 class GreeterServiceImpl final : public Greeter::Service {
@@ -44,9 +47,16 @@ class PageLoaderServiceImpl final : public PageLoader::Service {
             // items.emplace_back(it->value().data());
         };
         eng->DBPrefixScan(page_id, f_proc_entry);
-
         return Status::OK;
     }
+    Status ShutdownServer(ServerContext* context, const ShutdownRequest* request,
+                ShutdownReply* reply) override {
+        reply->set_signalret("1");
+        delete server;
+        // ExitThread(0);
+        return Status::OK;
+    }
+
 };
 
 void kvserver::RunServer() {
@@ -62,11 +72,11 @@ void kvserver::RunServer() {
   builder.RegisterService(&service);
   // Finally assemble the server.
   // std::unique_ptr<Server> server(builder.BuildAndStart());
-  server = builder.BuildAndStart();
+  server_ = builder.BuildAndStart();
 
   std::cout << "Server listening on " << server_address << std::endl;
 
   // Wait for the server to shutdown. Note that some other thread must be
   // responsible for shutting down the server for this call to ever return.
-  server->Wait();
+  server_->Wait();
 }

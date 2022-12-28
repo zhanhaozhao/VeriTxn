@@ -31,6 +31,7 @@ extern sgx_enclave_id_t enclave_id;
 #endif // USE_SGX
 
 #include "untrusted/system/kvengine.h"
+#include "untrusted/system/rpc_thread.h"
 
 void * f(void *);
 void * run_thread(void * id);
@@ -38,6 +39,7 @@ thread_t * m_thds;
 InputThread * input_thds;
 OutputThread * output_thds;
 LogThread * log_thds;
+RPCThread * rpc_thds;
 // defined in parser.cpp
 void parser(int argc, char * argv[]);
 
@@ -140,6 +142,7 @@ int main(int argc, char* argv[])
     input_thds = new InputThread[rthd_cnt];
     output_thds = new OutputThread[sthd_cnt];
     log_thds = new LogThread[1];
+    rpc_thds = new RPCThread[1];
 
 	pthread_t p_thds[all_thd_cnt];
 	m_thds = new thread_t[thd_cnt];
@@ -154,6 +157,9 @@ int main(int argc, char* argv[])
 		if (WORKLOAD != TEST)
 			query_queue->init(m_wl);
 		printf("query_queue initialized!\n");
+
+        // remotestorage = new RemoteStorage();
+        // printf("remotestorage client in main thread initialized!\n");
 	}
 
 	pthread_barrier_init( &warmup_bar, NULL, all_thd_cnt );
@@ -164,10 +170,10 @@ int main(int argc, char* argv[])
 	int64_t starttime = get_server_clock();
 	int id = 0;
 
-	if (g_log_recover) {
-		log_thds[0].init(id,g_node_id,m_wl);
-		pthread_create(&p_thds[id++], NULL, run_thread, (void *)&log_thds[0]);
-	}
+	// if (g_log_recover) {
+	// 	log_thds[0].init(id,g_node_id,m_wl);
+	// 	pthread_create(&p_thds[id++], NULL, run_thread, (void *)&log_thds[0]);
+	// }
 
 	for (uint32_t i = 0; i < thd_cnt; i++) {
 		uint64_t vid = i;
@@ -189,12 +195,30 @@ int main(int argc, char* argv[])
 		log_thds[0].init(id,g_node_id,m_wl);
 		pthread_create(&p_thds[id++], NULL, run_thread, (void *)&log_thds[0]);
 	}
+    
+    pthread_t rpc_thd;
+    if (g_log_recover) {
+		rpc_thds[0].init(id,g_node_id,m_wl);
+		pthread_create(&rpc_thd, NULL, run_thread, (void *)&rpc_thds[0]);
+        // server = new kvserver();
+		// server->RunServer();
+	}
 
     // m_thds[thd_cnt - 1]->init(i, g_node_id, m_wl);
     // run_thread((void *)(m_thds[thd_cnt - 1]));
-    for (uint32_t i = 0; i < thd_cnt; i++)
-        pthread_join(p_thds[i], NULL);
+    
+    if (!g_log_recover) {
+        for (uint32_t i = 0; i < thd_cnt; i++)
+            pthread_join(p_thds[i], NULL);
+        // notify store to destory and shutdown
+        // remotestorage->shutdown_server();
+    } else {
+        pthread_join(rpc_thd, NULL);
+    }
 //	int64_t endtime = get_server_clock();
+
+    // for (uint32_t i = thd_cnt - 1; i < thd_cnt; i++)
+        // pthread_join(p_thds[i], NULL);
 
     if (WORKLOAD != TEST) {
 //		printf("PASS! SimTime = %ld\n", endtime - starttime);

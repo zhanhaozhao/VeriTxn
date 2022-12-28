@@ -1,11 +1,11 @@
 syntax = "proto3";
 
 option java_multiple_files = true;
-option java_package = "io.grpc.examples.helloworld";
-option java_outer_classname = "HelloWorldProto";
-option objc_class_prefix = "HLW";
+option java_package = "io.grpc.storage.kvstore";
+option java_outer_classname = "StoreageProto";
+option objc_class_prefix = "KVSTORE";
 
-package helloworld;
+package kvstore;
 
 // The greeting service definition.
 service Greeter {
@@ -26,6 +26,7 @@ message HelloReply {
 service PageLoader {
   // Sends a greeting
   rpc GetPage (GetPageRequest) returns (GetPageReply) {}
+  rpc ShutdownServer (ShutdownRequest) returns (ShutdownReply) {}
 }
 
 message GetPageRequest {
@@ -39,4 +40,12 @@ message Item {
 
 message GetPageReply {
   repeated Item dataitem = 1;
+}
+
+message ShutdownRequest {
+  string signal = 1;
+}
+
+message ShutdownReply {
+  string signalret = 1;
 }

@@ -16,10 +16,10 @@
 #include <grpcpp/impl/codegen/server_callback.h>
 #include <grpcpp/impl/codegen/service_type.h>
 #include <grpcpp/impl/codegen/sync_stream.h>
-namespace helloworld {
+namespace kvstore {
 
 static const char* Greeter_method_names[] = {
-  "/helloworld.Greeter/SayHello",
+  "/kvstore.Greeter/SayHello",
 };
 
 std::unique_ptr< Greeter::Stub> Greeter::NewStub(const std::shared_ptr< ::grpc::ChannelInterface>& channel, const ::grpc::StubOptions& options) {
@@ -32,34 +32,34 @@ Greeter::Stub::Stub(const std::shared_ptr< ::grpc::ChannelInterface>& channel)
   : channel_(channel), rpcmethod_SayHello_(Greeter_method_names[0], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
   {}
 
-::grpc::Status Greeter::Stub::SayHello(::grpc::ClientContext* context, const ::helloworld::HelloRequest& request, ::helloworld::HelloReply* response) {
+::grpc::Status Greeter::Stub::SayHello(::grpc::ClientContext* context, const ::kvstore::HelloRequest& request, ::kvstore::HelloReply* response) {
   return ::grpc::internal::BlockingUnaryCall(channel_.get(), rpcmethod_SayHello_, context, request, response);
 }
 
-void Greeter::Stub::experimental_async::SayHello(::grpc::ClientContext* context, const ::helloworld::HelloRequest* request, ::helloworld::HelloReply* response, std::function<void(::grpc::Status)> f) {
+void Greeter::Stub::experimental_async::SayHello(::grpc::ClientContext* context, const ::kvstore::HelloRequest* request, ::kvstore::HelloReply* response, std::function<void(::grpc::Status)> f) {
   return ::grpc::internal::CallbackUnaryCall(stub_->channel_.get(), stub_->rpcmethod_SayHello_, context, request, response, std::move(f));
 }
 
-::grpc::ClientAsyncResponseReader< ::helloworld::HelloReply>* Greeter::Stub::AsyncSayHelloRaw(::grpc::ClientContext* context, const ::helloworld::HelloRequest& request, ::grpc::CompletionQueue* cq) {
-  return ::grpc::internal::ClientAsyncResponseReaderFactory< ::helloworld::HelloReply>::Create(channel_.get(), cq, rpcmethod_SayHello_, context, request, true);
+::grpc::ClientAsyncResponseReader< ::kvstore::HelloReply>* Greeter::Stub::AsyncSayHelloRaw(::grpc::ClientContext* context, const ::kvstore::HelloRequest& request, ::grpc::CompletionQueue* cq) {
+  return ::grpc::internal::ClientAsyncResponseReaderFactory< ::kvstore::HelloReply>::Create(channel_.get(), cq, rpcmethod_SayHello_, context, request, true);
 }
 
-::grpc::ClientAsyncResponseReader< ::helloworld::HelloReply>* Greeter::Stub::PrepareAsyncSayHelloRaw(::grpc::ClientContext* context, const ::helloworld::HelloRequest& request, ::grpc::CompletionQueue* cq) {
-  return ::grpc::internal::ClientAsyncResponseReaderFactory< ::helloworld::HelloReply>::Create(channel_.get(), cq, rpcmethod_SayHello_, context, request, false);
+::grpc::ClientAsyncResponseReader< ::kvstore::HelloReply>* Greeter::Stub::PrepareAsyncSayHelloRaw(::grpc::ClientContext* context, const ::kvstore::HelloRequest& request, ::grpc::CompletionQueue* cq) {
+  return ::grpc::internal::ClientAsyncResponseReaderFactory< ::kvstore::HelloReply>::Create(channel_.get(), cq, rpcmethod_SayHello_, context, request, false);
 }
 
 Greeter::Service::Service() {
   AddMethod(new ::grpc::internal::RpcServiceMethod(
       Greeter_method_names[0],
       ::grpc::internal::RpcMethod::NORMAL_RPC,
-      new ::grpc::internal::RpcMethodHandler< Greeter::Service, ::helloworld::HelloRequest, ::helloworld::HelloReply>(
+      new ::grpc::internal::RpcMethodHandler< Greeter::Service, ::kvstore::HelloRequest, ::kvstore::HelloReply>(
           std::mem_fn(&Greeter::Service::SayHello), this)));
 }
 
 Greeter::Service::~Service() {
 }
 
-::grpc::Status Greeter::Service::SayHello(::grpc::ServerContext* context, const ::helloworld::HelloRequest* request, ::helloworld::HelloReply* response) {
+::grpc::Status Greeter::Service::SayHello(::grpc::ServerContext* context, const ::kvstore::HelloRequest* request, ::kvstore::HelloReply* response) {
   (void) context;
   (void) request;
   (void) response;
@@ -68,7 +68,8 @@ Greeter::Service::~Service() {
 
 
 static const char* PageLoader_method_names[] = {
-  "/helloworld.PageLoader/GetPage",
+  "/kvstore.PageLoader/GetPage",
+  "/kvstore.PageLoader/ShutdownServer",
 };
 
 std::unique_ptr< PageLoader::Stub> PageLoader::NewStub(const std::shared_ptr< ::grpc::ChannelInterface>& channel, const ::grpc::StubOptions& options) {
@@ -79,36 +80,65 @@ std::unique_ptr< PageLoader::Stub> PageLoader::NewStub(const std::shared_ptr< ::
 
 PageLoader::Stub::Stub(const std::shared_ptr< ::grpc::ChannelInterface>& channel)
   : channel_(channel), rpcmethod_GetPage_(PageLoader_method_names[0], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_ShutdownServer_(PageLoader_method_names[1], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
   {}
 
-::grpc::Status PageLoader::Stub::GetPage(::grpc::ClientContext* context, const ::helloworld::GetPageRequest& request, ::helloworld::GetPageReply* response) {
+::grpc::Status PageLoader::Stub::GetPage(::grpc::ClientContext* context, const ::kvstore::GetPageRequest& request, ::kvstore::GetPageReply* response) {
   return ::grpc::internal::BlockingUnaryCall(channel_.get(), rpcmethod_GetPage_, context, request, response);
 }
 
-void PageLoader::Stub::experimental_async::GetPage(::grpc::ClientContext* context, const ::helloworld::GetPageRequest* request, ::helloworld::GetPageReply* response, std::function<void(::grpc::Status)> f) {
+void PageLoader::Stub::experimental_async::GetPage(::grpc::ClientContext* context, const ::kvstore::GetPageRequest* request, ::kvstore::GetPageReply* response, std::function<void(::grpc::Status)> f) {
   return ::grpc::internal::CallbackUnaryCall(stub_->channel_.get(), stub_->rpcmethod_GetPage_, context, request, response, std::move(f));
 }
 
-::grpc::ClientAsyncResponseReader< ::helloworld::GetPageReply>* PageLoader::Stub::AsyncGetPageRaw(::grpc::ClientContext* context, const ::helloworld::GetPageRequest& request, ::grpc::CompletionQueue* cq) {
-  return ::grpc::internal::ClientAsyncResponseReaderFactory< ::helloworld::GetPageReply>::Create(channel_.get(), cq, rpcmethod_GetPage_, context, request, true);
+::grpc::ClientAsyncResponseReader< ::kvstore::GetPageReply>* PageLoader::Stub::AsyncGetPageRaw(::grpc::ClientContext* context, const ::kvstore::GetPageRequest& request, ::grpc::CompletionQueue* cq) {
+  return ::grpc::internal::ClientAsyncResponseReaderFactory< ::kvstore::GetPageReply>::Create(channel_.get(), cq, rpcmethod_GetPage_, context, request, true);
 }
 
-::grpc::ClientAsyncResponseReader< ::helloworld::GetPageReply>* PageLoader::Stub::PrepareAsyncGetPageRaw(::grpc::ClientContext* context, const ::helloworld::GetPageRequest& request, ::grpc::CompletionQueue* cq) {
-  return ::grpc::internal::ClientAsyncResponseReaderFactory< ::helloworld::GetPageReply>::Create(channel_.get(), cq, rpcmethod_GetPage_, context, request, false);
+::grpc::ClientAsyncResponseReader< ::kvstore::GetPageReply>* PageLoader::Stub::PrepareAsyncGetPageRaw(::grpc::ClientContext* context, const ::kvstore::GetPageRequest& request, ::grpc::CompletionQueue* cq) {
+  return ::grpc::internal::ClientAsyncResponseReaderFactory< ::kvstore::GetPageReply>::Create(channel_.get(), cq, rpcmethod_GetPage_, context, request, false);
+}
+
+::grpc::Status PageLoader::Stub::ShutdownServer(::grpc::ClientContext* context, const ::kvstore::ShutdownRequest& request, ::kvstore::ShutdownReply* response) {
+  return ::grpc::internal::BlockingUnaryCall(channel_.get(), rpcmethod_ShutdownServer_, context, request, response);
+}
+
+void PageLoader::Stub::experimental_async::ShutdownServer(::grpc::ClientContext* context, const ::kvstore::ShutdownRequest* request, ::kvstore::ShutdownReply* response, std::function<void(::grpc::Status)> f) {
+  return ::grpc::internal::CallbackUnaryCall(stub_->channel_.get(), stub_->rpcmethod_ShutdownServer_, context, request, response, std::move(f));
+}
+
+::grpc::ClientAsyncResponseReader< ::kvstore::ShutdownReply>* PageLoader::Stub::AsyncShutdownServerRaw(::grpc::ClientContext* context, const ::kvstore::ShutdownRequest& request, ::grpc::CompletionQueue* cq) {
+  return ::grpc::internal::ClientAsyncResponseReaderFactory< ::kvstore::ShutdownReply>::Create(channel_.get(), cq, rpcmethod_ShutdownServer_, context, request, true);
+}
+
+::grpc::ClientAsyncResponseReader< ::kvstore::ShutdownReply>* PageLoader::Stub::PrepareAsyncShutdownServerRaw(::grpc::ClientContext* context, const ::kvstore::ShutdownRequest& request, ::grpc::CompletionQueue* cq) {
+  return ::grpc::internal::ClientAsyncResponseReaderFactory< ::kvstore::ShutdownReply>::Create(channel_.get(), cq, rpcmethod_ShutdownServer_, context, request, false);
 }
 
 PageLoader::Service::Service() {
   AddMethod(new ::grpc::internal::RpcServiceMethod(
       PageLoader_method_names[0],
       ::grpc::internal::RpcMethod::NORMAL_RPC,
-      new ::grpc::internal::RpcMethodHandler< PageLoader::Service, ::helloworld::GetPageRequest, ::helloworld::GetPageReply>(
+      new ::grpc::internal::RpcMethodHandler< PageLoader::Service, ::kvstore::GetPageRequest, ::kvstore::GetPageReply>(
           std::mem_fn(&PageLoader::Service::GetPage), this)));
+  AddMethod(new ::grpc::internal::RpcServiceMethod(
+      PageLoader_method_names[1],
+      ::grpc::internal::RpcMethod::NORMAL_RPC,
+      new ::grpc::internal::RpcMethodHandler< PageLoader::Service, ::kvstore::ShutdownRequest, ::kvstore::ShutdownReply>(
+          std::mem_fn(&PageLoader::Service::ShutdownServer), this)));
 }
 
 PageLoader::Service::~Service() {
 }
 
-::grpc::Status PageLoader::Service::GetPage(::grpc::ServerContext* context, const ::helloworld::GetPageRequest* request, ::helloworld::GetPageReply* response) {
+::grpc::Status PageLoader::Service::GetPage(::grpc::ServerContext* context, const ::kvstore::GetPageRequest* request, ::kvstore::GetPageReply* response) {
+  (void) context;
+  (void) request;
+  (void) response;
+  return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+}
+
+::grpc::Status PageLoader::Service::ShutdownServer(::grpc::ServerContext* context, const ::kvstore::ShutdownRequest* request, ::kvstore::ShutdownReply* response) {
   (void) context;
   (void) request;
   (void) response;
@@ -116,5 +146,5 @@ PageLoader::Service::~Service() {
 }
 
 
-}  // namespace helloworld
+}  // namespace kvstore
 
