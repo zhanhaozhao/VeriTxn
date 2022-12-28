@@ -17,6 +17,12 @@ private:
 	RC run_order_status(tpcc_query * query);
 	RC run_delivery(tpcc_query * query);
 	RC run_stock_level(tpcc_query * query);
+
+    row_t *stock_level_getOId(uint64_t d_w_id, uint64_t d_id);
+
+    bool
+    stock_level_getStockCount(uint64_t ol_w_id, uint64_t ol_d_id, int64_t ol_o_id, uint64_t s_w_id, uint64_t threshold,
+                              uint64_t *out_distinct_count);
 };
 
 #endif

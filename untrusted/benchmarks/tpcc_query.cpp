@@ -11,13 +11,26 @@
 // #include "common/table.h"
 
 void tpcc_query::init(uint64_t thd_id, workload * h_wl) {
-	double x = (double)(rand() % 100) / 100.0;
-	part_to_access = (uint64_t *) 
-		mem_allocator.alloc(sizeof(uint64_t) * g_part_cnt, thd_id);
+    double x = (double)(rand() % 100) / 100.0;
+    part_to_access = (uint64_t *)
+            mem_allocator.alloc(sizeof(uint64_t) * g_part_cnt, thd_id);
+#if FULL_TPCC
+  if (x < 0.04)
+    gen_stocklevel(thd_id);
+  else if (x < 0.04 + 0.04)
+    gen_delivery(thd_id);
+  else if (x < 0.04 + 0.04 + 0.04)
+    gen_order_status(thd_id);
+  else if (x < 0.04 + 0.04 + 0.04 + 0.43)
+    gen_payment(thd_id);
+  else
+    gen_new_order(thd_id);
+#else
 	if (x < g_perc_payment)
 		gen_payment(thd_id);
 	else 
 		gen_new_order(thd_id);
+#endif
 }
 
 void tpcc_query::gen_payment(uint64_t thd_id) {
@@ -116,7 +129,7 @@ void tpcc_query::gen_new_order(uint64_t thd_id) {
 	}
 }
 
-void 
+void
 tpcc_query::gen_order_status(uint64_t thd_id) {
 	type = TPCC_ORDER_STATUS;
 	if (FIRST_PART_LOCAL)
@@ -136,4 +149,45 @@ tpcc_query::gen_order_status(uint64_t thd_id) {
 		by_last_name = false;
 		c_id = NURand(1023, 1, g_cust_per_dist, w_id-1);
 	}
+}
+
+void
+tpcc_query::gen_delivery(uint64_t thd_id) {
+    type = TPCC_DELIVERY;
+    if (FIRST_PART_LOCAL) {
+        if (g_num_wh <= g_thread_cnt)
+            w_id = thd_id % g_num_wh + 1;
+        else {
+            do {
+                w_id = RAND((g_num_wh + g_thread_cnt - 1) / g_thread_cnt, thd_id) *
+                       g_thread_cnt +
+                       thd_id + 1;
+            } while (w_id > g_num_wh);
+            assert((w_id - 1) % g_thread_cnt == thd_id);
+        }
+    } else
+        w_id = URand(1, g_num_wh, thd_id);
+    o_carrier_id = URand(1, DIST_PER_WARE, thd_id);
+    ol_delivery_d = 2013;
+}
+
+void
+tpcc_query::gen_stocklevel(uint64_t thd_id) {
+    type = TPCC_STOCK_LEVEL;
+
+    if (FIRST_PART_LOCAL) {
+        if (g_num_wh <= g_thread_cnt)
+            w_id = thd_id % g_num_wh + 1;
+        else {
+            do {
+                w_id = RAND((g_num_wh + g_thread_cnt - 1) / g_thread_cnt, thd_id) *
+                       g_thread_cnt +
+                       thd_id + 1;
+            } while (w_id > g_num_wh);
+            assert((w_id - 1) % g_thread_cnt == thd_id);
+        }
+    } else
+        w_id = URand(1, g_num_wh, thd_id);
+    d_id = URand(1, DIST_PER_WARE, thd_id);
+    threshold = URand(10, 20, thd_id);
 }

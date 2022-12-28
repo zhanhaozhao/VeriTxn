@@ -381,7 +381,7 @@ void txn_man::create_log_entry() {
 #if LOG_TYPE == LOG_DATA
 
 	// Format for serial logging
-	// | checksum:4 | size:4 | N:4 | (table_id:4 | primary_key:8 | data_length:4 | data:?) * N
+	// | checksum:4 | size:4 | N:4 | (part_id:8 | pgid:8 | offset:8 | table_id:4 | primary_key:8 | data_length:4 | data:?) * N
 
 	uint32_t offset = 0;
 	uint32_t checksum = 0xbeef;  // we also use this to distinguish PSN items and log items

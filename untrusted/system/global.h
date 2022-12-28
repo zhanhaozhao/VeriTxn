@@ -120,6 +120,7 @@ extern bool g_wh_update;
 extern char * output_file;
 extern UInt32 g_max_items;
 extern UInt32 g_cust_per_dist;
+extern uint64_t g_max_orderline;
 
 enum RemReqType {
     ASYNC_HASH = 0,

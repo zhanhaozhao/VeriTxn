@@ -100,3 +100,5 @@ UInt32 g_cust_per_dist = 3000;
 #if USE_SGX == 1
 sgx_enclave_id_t enclave_id = 0;
 #endif // USE_SGX
+
+uint64_t g_max_orderline = uint64_t(1) << 32;
