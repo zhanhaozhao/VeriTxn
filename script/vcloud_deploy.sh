@@ -14,22 +14,39 @@ for HOSTNAME in ${HOSTS}; do
         SCRIPT="cd ${PATHE}; ./App -nid${count} -r100 -w0 > ${PATHE}dbresults${count}.out 2>&1"
         echo "${HOSTNAME}: App r ${count}"
         ssh -n -o BatchMode=yes -o StrictHostKeyChecking=no -p 5000 -l ${USERNAME} ${USERNAME}@${HOSTNAME} "${SCRIPT}" &
+        echo $SCRIPT
     else
-    # elif [ $count -eq 1 ]; then
-        SCRIPT="cd ${PATHE}; ./App -nid${count} > ${PATHE}dbresults${count}.out 2>&1"
-        echo "${HOSTNAME}: App r/w ${count}"
-        ssh -n -o BatchMode=yes -o StrictHostKeyChecking=no -p 5000 -l ${USERNAME} ${USERNAME}@${HOSTNAME} "${SCRIPT}" &
         SCRIPT="cd ${PATHE}; ./Store > ${PATHE}storageresults${count}.out 2>&1"
         echo "${HOSTNAME}: Store ${count}"
         ssh -n -o BatchMode=yes -o StrictHostKeyChecking=no -p 5000 -l ${USERNAME} ${USERNAME}@${HOSTNAME} "${SCRIPT}" &
+        echo $SCRIPT
+        
+        SCRIPT="cd ${PATHE}; ./App -nid${count} > ${PATHE}dbresults${count}.out 2>&1"
+        echo "${HOSTNAME}: App r/w ${count}"
+        ssh -n -o BatchMode=yes -o StrictHostKeyChecking=no -p 5000 -l ${USERNAME} ${USERNAME}@${HOSTNAME} "${SCRIPT}" &
+        echo $SCRIPT
     fi
-    echo $SCRIPT
     count=`expr $count + 1`
 done
 
-sleep 10
+sleep 2
+
 while [ $count -gt 0 ]
 do
+    # echo $count
+    if [ $count -eq 1 ]; then
+        isrunning=$(ssh -p 5000 $USERNAME@$HOSTNAME "ps -aux | grep App | grep -v grep | wc -l")
+        # echo $isrunning
+        if [ $isrunning == 0 ]; then
+            echo "not running"
+            ssh -n -o BatchMode=yes -o StrictHostKeyChecking=no -p 5000 -l ${USERNAME} ${USERNAME}@${HOSTNAME} "ps -aux | grep Store | awk '{print \$2}' | xargs kill -9" 
+        else
+            # echo "still running"
+            sleep 2
+            continue
+        fi
+    fi
+
     wait $pids
     count=`expr $count - 1`
 done

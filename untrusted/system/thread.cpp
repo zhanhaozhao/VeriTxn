@@ -103,7 +103,7 @@ RC thread_t::run() {
 			assert(false);
 		}
 
-		m_txn->init(this, this->_wl, this->get_thd_id());
+		// m_txn->init(this, this->_wl, this->get_thd_id());
 		glob_manager->set_txn_man(m_txn);
 		assert (m_txn);
 

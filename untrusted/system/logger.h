@@ -9,6 +9,10 @@
 #include <set>
 #include <queue>
 #include <fstream>
+
+#include <grpcpp/grpcpp.h>
+#include "storage.grpc.pb.h"
+
 #if USE_AZURE == 1
 #include <iostream>
 #include <azure/storage/blobs.hpp>
@@ -42,6 +46,9 @@ private:
     std::set<uint64_t> txns_to_notify;
     uint64_t last_flush;
     uint64_t log_buf_cnt;
+
+	uint64_t batch_num;
+	kvstore::LogReplayRequest request;
 
     #if USE_AZURE == 1
     const char* connectionString;

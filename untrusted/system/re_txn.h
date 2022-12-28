@@ -7,6 +7,7 @@
 
 #include "global_common.h"
 #include "db_thread.h"
+#include "rpc_thread.h"
 #include "helper.h"
 #include "log.h"
 #include "wl.h"
@@ -25,10 +26,10 @@ class row_t;
 class re_txn_man
 {
 public:
-	virtual void init(thread_t * h_thd, workload * h_wl, uint64_t part_id);
+	virtual void init(RPCThread * h_thd, workload * h_wl, uint64_t part_id);
 	virtual ~re_txn_man() = default;
 	void release();
-	thread_t * h_thd;
+	RPCThread * h_thd;
 	workload * h_wl;
 	myrand * mrand;
 	uint64_t abort_cnt;
@@ -90,7 +91,7 @@ public:
 	// for replay
 public:
 	void 			recover();
-protected:
+// protected:
 	virtual void 	recover_txn(char * log_entry, uint64_t tid = (uint64_t)-1)  
 	{ assert(false); }
 

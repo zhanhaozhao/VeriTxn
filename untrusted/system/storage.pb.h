@@ -38,7 +38,7 @@ namespace protobuf_storage_2eproto {
 struct TableStruct {
   static const ::google::protobuf::internal::ParseTableField entries[];
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
-  static const ::google::protobuf::internal::ParseTable schema[7];
+  static const ::google::protobuf::internal::ParseTable schema[10];
   static const ::google::protobuf::internal::FieldMetadata field_metadata[];
   static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static const ::google::protobuf::uint32 offsets[];
@@ -61,6 +61,15 @@ extern HelloRequestDefaultTypeInternal _HelloRequest_default_instance_;
 class Item;
 class ItemDefaultTypeInternal;
 extern ItemDefaultTypeInternal _Item_default_instance_;
+class LogEntry;
+class LogEntryDefaultTypeInternal;
+extern LogEntryDefaultTypeInternal _LogEntry_default_instance_;
+class LogReplayReply;
+class LogReplayReplyDefaultTypeInternal;
+extern LogReplayReplyDefaultTypeInternal _LogReplayReply_default_instance_;
+class LogReplayRequest;
+class LogReplayRequestDefaultTypeInternal;
+extern LogReplayRequestDefaultTypeInternal _LogReplayRequest_default_instance_;
 class ShutdownReply;
 class ShutdownReplyDefaultTypeInternal;
 extern ShutdownReplyDefaultTypeInternal _ShutdownReply_default_instance_;
@@ -75,6 +84,9 @@ template<> ::kvstore::GetPageRequest* Arena::CreateMaybeMessage<::kvstore::GetPa
 template<> ::kvstore::HelloReply* Arena::CreateMaybeMessage<::kvstore::HelloReply>(Arena*);
 template<> ::kvstore::HelloRequest* Arena::CreateMaybeMessage<::kvstore::HelloRequest>(Arena*);
 template<> ::kvstore::Item* Arena::CreateMaybeMessage<::kvstore::Item>(Arena*);
+template<> ::kvstore::LogEntry* Arena::CreateMaybeMessage<::kvstore::LogEntry>(Arena*);
+template<> ::kvstore::LogReplayReply* Arena::CreateMaybeMessage<::kvstore::LogReplayReply>(Arena*);
+template<> ::kvstore::LogReplayRequest* Arena::CreateMaybeMessage<::kvstore::LogReplayRequest>(Arena*);
 template<> ::kvstore::ShutdownReply* Arena::CreateMaybeMessage<::kvstore::ShutdownReply>(Arena*);
 template<> ::kvstore::ShutdownRequest* Arena::CreateMaybeMessage<::kvstore::ShutdownRequest>(Arena*);
 }  // namespace protobuf
@@ -305,117 +317,6 @@ class HelloReply : public ::google::protobuf::Message /* @@protoc_insertion_poin
 };
 // -------------------------------------------------------------------
 
-class GetPageRequest : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:kvstore.GetPageRequest) */ {
- public:
-  GetPageRequest();
-  virtual ~GetPageRequest();
-
-  GetPageRequest(const GetPageRequest& from);
-
-  inline GetPageRequest& operator=(const GetPageRequest& from) {
-    CopyFrom(from);
-    return *this;
-  }
-  #if LANG_CXX11
-  GetPageRequest(GetPageRequest&& from) noexcept
-    : GetPageRequest() {
-    *this = ::std::move(from);
-  }
-
-  inline GetPageRequest& operator=(GetPageRequest&& from) noexcept {
-    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
-      if (this != &from) InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
-  #endif
-  static const ::google::protobuf::Descriptor* descriptor();
-  static const GetPageRequest& default_instance();
-
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
-  static inline const GetPageRequest* internal_default_instance() {
-    return reinterpret_cast<const GetPageRequest*>(
-               &_GetPageRequest_default_instance_);
-  }
-  static constexpr int kIndexInFileMessages =
-    2;
-
-  void Swap(GetPageRequest* other);
-  friend void swap(GetPageRequest& a, GetPageRequest& b) {
-    a.Swap(&b);
-  }
-
-  // implements Message ----------------------------------------------
-
-  inline GetPageRequest* New() const final {
-    return CreateMaybeMessage<GetPageRequest>(NULL);
-  }
-
-  GetPageRequest* New(::google::protobuf::Arena* arena) const final {
-    return CreateMaybeMessage<GetPageRequest>(arena);
-  }
-  void CopyFrom(const ::google::protobuf::Message& from) final;
-  void MergeFrom(const ::google::protobuf::Message& from) final;
-  void CopyFrom(const GetPageRequest& from);
-  void MergeFrom(const GetPageRequest& from);
-  void Clear() final;
-  bool IsInitialized() const final;
-
-  size_t ByteSizeLong() const final;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input) final;
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const final;
-  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
-      bool deterministic, ::google::protobuf::uint8* target) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
-
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const final;
-  void InternalSwap(GetPageRequest* other);
-  private:
-  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
-    return NULL;
-  }
-  inline void* MaybeArenaPtr() const {
-    return NULL;
-  }
-  public:
-
-  ::google::protobuf::Metadata GetMetadata() const final;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // string page_id = 1;
-  void clear_page_id();
-  static const int kPageIdFieldNumber = 1;
-  const ::std::string& page_id() const;
-  void set_page_id(const ::std::string& value);
-  #if LANG_CXX11
-  void set_page_id(::std::string&& value);
-  #endif
-  void set_page_id(const char* value);
-  void set_page_id(const char* value, size_t size);
-  ::std::string* mutable_page_id();
-  ::std::string* release_page_id();
-  void set_allocated_page_id(::std::string* page_id);
-
-  // @@protoc_insertion_point(class_scope:kvstore.GetPageRequest)
- private:
-
-  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
-  ::google::protobuf::internal::ArenaStringPtr page_id_;
-  mutable ::google::protobuf::internal::CachedSize _cached_size_;
-  friend struct ::protobuf_storage_2eproto::TableStruct;
-};
-// -------------------------------------------------------------------
-
 class Item : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:kvstore.Item) */ {
  public:
   Item();
@@ -451,7 +352,7 @@ class Item : public ::google::protobuf::Message /* @@protoc_insertion_point(clas
                &_Item_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    3;
+    2;
 
   void Swap(Item* other);
   friend void swap(Item& a, Item& b) {
@@ -537,6 +438,117 @@ class Item : public ::google::protobuf::Message /* @@protoc_insertion_point(clas
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::ArenaStringPtr key_;
   ::google::protobuf::internal::ArenaStringPtr value_;
+  mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  friend struct ::protobuf_storage_2eproto::TableStruct;
+};
+// -------------------------------------------------------------------
+
+class GetPageRequest : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:kvstore.GetPageRequest) */ {
+ public:
+  GetPageRequest();
+  virtual ~GetPageRequest();
+
+  GetPageRequest(const GetPageRequest& from);
+
+  inline GetPageRequest& operator=(const GetPageRequest& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  #if LANG_CXX11
+  GetPageRequest(GetPageRequest&& from) noexcept
+    : GetPageRequest() {
+    *this = ::std::move(from);
+  }
+
+  inline GetPageRequest& operator=(GetPageRequest&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const GetPageRequest& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const GetPageRequest* internal_default_instance() {
+    return reinterpret_cast<const GetPageRequest*>(
+               &_GetPageRequest_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    3;
+
+  void Swap(GetPageRequest* other);
+  friend void swap(GetPageRequest& a, GetPageRequest& b) {
+    a.Swap(&b);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline GetPageRequest* New() const final {
+    return CreateMaybeMessage<GetPageRequest>(NULL);
+  }
+
+  GetPageRequest* New(::google::protobuf::Arena* arena) const final {
+    return CreateMaybeMessage<GetPageRequest>(arena);
+  }
+  void CopyFrom(const ::google::protobuf::Message& from) final;
+  void MergeFrom(const ::google::protobuf::Message& from) final;
+  void CopyFrom(const GetPageRequest& from);
+  void MergeFrom(const GetPageRequest& from);
+  void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) final;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const final;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(GetPageRequest* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // string page_id = 1;
+  void clear_page_id();
+  static const int kPageIdFieldNumber = 1;
+  const ::std::string& page_id() const;
+  void set_page_id(const ::std::string& value);
+  #if LANG_CXX11
+  void set_page_id(::std::string&& value);
+  #endif
+  void set_page_id(const char* value);
+  void set_page_id(const char* value, size_t size);
+  ::std::string* mutable_page_id();
+  ::std::string* release_page_id();
+  void set_allocated_page_id(::std::string* page_id);
+
+  // @@protoc_insertion_point(class_scope:kvstore.GetPageRequest)
+ private:
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::google::protobuf::internal::ArenaStringPtr page_id_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   friend struct ::protobuf_storage_2eproto::TableStruct;
 };
@@ -871,6 +883,336 @@ class ShutdownReply : public ::google::protobuf::Message /* @@protoc_insertion_p
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   friend struct ::protobuf_storage_2eproto::TableStruct;
 };
+// -------------------------------------------------------------------
+
+class LogEntry : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:kvstore.LogEntry) */ {
+ public:
+  LogEntry();
+  virtual ~LogEntry();
+
+  LogEntry(const LogEntry& from);
+
+  inline LogEntry& operator=(const LogEntry& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  #if LANG_CXX11
+  LogEntry(LogEntry&& from) noexcept
+    : LogEntry() {
+    *this = ::std::move(from);
+  }
+
+  inline LogEntry& operator=(LogEntry&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const LogEntry& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const LogEntry* internal_default_instance() {
+    return reinterpret_cast<const LogEntry*>(
+               &_LogEntry_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    7;
+
+  void Swap(LogEntry* other);
+  friend void swap(LogEntry& a, LogEntry& b) {
+    a.Swap(&b);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline LogEntry* New() const final {
+    return CreateMaybeMessage<LogEntry>(NULL);
+  }
+
+  LogEntry* New(::google::protobuf::Arena* arena) const final {
+    return CreateMaybeMessage<LogEntry>(arena);
+  }
+  void CopyFrom(const ::google::protobuf::Message& from) final;
+  void MergeFrom(const ::google::protobuf::Message& from) final;
+  void CopyFrom(const LogEntry& from);
+  void MergeFrom(const LogEntry& from);
+  void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) final;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const final;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(LogEntry* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // string data = 1;
+  void clear_data();
+  static const int kDataFieldNumber = 1;
+  const ::std::string& data() const;
+  void set_data(const ::std::string& value);
+  #if LANG_CXX11
+  void set_data(::std::string&& value);
+  #endif
+  void set_data(const char* value);
+  void set_data(const char* value, size_t size);
+  ::std::string* mutable_data();
+  ::std::string* release_data();
+  void set_allocated_data(::std::string* data);
+
+  // int32 size = 2;
+  void clear_size();
+  static const int kSizeFieldNumber = 2;
+  ::google::protobuf::int32 size() const;
+  void set_size(::google::protobuf::int32 value);
+
+  // @@protoc_insertion_point(class_scope:kvstore.LogEntry)
+ private:
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::google::protobuf::internal::ArenaStringPtr data_;
+  ::google::protobuf::int32 size_;
+  mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  friend struct ::protobuf_storage_2eproto::TableStruct;
+};
+// -------------------------------------------------------------------
+
+class LogReplayRequest : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:kvstore.LogReplayRequest) */ {
+ public:
+  LogReplayRequest();
+  virtual ~LogReplayRequest();
+
+  LogReplayRequest(const LogReplayRequest& from);
+
+  inline LogReplayRequest& operator=(const LogReplayRequest& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  #if LANG_CXX11
+  LogReplayRequest(LogReplayRequest&& from) noexcept
+    : LogReplayRequest() {
+    *this = ::std::move(from);
+  }
+
+  inline LogReplayRequest& operator=(LogReplayRequest&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const LogReplayRequest& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const LogReplayRequest* internal_default_instance() {
+    return reinterpret_cast<const LogReplayRequest*>(
+               &_LogReplayRequest_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    8;
+
+  void Swap(LogReplayRequest* other);
+  friend void swap(LogReplayRequest& a, LogReplayRequest& b) {
+    a.Swap(&b);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline LogReplayRequest* New() const final {
+    return CreateMaybeMessage<LogReplayRequest>(NULL);
+  }
+
+  LogReplayRequest* New(::google::protobuf::Arena* arena) const final {
+    return CreateMaybeMessage<LogReplayRequest>(arena);
+  }
+  void CopyFrom(const ::google::protobuf::Message& from) final;
+  void MergeFrom(const ::google::protobuf::Message& from) final;
+  void CopyFrom(const LogReplayRequest& from);
+  void MergeFrom(const LogReplayRequest& from);
+  void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) final;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const final;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(LogReplayRequest* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // repeated .kvstore.LogEntry entry = 1;
+  int entry_size() const;
+  void clear_entry();
+  static const int kEntryFieldNumber = 1;
+  ::kvstore::LogEntry* mutable_entry(int index);
+  ::google::protobuf::RepeatedPtrField< ::kvstore::LogEntry >*
+      mutable_entry();
+  const ::kvstore::LogEntry& entry(int index) const;
+  ::kvstore::LogEntry* add_entry();
+  const ::google::protobuf::RepeatedPtrField< ::kvstore::LogEntry >&
+      entry() const;
+
+  // @@protoc_insertion_point(class_scope:kvstore.LogReplayRequest)
+ private:
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::google::protobuf::RepeatedPtrField< ::kvstore::LogEntry > entry_;
+  mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  friend struct ::protobuf_storage_2eproto::TableStruct;
+};
+// -------------------------------------------------------------------
+
+class LogReplayReply : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:kvstore.LogReplayReply) */ {
+ public:
+  LogReplayReply();
+  virtual ~LogReplayReply();
+
+  LogReplayReply(const LogReplayReply& from);
+
+  inline LogReplayReply& operator=(const LogReplayReply& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  #if LANG_CXX11
+  LogReplayReply(LogReplayReply&& from) noexcept
+    : LogReplayReply() {
+    *this = ::std::move(from);
+  }
+
+  inline LogReplayReply& operator=(LogReplayReply&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const LogReplayReply& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const LogReplayReply* internal_default_instance() {
+    return reinterpret_cast<const LogReplayReply*>(
+               &_LogReplayReply_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    9;
+
+  void Swap(LogReplayReply* other);
+  friend void swap(LogReplayReply& a, LogReplayReply& b) {
+    a.Swap(&b);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline LogReplayReply* New() const final {
+    return CreateMaybeMessage<LogReplayReply>(NULL);
+  }
+
+  LogReplayReply* New(::google::protobuf::Arena* arena) const final {
+    return CreateMaybeMessage<LogReplayReply>(arena);
+  }
+  void CopyFrom(const ::google::protobuf::Message& from) final;
+  void MergeFrom(const ::google::protobuf::Message& from) final;
+  void CopyFrom(const LogReplayReply& from);
+  void MergeFrom(const LogReplayReply& from);
+  void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) final;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const final;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(LogReplayReply* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // int32 numreplay = 1;
+  void clear_numreplay();
+  static const int kNumreplayFieldNumber = 1;
+  ::google::protobuf::int32 numreplay() const;
+  void set_numreplay(::google::protobuf::int32 value);
+
+  // @@protoc_insertion_point(class_scope:kvstore.LogReplayReply)
+ private:
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::google::protobuf::int32 numreplay_;
+  mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  friend struct ::protobuf_storage_2eproto::TableStruct;
+};
 // ===================================================================
 
 
@@ -994,63 +1336,6 @@ inline void HelloReply::set_allocated_message(::std::string* message) {
 
 // -------------------------------------------------------------------
 
-// GetPageRequest
-
-// string page_id = 1;
-inline void GetPageRequest::clear_page_id() {
-  page_id_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline const ::std::string& GetPageRequest::page_id() const {
-  // @@protoc_insertion_point(field_get:kvstore.GetPageRequest.page_id)
-  return page_id_.GetNoArena();
-}
-inline void GetPageRequest::set_page_id(const ::std::string& value) {
-  
-  page_id_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:kvstore.GetPageRequest.page_id)
-}
-#if LANG_CXX11
-inline void GetPageRequest::set_page_id(::std::string&& value) {
-  
-  page_id_.SetNoArena(
-    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:kvstore.GetPageRequest.page_id)
-}
-#endif
-inline void GetPageRequest::set_page_id(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
-  
-  page_id_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:kvstore.GetPageRequest.page_id)
-}
-inline void GetPageRequest::set_page_id(const char* value, size_t size) {
-  
-  page_id_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:kvstore.GetPageRequest.page_id)
-}
-inline ::std::string* GetPageRequest::mutable_page_id() {
-  
-  // @@protoc_insertion_point(field_mutable:kvstore.GetPageRequest.page_id)
-  return page_id_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline ::std::string* GetPageRequest::release_page_id() {
-  // @@protoc_insertion_point(field_release:kvstore.GetPageRequest.page_id)
-  
-  return page_id_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline void GetPageRequest::set_allocated_page_id(::std::string* page_id) {
-  if (page_id != NULL) {
-    
-  } else {
-    
-  }
-  page_id_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), page_id);
-  // @@protoc_insertion_point(field_set_allocated:kvstore.GetPageRequest.page_id)
-}
-
-// -------------------------------------------------------------------
-
 // Item
 
 // string key = 1;
@@ -1157,6 +1442,63 @@ inline void Item::set_allocated_value(::std::string* value) {
   }
   value_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
   // @@protoc_insertion_point(field_set_allocated:kvstore.Item.value)
+}
+
+// -------------------------------------------------------------------
+
+// GetPageRequest
+
+// string page_id = 1;
+inline void GetPageRequest::clear_page_id() {
+  page_id_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline const ::std::string& GetPageRequest::page_id() const {
+  // @@protoc_insertion_point(field_get:kvstore.GetPageRequest.page_id)
+  return page_id_.GetNoArena();
+}
+inline void GetPageRequest::set_page_id(const ::std::string& value) {
+  
+  page_id_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:kvstore.GetPageRequest.page_id)
+}
+#if LANG_CXX11
+inline void GetPageRequest::set_page_id(::std::string&& value) {
+  
+  page_id_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:kvstore.GetPageRequest.page_id)
+}
+#endif
+inline void GetPageRequest::set_page_id(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  
+  page_id_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:kvstore.GetPageRequest.page_id)
+}
+inline void GetPageRequest::set_page_id(const char* value, size_t size) {
+  
+  page_id_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:kvstore.GetPageRequest.page_id)
+}
+inline ::std::string* GetPageRequest::mutable_page_id() {
+  
+  // @@protoc_insertion_point(field_mutable:kvstore.GetPageRequest.page_id)
+  return page_id_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* GetPageRequest::release_page_id() {
+  // @@protoc_insertion_point(field_release:kvstore.GetPageRequest.page_id)
+  
+  return page_id_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void GetPageRequest::set_allocated_page_id(::std::string* page_id) {
+  if (page_id != NULL) {
+    
+  } else {
+    
+  }
+  page_id_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), page_id);
+  // @@protoc_insertion_point(field_set_allocated:kvstore.GetPageRequest.page_id)
 }
 
 // -------------------------------------------------------------------
@@ -1307,9 +1649,138 @@ inline void ShutdownReply::set_allocated_signalret(::std::string* signalret) {
   // @@protoc_insertion_point(field_set_allocated:kvstore.ShutdownReply.signalret)
 }
 
+// -------------------------------------------------------------------
+
+// LogEntry
+
+// string data = 1;
+inline void LogEntry::clear_data() {
+  data_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline const ::std::string& LogEntry::data() const {
+  // @@protoc_insertion_point(field_get:kvstore.LogEntry.data)
+  return data_.GetNoArena();
+}
+inline void LogEntry::set_data(const ::std::string& value) {
+  
+  data_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:kvstore.LogEntry.data)
+}
+#if LANG_CXX11
+inline void LogEntry::set_data(::std::string&& value) {
+  
+  data_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:kvstore.LogEntry.data)
+}
+#endif
+inline void LogEntry::set_data(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  
+  data_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:kvstore.LogEntry.data)
+}
+inline void LogEntry::set_data(const char* value, size_t size) {
+  
+  data_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:kvstore.LogEntry.data)
+}
+inline ::std::string* LogEntry::mutable_data() {
+  
+  // @@protoc_insertion_point(field_mutable:kvstore.LogEntry.data)
+  return data_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* LogEntry::release_data() {
+  // @@protoc_insertion_point(field_release:kvstore.LogEntry.data)
+  
+  return data_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void LogEntry::set_allocated_data(::std::string* data) {
+  if (data != NULL) {
+    
+  } else {
+    
+  }
+  data_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), data);
+  // @@protoc_insertion_point(field_set_allocated:kvstore.LogEntry.data)
+}
+
+// int32 size = 2;
+inline void LogEntry::clear_size() {
+  size_ = 0;
+}
+inline ::google::protobuf::int32 LogEntry::size() const {
+  // @@protoc_insertion_point(field_get:kvstore.LogEntry.size)
+  return size_;
+}
+inline void LogEntry::set_size(::google::protobuf::int32 value) {
+  
+  size_ = value;
+  // @@protoc_insertion_point(field_set:kvstore.LogEntry.size)
+}
+
+// -------------------------------------------------------------------
+
+// LogReplayRequest
+
+// repeated .kvstore.LogEntry entry = 1;
+inline int LogReplayRequest::entry_size() const {
+  return entry_.size();
+}
+inline void LogReplayRequest::clear_entry() {
+  entry_.Clear();
+}
+inline ::kvstore::LogEntry* LogReplayRequest::mutable_entry(int index) {
+  // @@protoc_insertion_point(field_mutable:kvstore.LogReplayRequest.entry)
+  return entry_.Mutable(index);
+}
+inline ::google::protobuf::RepeatedPtrField< ::kvstore::LogEntry >*
+LogReplayRequest::mutable_entry() {
+  // @@protoc_insertion_point(field_mutable_list:kvstore.LogReplayRequest.entry)
+  return &entry_;
+}
+inline const ::kvstore::LogEntry& LogReplayRequest::entry(int index) const {
+  // @@protoc_insertion_point(field_get:kvstore.LogReplayRequest.entry)
+  return entry_.Get(index);
+}
+inline ::kvstore::LogEntry* LogReplayRequest::add_entry() {
+  // @@protoc_insertion_point(field_add:kvstore.LogReplayRequest.entry)
+  return entry_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::kvstore::LogEntry >&
+LogReplayRequest::entry() const {
+  // @@protoc_insertion_point(field_list:kvstore.LogReplayRequest.entry)
+  return entry_;
+}
+
+// -------------------------------------------------------------------
+
+// LogReplayReply
+
+// int32 numreplay = 1;
+inline void LogReplayReply::clear_numreplay() {
+  numreplay_ = 0;
+}
+inline ::google::protobuf::int32 LogReplayReply::numreplay() const {
+  // @@protoc_insertion_point(field_get:kvstore.LogReplayReply.numreplay)
+  return numreplay_;
+}
+inline void LogReplayReply::set_numreplay(::google::protobuf::int32 value) {
+  
+  numreplay_ = value;
+  // @@protoc_insertion_point(field_set:kvstore.LogReplayReply.numreplay)
+}
+
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

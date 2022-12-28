@@ -318,7 +318,7 @@ void Logger::flushBuffer(uint64_t thd_id) {
 Logger::Logger() // uint32_t logger_id
 	// : _logger_id (logger_id)
 {
-	
+	batch_num = 0;
 }
 
 
@@ -400,6 +400,21 @@ Logger::logTxn(char * log_entry, uint32_t size, uint64_t epoch, bool sync, uint6
 	} else {
 		memcpy(_buffer + lsn % _log_buffer_size, log_entry, size);
 	}
+    
+    // TODOzzh: generate log batch
+    // kvstore::LogEntry * entry = request.add_entry();
+    // entry->set_data(std::string(log_entry, size));
+    // entry->set_size(size);
+    // batch_num ++;
+    // if (batch_num >= 1000) {
+    //     // send batch
+    //     remotestorage->send_log(request);
+        
+    //     request.Clear();
+    //     assert(request.entry_size() == 0);
+    //     batch_num = 0;
+    // }
+
 	COMPILER_BARRIER
 	// INC_INT_STATS(time_insideSLT1, get_sys_clock() - starttime);
 

@@ -70,6 +70,7 @@ Greeter::Service::~Service() {
 static const char* PageLoader_method_names[] = {
   "/kvstore.PageLoader/GetPage",
   "/kvstore.PageLoader/ShutdownServer",
+  "/kvstore.PageLoader/LogReplay",
 };
 
 std::unique_ptr< PageLoader::Stub> PageLoader::NewStub(const std::shared_ptr< ::grpc::ChannelInterface>& channel, const ::grpc::StubOptions& options) {
@@ -81,6 +82,7 @@ std::unique_ptr< PageLoader::Stub> PageLoader::NewStub(const std::shared_ptr< ::
 PageLoader::Stub::Stub(const std::shared_ptr< ::grpc::ChannelInterface>& channel)
   : channel_(channel), rpcmethod_GetPage_(PageLoader_method_names[0], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
   , rpcmethod_ShutdownServer_(PageLoader_method_names[1], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_LogReplay_(PageLoader_method_names[2], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
   {}
 
 ::grpc::Status PageLoader::Stub::GetPage(::grpc::ClientContext* context, const ::kvstore::GetPageRequest& request, ::kvstore::GetPageReply* response) {
@@ -115,6 +117,22 @@ void PageLoader::Stub::experimental_async::ShutdownServer(::grpc::ClientContext*
   return ::grpc::internal::ClientAsyncResponseReaderFactory< ::kvstore::ShutdownReply>::Create(channel_.get(), cq, rpcmethod_ShutdownServer_, context, request, false);
 }
 
+::grpc::Status PageLoader::Stub::LogReplay(::grpc::ClientContext* context, const ::kvstore::LogReplayRequest& request, ::kvstore::LogReplayReply* response) {
+  return ::grpc::internal::BlockingUnaryCall(channel_.get(), rpcmethod_LogReplay_, context, request, response);
+}
+
+void PageLoader::Stub::experimental_async::LogReplay(::grpc::ClientContext* context, const ::kvstore::LogReplayRequest* request, ::kvstore::LogReplayReply* response, std::function<void(::grpc::Status)> f) {
+  return ::grpc::internal::CallbackUnaryCall(stub_->channel_.get(), stub_->rpcmethod_LogReplay_, context, request, response, std::move(f));
+}
+
+::grpc::ClientAsyncResponseReader< ::kvstore::LogReplayReply>* PageLoader::Stub::AsyncLogReplayRaw(::grpc::ClientContext* context, const ::kvstore::LogReplayRequest& request, ::grpc::CompletionQueue* cq) {
+  return ::grpc::internal::ClientAsyncResponseReaderFactory< ::kvstore::LogReplayReply>::Create(channel_.get(), cq, rpcmethod_LogReplay_, context, request, true);
+}
+
+::grpc::ClientAsyncResponseReader< ::kvstore::LogReplayReply>* PageLoader::Stub::PrepareAsyncLogReplayRaw(::grpc::ClientContext* context, const ::kvstore::LogReplayRequest& request, ::grpc::CompletionQueue* cq) {
+  return ::grpc::internal::ClientAsyncResponseReaderFactory< ::kvstore::LogReplayReply>::Create(channel_.get(), cq, rpcmethod_LogReplay_, context, request, false);
+}
+
 PageLoader::Service::Service() {
   AddMethod(new ::grpc::internal::RpcServiceMethod(
       PageLoader_method_names[0],
@@ -126,6 +144,11 @@ PageLoader::Service::Service() {
       ::grpc::internal::RpcMethod::NORMAL_RPC,
       new ::grpc::internal::RpcMethodHandler< PageLoader::Service, ::kvstore::ShutdownRequest, ::kvstore::ShutdownReply>(
           std::mem_fn(&PageLoader::Service::ShutdownServer), this)));
+  AddMethod(new ::grpc::internal::RpcServiceMethod(
+      PageLoader_method_names[2],
+      ::grpc::internal::RpcMethod::NORMAL_RPC,
+      new ::grpc::internal::RpcMethodHandler< PageLoader::Service, ::kvstore::LogReplayRequest, ::kvstore::LogReplayReply>(
+          std::mem_fn(&PageLoader::Service::LogReplay), this)));
 }
 
 PageLoader::Service::~Service() {
@@ -139,6 +162,13 @@ PageLoader::Service::~Service() {
 }
 
 ::grpc::Status PageLoader::Service::ShutdownServer(::grpc::ServerContext* context, const ::kvstore::ShutdownRequest* request, ::kvstore::ShutdownReply* response) {
+  (void) context;
+  (void) request;
+  (void) response;
+  return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+}
+
+::grpc::Status PageLoader::Service::LogReplay(::grpc::ServerContext* context, const ::kvstore::LogReplayRequest* request, ::kvstore::LogReplayReply* response) {
   (void) context;
   (void) request;
   (void) response;

@@ -14,7 +14,7 @@
 #include "re_ycsb_txn.h"
 #include "kvengine.h"
 
-void re_ycsb_txn_man::init(thread_t * h_thd, workload * h_wl, uint64_t thd_id) {
+void re_ycsb_txn_man::init(RPCThread * h_thd, workload * h_wl, uint64_t thd_id) {
 	re_txn_man::init(h_thd, h_wl, thd_id);
 	_wl = (ycsb_wl *) h_wl;
 }

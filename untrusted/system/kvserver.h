@@ -5,8 +5,11 @@
 #include <memory>
 #include <string>
 
+#include "rpc_thread.h"
+
 #include <grpcpp/grpcpp.h>
 // #include "storage.grpc.pb.h"
+class RPCThread;
 
 class kvserver {
 public:
@@ -14,8 +17,9 @@ public:
     ~kvserver() {
         server_->Shutdown();
     }
-    void RunServer();
+    void RunServer(RPCThread * thread);
     std::unique_ptr<grpc::Server> server_;
+    // RPCThread * thread_;
 };
 
 #endif
