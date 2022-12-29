@@ -48,7 +48,8 @@ private:
     uint64_t log_buf_cnt;
 
 	uint64_t batch_num;
-	kvstore::LogReplayRequest request;
+	kvstore::LogReplayRequest * request;
+	// std::shared_ptr<kvstore::LogReplayRequest> request;
 
     #if USE_AZURE == 1
     const char* connectionString;

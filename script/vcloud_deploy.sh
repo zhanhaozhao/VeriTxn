@@ -20,7 +20,7 @@ for HOSTNAME in ${HOSTS}; do
         echo "${HOSTNAME}: Store ${count}"
         ssh -n -o BatchMode=yes -o StrictHostKeyChecking=no -p 5000 -l ${USERNAME} ${USERNAME}@${HOSTNAME} "${SCRIPT}" &
         echo $SCRIPT
-        
+        sleep 10
         SCRIPT="cd ${PATHE}; ./App -nid${count} > ${PATHE}dbresults${count}.out 2>&1"
         echo "${HOSTNAME}: App r/w ${count}"
         ssh -n -o BatchMode=yes -o StrictHostKeyChecking=no -p 5000 -l ${USERNAME} ${USERNAME}@${HOSTNAME} "${SCRIPT}" &

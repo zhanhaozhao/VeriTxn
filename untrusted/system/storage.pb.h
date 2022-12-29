@@ -972,7 +972,7 @@ class LogEntry : public ::google::protobuf::Message /* @@protoc_insertion_point(
 
   // accessors -------------------------------------------------------
 
-  // string data = 1;
+  // bytes data = 1;
   void clear_data();
   static const int kDataFieldNumber = 1;
   const ::std::string& data() const;
@@ -981,7 +981,7 @@ class LogEntry : public ::google::protobuf::Message /* @@protoc_insertion_point(
   void set_data(::std::string&& value);
   #endif
   void set_data(const char* value);
-  void set_data(const char* value, size_t size);
+  void set_data(const void* value, size_t size);
   ::std::string* mutable_data();
   ::std::string* release_data();
   void set_allocated_data(::std::string* data);
@@ -1653,7 +1653,7 @@ inline void ShutdownReply::set_allocated_signalret(::std::string* signalret) {
 
 // LogEntry
 
-// string data = 1;
+// bytes data = 1;
 inline void LogEntry::clear_data() {
   data_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -1680,7 +1680,7 @@ inline void LogEntry::set_data(const char* value) {
   data_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
   // @@protoc_insertion_point(field_set_char:kvstore.LogEntry.data)
 }
-inline void LogEntry::set_data(const char* value, size_t size) {
+inline void LogEntry::set_data(const void* value, size_t size) {
   
   data_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));

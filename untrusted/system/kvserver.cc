@@ -105,7 +105,11 @@ public:
             COMPILER_BARRIER
 
         }
+        reply->set_numreplay(size);
+        return Status::OK;
     }
+
+public:
     RPCThread * thread_;
 };
 

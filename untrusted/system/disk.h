@@ -111,8 +111,7 @@ class PageLoaderClient {
 
     // Act upon its status.
     if (status.ok()) {
-
-      std::cout << "replay num:" << reply.numreplay() << std::endl;
+      // std::cout << "replay num:" << reply.numreplay() << std::endl;
       return "Log replay success";
     } else {
       std::cout << status.error_code() << ": " << status.error_message()
