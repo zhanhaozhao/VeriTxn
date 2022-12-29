@@ -82,38 +82,38 @@ RC thread_t::run() {
 	UInt64 txn_cnt = 0;
 
 	if (g_log_recover) {
-		// thread_t * h_thd = (thread_t *) thd;
-		RC rc = RCOK;
-		re_txn_man * m_txn;
-		uint64_t thd_id = this->get_thd_id();
+		// // thread_t * h_thd = (thread_t *) thd;
+		// RC rc = RCOK;
+		// re_txn_man * m_txn;
+		// uint64_t thd_id = this->get_thd_id();
 
-		assert (glob_manager);
-		switch (WORKLOAD) {
-		case YCSB :
-			// m_txn = (ycsb_txn_man *) aligned_alloc(64, sizeof(ycsb_txn_man));
-			m_txn = (re_ycsb_txn_man *) malloc(sizeof(re_ycsb_txn_man));
-			new(m_txn) re_ycsb_txn_man();
-			break;
-		// case TPCC :
-		// 	// m_txn = (tpcc_txn_man *) aligned_alloc(64, sizeof(tpcc_txn_man));
-		// 	m_txn = (re_tpcc_txn_man *) malloc(sizeof(re_tpcc_txn_man));
-		// 	new(m_txn) re_tpcc_re_txn_man();
+		// assert (glob_manager);
+		// switch (WORKLOAD) {
+		// case YCSB :
+		// 	// m_txn = (ycsb_txn_man *) aligned_alloc(64, sizeof(ycsb_txn_man));
+		// 	m_txn = (re_ycsb_txn_man *) malloc(sizeof(re_ycsb_txn_man));
+		// 	new(m_txn) re_ycsb_txn_man();
 		// 	break;
-		default:
-			assert(false);
-		}
+		// // case TPCC :
+		// // 	// m_txn = (tpcc_txn_man *) aligned_alloc(64, sizeof(tpcc_txn_man));
+		// // 	m_txn = (re_tpcc_txn_man *) malloc(sizeof(re_tpcc_txn_man));
+		// // 	new(m_txn) re_tpcc_re_txn_man();
+		// // 	break;
+		// default:
+		// 	assert(false);
+		// }
 
-		// m_txn->init(this, this->_wl, this->get_thd_id());
-		glob_manager->set_txn_man(m_txn);
-		assert (m_txn);
+		// // m_txn->init(this, this->_wl, this->get_thd_id());
+		// glob_manager->set_txn_man(m_txn);
+		// assert (m_txn);
 
-		m_txn->set_txn_id(thd_id + glob_manager->get_thd_txn_id(thd_id) * g_thread_cnt);
-		glob_manager->set_thd_txn_id(thd_id);
+		// m_txn->set_txn_id(thd_id + glob_manager->get_thd_txn_id(thd_id) * g_thread_cnt);
+		// glob_manager->set_thd_txn_id(thd_id);
 
-		//if (get_thd_id() == 0)
-		COMPILER_BARRIER
-		m_txn->recover();
-		COMPILER_BARRIER
+		// //if (get_thd_id() == 0)
+		// COMPILER_BARRIER
+		// m_txn->recover();
+		// COMPILER_BARRIER
 		// INC_FLOAT_STATS_V0(run_time, get_sys_clock() - starttime);
 		return FINISH;
 

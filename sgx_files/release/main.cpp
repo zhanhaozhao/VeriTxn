@@ -86,6 +86,7 @@ int main(int argc, char* argv[])
 	std::string dir = "./logs/";
 
     if (!g_log_recover) {
+        logger = new Logger();
 #if LOG_TYPE == LOG_DATA
 		logger->init(dir + "/SD_log" + std::to_string(0) + "_" + bench + "_S.data");
 #else
