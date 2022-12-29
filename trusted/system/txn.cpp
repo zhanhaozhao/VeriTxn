@@ -409,38 +409,38 @@ void txn_man::create_log_entry() {
 #if LOG_TYPE == LOG_DATA
 
 	// Format for serial logging
-	// | checksum:4 | size:4 | N:4 | (part_id:8 | pgid:8 | offset:8 | table_id:4 | primary_key:8 | data_length:4 | data:?) * N
+	// | checksum:4 | size:4 | N:4 | (part_id:8 | pgid:8 | offset:8 | primary_key:8 | data_length:4 | data:?) * N
 
 	uint32_t offset = 0;
 	uint32_t checksum = 0xbeef;  // we also use this to distinguish PSN items and log items
-
 	PACK(_log_entry, checksum, offset);
-
 	offset += sizeof(uint32_t); // make space for size;
+  	PACK(_log_entry, row_cnt, offset);
+	// std::cout << "num_keys:" << row_cnt << std::endl;
 
-  PACK(_log_entry, row_cnt, offset);
-
-  for (uint32_t i = 0; i < row_cnt; i ++) {
-    Access * access = accesses[i];
-    if (access->type != WR) continue;
+  	for (uint32_t i = 0; i < row_cnt; i ++) {
+    	Access * access = accesses[i];
+    	if (access->type != WR) continue;
 		// row_t * orig_row = accesses[write_set[i]]->orig_row; 
 		// uint32_t table_id = access->orig_row->get_table()->get_table_id();
-    uint32_t table_id = 0;
+    	// uint32_t table_id = 0;
 		uint64_t key = access->orig_row->get_primary_key();
 		uint32_t tuple_size = access->orig_row->get_tuple_size();
 		char * tuple_data = access->orig_row->data;
 		//assert(tuple_size!=0);
 
+		uint64_t part_id = (uint64_t) (((PAGE_ENC*)access->orig_row->from_page)->part);
+
 #if INDEX_STRUCT == IDX_HASH
-        PACK(_log_entry, ((PAGE_ENC*)access->orig_row->from_page)->part, offset);        // part.
+        PACK(_log_entry, part_id, offset);        // part.
         PACK(_log_entry, ((PAGE_ENC*)access->orig_row->from_page)->bkt, offset);        // page id.
         PACK(_log_entry, access->orig_row->offset, offset); // invalid data.
 #else
-        PACK(_log_entry, ((PAGE_ENC*)access->orig_row->from_page)->part, offset);        // part.
+        PACK(_log_entry, part_id, offset);        // part.
         PACK(_log_entry, ((PAGE_ENC*)access->orig_row->from_page)->node_id, offset);        // page id.
         PACK(_log_entry, access->orig_row->offset, offset); // the offset of the item_t in data.
 #endif
-		PACK(_log_entry, table_id, offset);
+		// PACK(_log_entry, table_id, offset);
 		PACK(_log_entry, key, offset);
 		PACK(_log_entry, tuple_size, offset);
 		PACK_SIZE(_log_entry, tuple_data, tuple_size, offset);

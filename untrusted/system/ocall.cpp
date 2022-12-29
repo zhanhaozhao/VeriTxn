@@ -45,7 +45,7 @@ void async_hash(std::string index_name, int part_id, uint64_t bkt_idx, uint64_t 
 void send_logs(std::string logs, int size, uint64_t thd_id) {
 	// logger.buf_to_log(logs);
 
-	logger.serialLogTxn(logs, size, thd_id);
+	logger->serialLogTxn(logs, size, thd_id);
 
 	// 	LogRecord* clog = NULL;
 	// 	clog = (LogRecord*)logs[i];
@@ -56,7 +56,7 @@ void send_logs(std::string logs, int size, uint64_t thd_id) {
 void untrust_send_logs(std::string logs, uint64_t thd_id) {
 	// logger.buf_to_log(logs);
 
-	logger.serialLogTxn(logs, logs.size(), thd_id);
+	logger->serialLogTxn(logs, logs.size(), thd_id);
 
 	// 	LogRecord* clog = NULL;
 	// 	clog = (LogRecord*)logs[i];

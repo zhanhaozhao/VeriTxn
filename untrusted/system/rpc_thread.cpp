@@ -16,7 +16,6 @@
 
 #include "global.h"
 #include "helper.h"
-#include "thread.h"
 #include "rpc_thread.h"
 #include "wl.h"
 
@@ -28,7 +27,7 @@ RC RPCThread::run() {
   // pthread_barrier_wait(&log_bar);
   if (g_log_recover) {
     server = new kvserver();
-		server->RunServer();
+		server->RunServer(this);
   }
 
   return FINISH;

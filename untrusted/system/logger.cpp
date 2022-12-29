@@ -104,7 +104,7 @@ void Logger::init(std::string log_file_name) {
     //     log_file.open(log_file_name, std::ios::out | std::ios::app | std::ios::binary);
     //     assert(log_file.is_open());
     // #endif
-    // pthread_mutex_init(&mtx,NULL);
+    pthread_mutex_init(&mtx,NULL);
 
     _log_buffer_size = g_log_buffer_size;
 	
@@ -318,7 +318,8 @@ void Logger::flushBuffer(uint64_t thd_id) {
 Logger::Logger() // uint32_t logger_id
 	// : _logger_id (logger_id)
 {
-	
+	batch_num = 0;
+    request = new kvstore::LogReplayRequest();
 }
 
 
@@ -400,6 +401,24 @@ Logger::logTxn(char * log_entry, uint32_t size, uint64_t epoch, bool sync, uint6
 	} else {
 		memcpy(_buffer + lsn % _log_buffer_size, log_entry, size);
 	}
+    
+    // TODOzzh: generate log batch
+    pthread_mutex_lock(&mtx);
+    kvstore::LogEntry * entry = request->add_entry();
+    entry->set_data(std::string(log_entry, size));
+    entry->set_size(size);
+    batch_num ++;
+    if (batch_num >= 100) {
+        // send batch
+        remotestorage->send_log(*request);
+        // request.Clear();
+        delete request;
+        request = new kvstore::LogReplayRequest();
+        batch_num = 0;
+        assert(request->entry_size() == 0);
+    }
+    pthread_mutex_unlock(&mtx);
+
 	COMPILER_BARRIER
 	// INC_INT_STATS(time_insideSLT1, get_sys_clock() - starttime);
 

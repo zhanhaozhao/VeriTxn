@@ -20,7 +20,7 @@
 // Query_queue * query_queue;
 Transport tport_man;
 MessageQueue msg_queue;
-Logger logger;
+Logger * logger;
 SimManager * simulation;
 #if USE_SGX != 1
 kvengine * eng;

@@ -7,7 +7,7 @@ protoc --cpp_out=. --grpc_out=. --plugin=protoc-gen-grpc=`which grpc_cpp_plugin`
 cd ../../common/
 pwd
 sed -i '119c #define LOG_RECOVER                 true' config.h
-sed -i '246c #define USE_SGX 0' config.h
+sed -i '247c #define USE_SGX 0' config.h
 
 cd ../
 pwd
@@ -19,4 +19,4 @@ make no-sgx
 cd common/
 pwd
 sed -i '119c #define LOG_RECOVER                 false' config.h
-sed -i '246c #define USE_SGX 0' config.h
+sed -i '247c #define USE_SGX 0' config.h

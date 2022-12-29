@@ -251,12 +251,20 @@ class PageLoader final {
     std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::kvstore::ShutdownReply>> PrepareAsyncShutdownServer(::grpc::ClientContext* context, const ::kvstore::ShutdownRequest& request, ::grpc::CompletionQueue* cq) {
       return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::kvstore::ShutdownReply>>(PrepareAsyncShutdownServerRaw(context, request, cq));
     }
+    virtual ::grpc::Status LogReplay(::grpc::ClientContext* context, const ::kvstore::LogReplayRequest& request, ::kvstore::LogReplayReply* response) = 0;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::kvstore::LogReplayReply>> AsyncLogReplay(::grpc::ClientContext* context, const ::kvstore::LogReplayRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::kvstore::LogReplayReply>>(AsyncLogReplayRaw(context, request, cq));
+    }
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::kvstore::LogReplayReply>> PrepareAsyncLogReplay(::grpc::ClientContext* context, const ::kvstore::LogReplayRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::kvstore::LogReplayReply>>(PrepareAsyncLogReplayRaw(context, request, cq));
+    }
     class experimental_async_interface {
      public:
       virtual ~experimental_async_interface() {}
       // Sends a greeting
       virtual void GetPage(::grpc::ClientContext* context, const ::kvstore::GetPageRequest* request, ::kvstore::GetPageReply* response, std::function<void(::grpc::Status)>) = 0;
       virtual void ShutdownServer(::grpc::ClientContext* context, const ::kvstore::ShutdownRequest* request, ::kvstore::ShutdownReply* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void LogReplay(::grpc::ClientContext* context, const ::kvstore::LogReplayRequest* request, ::kvstore::LogReplayReply* response, std::function<void(::grpc::Status)>) = 0;
     };
     virtual class experimental_async_interface* experimental_async() { return nullptr; }
   private:
@@ -264,6 +272,8 @@ class PageLoader final {
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::kvstore::GetPageReply>* PrepareAsyncGetPageRaw(::grpc::ClientContext* context, const ::kvstore::GetPageRequest& request, ::grpc::CompletionQueue* cq) = 0;
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::kvstore::ShutdownReply>* AsyncShutdownServerRaw(::grpc::ClientContext* context, const ::kvstore::ShutdownRequest& request, ::grpc::CompletionQueue* cq) = 0;
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::kvstore::ShutdownReply>* PrepareAsyncShutdownServerRaw(::grpc::ClientContext* context, const ::kvstore::ShutdownRequest& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::kvstore::LogReplayReply>* AsyncLogReplayRaw(::grpc::ClientContext* context, const ::kvstore::LogReplayRequest& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::kvstore::LogReplayReply>* PrepareAsyncLogReplayRaw(::grpc::ClientContext* context, const ::kvstore::LogReplayRequest& request, ::grpc::CompletionQueue* cq) = 0;
   };
   class Stub final : public StubInterface {
    public:
@@ -282,11 +292,19 @@ class PageLoader final {
     std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::kvstore::ShutdownReply>> PrepareAsyncShutdownServer(::grpc::ClientContext* context, const ::kvstore::ShutdownRequest& request, ::grpc::CompletionQueue* cq) {
       return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::kvstore::ShutdownReply>>(PrepareAsyncShutdownServerRaw(context, request, cq));
     }
+    ::grpc::Status LogReplay(::grpc::ClientContext* context, const ::kvstore::LogReplayRequest& request, ::kvstore::LogReplayReply* response) override;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::kvstore::LogReplayReply>> AsyncLogReplay(::grpc::ClientContext* context, const ::kvstore::LogReplayRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::kvstore::LogReplayReply>>(AsyncLogReplayRaw(context, request, cq));
+    }
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::kvstore::LogReplayReply>> PrepareAsyncLogReplay(::grpc::ClientContext* context, const ::kvstore::LogReplayRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::kvstore::LogReplayReply>>(PrepareAsyncLogReplayRaw(context, request, cq));
+    }
     class experimental_async final :
       public StubInterface::experimental_async_interface {
      public:
       void GetPage(::grpc::ClientContext* context, const ::kvstore::GetPageRequest* request, ::kvstore::GetPageReply* response, std::function<void(::grpc::Status)>) override;
       void ShutdownServer(::grpc::ClientContext* context, const ::kvstore::ShutdownRequest* request, ::kvstore::ShutdownReply* response, std::function<void(::grpc::Status)>) override;
+      void LogReplay(::grpc::ClientContext* context, const ::kvstore::LogReplayRequest* request, ::kvstore::LogReplayReply* response, std::function<void(::grpc::Status)>) override;
      private:
       friend class Stub;
       explicit experimental_async(Stub* stub): stub_(stub) { }
@@ -302,8 +320,11 @@ class PageLoader final {
     ::grpc::ClientAsyncResponseReader< ::kvstore::GetPageReply>* PrepareAsyncGetPageRaw(::grpc::ClientContext* context, const ::kvstore::GetPageRequest& request, ::grpc::CompletionQueue* cq) override;
     ::grpc::ClientAsyncResponseReader< ::kvstore::ShutdownReply>* AsyncShutdownServerRaw(::grpc::ClientContext* context, const ::kvstore::ShutdownRequest& request, ::grpc::CompletionQueue* cq) override;
     ::grpc::ClientAsyncResponseReader< ::kvstore::ShutdownReply>* PrepareAsyncShutdownServerRaw(::grpc::ClientContext* context, const ::kvstore::ShutdownRequest& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::kvstore::LogReplayReply>* AsyncLogReplayRaw(::grpc::ClientContext* context, const ::kvstore::LogReplayRequest& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::kvstore::LogReplayReply>* PrepareAsyncLogReplayRaw(::grpc::ClientContext* context, const ::kvstore::LogReplayRequest& request, ::grpc::CompletionQueue* cq) override;
     const ::grpc::internal::RpcMethod rpcmethod_GetPage_;
     const ::grpc::internal::RpcMethod rpcmethod_ShutdownServer_;
+    const ::grpc::internal::RpcMethod rpcmethod_LogReplay_;
   };
   static std::unique_ptr<Stub> NewStub(const std::shared_ptr< ::grpc::ChannelInterface>& channel, const ::grpc::StubOptions& options = ::grpc::StubOptions());
 
@@ -314,6 +335,7 @@ class PageLoader final {
     // Sends a greeting
     virtual ::grpc::Status GetPage(::grpc::ServerContext* context, const ::kvstore::GetPageRequest* request, ::kvstore::GetPageReply* response);
     virtual ::grpc::Status ShutdownServer(::grpc::ServerContext* context, const ::kvstore::ShutdownRequest* request, ::kvstore::ShutdownReply* response);
+    virtual ::grpc::Status LogReplay(::grpc::ServerContext* context, const ::kvstore::LogReplayRequest* request, ::kvstore::LogReplayReply* response);
   };
   template <class BaseClass>
   class WithAsyncMethod_GetPage : public BaseClass {
@@ -355,7 +377,27 @@ class PageLoader final {
       ::grpc::Service::RequestAsyncUnary(1, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
-  typedef WithAsyncMethod_GetPage<WithAsyncMethod_ShutdownServer<Service > > AsyncService;
+  template <class BaseClass>
+  class WithAsyncMethod_LogReplay : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service *service) {}
+   public:
+    WithAsyncMethod_LogReplay() {
+      ::grpc::Service::MarkMethodAsync(2);
+    }
+    ~WithAsyncMethod_LogReplay() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status LogReplay(::grpc::ServerContext* context, const ::kvstore::LogReplayRequest* request, ::kvstore::LogReplayReply* response) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    void RequestLogReplay(::grpc::ServerContext* context, ::kvstore::LogReplayRequest* request, ::grpc::ServerAsyncResponseWriter< ::kvstore::LogReplayReply>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+      ::grpc::Service::RequestAsyncUnary(2, context, request, response, new_call_cq, notification_cq, tag);
+    }
+  };
+  typedef WithAsyncMethod_GetPage<WithAsyncMethod_ShutdownServer<WithAsyncMethod_LogReplay<Service > > > AsyncService;
   template <class BaseClass>
   class ExperimentalWithCallbackMethod_GetPage : public BaseClass {
    private:
@@ -406,7 +448,32 @@ class PageLoader final {
     }
     virtual void ShutdownServer(::grpc::ServerContext* context, const ::kvstore::ShutdownRequest* request, ::kvstore::ShutdownReply* response, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
   };
-  typedef ExperimentalWithCallbackMethod_GetPage<ExperimentalWithCallbackMethod_ShutdownServer<Service > > ExperimentalCallbackService;
+  template <class BaseClass>
+  class ExperimentalWithCallbackMethod_LogReplay : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service *service) {}
+   public:
+    ExperimentalWithCallbackMethod_LogReplay() {
+      ::grpc::Service::experimental().MarkMethodCallback(2,
+        new ::grpc::internal::CallbackUnaryHandler< ExperimentalWithCallbackMethod_LogReplay<BaseClass>, ::kvstore::LogReplayRequest, ::kvstore::LogReplayReply>(
+          [this](::grpc::ServerContext* context,
+                 const ::kvstore::LogReplayRequest* request,
+                 ::kvstore::LogReplayReply* response,
+                 ::grpc::experimental::ServerCallbackRpcController* controller) {
+                   this->LogReplay(context, request, response, controller);
+                 }, this));
+    }
+    ~ExperimentalWithCallbackMethod_LogReplay() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status LogReplay(::grpc::ServerContext* context, const ::kvstore::LogReplayRequest* request, ::kvstore::LogReplayReply* response) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    virtual void LogReplay(::grpc::ServerContext* context, const ::kvstore::LogReplayRequest* request, ::kvstore::LogReplayReply* response, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
+  };
+  typedef ExperimentalWithCallbackMethod_GetPage<ExperimentalWithCallbackMethod_ShutdownServer<ExperimentalWithCallbackMethod_LogReplay<Service > > > ExperimentalCallbackService;
   template <class BaseClass>
   class WithGenericMethod_GetPage : public BaseClass {
    private:
@@ -437,6 +504,23 @@ class PageLoader final {
     }
     // disable synchronous version of this method
     ::grpc::Status ShutdownServer(::grpc::ServerContext* context, const ::kvstore::ShutdownRequest* request, ::kvstore::ShutdownReply* response) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+  };
+  template <class BaseClass>
+  class WithGenericMethod_LogReplay : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service *service) {}
+   public:
+    WithGenericMethod_LogReplay() {
+      ::grpc::Service::MarkMethodGeneric(2);
+    }
+    ~WithGenericMethod_LogReplay() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status LogReplay(::grpc::ServerContext* context, const ::kvstore::LogReplayRequest* request, ::kvstore::LogReplayReply* response) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -479,6 +563,26 @@ class PageLoader final {
     }
     void RequestShutdownServer(::grpc::ServerContext* context, ::grpc::ByteBuffer* request, ::grpc::ServerAsyncResponseWriter< ::grpc::ByteBuffer>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
       ::grpc::Service::RequestAsyncUnary(1, context, request, response, new_call_cq, notification_cq, tag);
+    }
+  };
+  template <class BaseClass>
+  class WithRawMethod_LogReplay : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service *service) {}
+   public:
+    WithRawMethod_LogReplay() {
+      ::grpc::Service::MarkMethodRaw(2);
+    }
+    ~WithRawMethod_LogReplay() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status LogReplay(::grpc::ServerContext* context, const ::kvstore::LogReplayRequest* request, ::kvstore::LogReplayReply* response) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    void RequestLogReplay(::grpc::ServerContext* context, ::grpc::ByteBuffer* request, ::grpc::ServerAsyncResponseWriter< ::grpc::ByteBuffer>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+      ::grpc::Service::RequestAsyncUnary(2, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
@@ -532,6 +636,31 @@ class PageLoader final {
     virtual void ShutdownServer(::grpc::ServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
   };
   template <class BaseClass>
+  class ExperimentalWithRawCallbackMethod_LogReplay : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service *service) {}
+   public:
+    ExperimentalWithRawCallbackMethod_LogReplay() {
+      ::grpc::Service::experimental().MarkMethodRawCallback(2,
+        new ::grpc::internal::CallbackUnaryHandler< ExperimentalWithRawCallbackMethod_LogReplay<BaseClass>, ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
+          [this](::grpc::ServerContext* context,
+                 const ::grpc::ByteBuffer* request,
+                 ::grpc::ByteBuffer* response,
+                 ::grpc::experimental::ServerCallbackRpcController* controller) {
+                   this->LogReplay(context, request, response, controller);
+                 }, this));
+    }
+    ~ExperimentalWithRawCallbackMethod_LogReplay() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status LogReplay(::grpc::ServerContext* context, const ::kvstore::LogReplayRequest* request, ::kvstore::LogReplayReply* response) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    virtual void LogReplay(::grpc::ServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
+  };
+  template <class BaseClass>
   class WithStreamedUnaryMethod_GetPage : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service *service) {}
@@ -571,9 +700,29 @@ class PageLoader final {
     // replace default version of method with streamed unary
     virtual ::grpc::Status StreamedShutdownServer(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::kvstore::ShutdownRequest,::kvstore::ShutdownReply>* server_unary_streamer) = 0;
   };
-  typedef WithStreamedUnaryMethod_GetPage<WithStreamedUnaryMethod_ShutdownServer<Service > > StreamedUnaryService;
+  template <class BaseClass>
+  class WithStreamedUnaryMethod_LogReplay : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service *service) {}
+   public:
+    WithStreamedUnaryMethod_LogReplay() {
+      ::grpc::Service::MarkMethodStreamed(2,
+        new ::grpc::internal::StreamedUnaryHandler< ::kvstore::LogReplayRequest, ::kvstore::LogReplayReply>(std::bind(&WithStreamedUnaryMethod_LogReplay<BaseClass>::StreamedLogReplay, this, std::placeholders::_1, std::placeholders::_2)));
+    }
+    ~WithStreamedUnaryMethod_LogReplay() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable regular version of this method
+    ::grpc::Status LogReplay(::grpc::ServerContext* context, const ::kvstore::LogReplayRequest* request, ::kvstore::LogReplayReply* response) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    // replace default version of method with streamed unary
+    virtual ::grpc::Status StreamedLogReplay(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::kvstore::LogReplayRequest,::kvstore::LogReplayReply>* server_unary_streamer) = 0;
+  };
+  typedef WithStreamedUnaryMethod_GetPage<WithStreamedUnaryMethod_ShutdownServer<WithStreamedUnaryMethod_LogReplay<Service > > > StreamedUnaryService;
   typedef Service SplitStreamedService;
-  typedef WithStreamedUnaryMethod_GetPage<WithStreamedUnaryMethod_ShutdownServer<Service > > StreamedService;
+  typedef WithStreamedUnaryMethod_GetPage<WithStreamedUnaryMethod_ShutdownServer<WithStreamedUnaryMethod_LogReplay<Service > > > StreamedService;
 };
 
 }  // namespace kvstore

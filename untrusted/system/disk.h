@@ -97,6 +97,29 @@ class PageLoaderClient {
     }
   }
 
+  std::string SendLogBatch(kvstore::LogReplayRequest &request) {
+    // Data we are sending to the server.
+
+    // Container for the data we expect from the server.
+    kvstore::LogReplayReply reply;
+    // Context for the client. It could be used to convey extra information to
+    // the server and/or tweak certain RPC behaviors.
+    grpc::ClientContext context;
+
+    // The actual RPC.
+    grpc::Status status = stub_->LogReplay(&context, request, &reply);
+
+    // Act upon its status.
+    if (status.ok()) {
+      // std::cout << "replay num:" << reply.numreplay() << std::endl;
+      return "Log replay success";
+    } else {
+      std::cout << status.error_code() << ": " << status.error_message()
+                << std::endl;
+      return "RPC failed";
+    }
+  }
+
 private:
   std::unique_ptr<kvstore::PageLoader::Stub> stub_;
 };
@@ -130,6 +153,12 @@ public:
       PageLoaderClient pageloader(grpc::CreateChannel(
             "localhost:50051", grpc::InsecureChannelCredentials()));
         pageloader.ShutdownServer();
+    }
+
+    void send_log(kvstore::LogReplayRequest &request) {
+      PageLoaderClient pageloader(grpc::CreateChannel(
+            "localhost:50051", grpc::InsecureChannelCredentials()));
+        pageloader.SendLogBatch(request);
     }
 };
 

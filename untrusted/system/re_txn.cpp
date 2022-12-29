@@ -21,7 +21,7 @@
 
 #include "api.h"
 
-void re_txn_man::init(thread_t * h_thd, workload * h_wl, uint64_t thd_id) {
+void re_txn_man::init(RPCThread * h_thd, workload * h_wl, uint64_t thd_id) {
 	this->h_thd = h_thd;
 	this->h_wl = h_wl;
 	pthread_mutex_init(&txn_lock, NULL);
@@ -99,16 +99,15 @@ void re_txn_man::recover() {
 	while (true) {
 		char * entry = default_entry;
 		uint64_t tt = get_sys_clock();
-		uint64_t lsn = logger.get_next_log_entry_non_atom(entry);
+		uint64_t lsn = logger->get_next_log_entry_non_atom(entry);
 		if (entry == NULL) {
-			if (logger.iseof()) {
-				lsn = logger.get_next_log_entry_non_atom(entry);
+			if (logger->iseof()) {
+				lsn = logger->get_next_log_entry_non_atom(entry);
 				if (entry == NULL) {
 					// std::cout<< "emtry null2"<<std::endl;
 					continue;
 				}
-			}
-			else { 
+			} else { 
 				PAUSE //usleep(50);
 				// INC_INT_STATS(time_wait_io, get_sys_clock() - tt);
 				continue;
@@ -126,7 +125,7 @@ void re_txn_man::recover() {
 		// printf("size=%d lsn=%ld\n", *(uint32_t*)(entry+4), lsn);
 		COMPILER_BARRIER
 		//INC_INT_STATS(time_recover_txn, get_sys_clock() - tt2);
-		logger.set_gc_lsn(lsn, get_thd_id());
+		logger->set_gc_lsn(lsn, get_thd_id());
 		INC_STATS(get_thd_id(), txn_cnt, 1);
 		count ++;
 	}

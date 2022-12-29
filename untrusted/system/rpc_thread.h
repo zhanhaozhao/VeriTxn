@@ -18,6 +18,7 @@
 #define _RPCTHREAD_H_
 
 #include "global.h"
+#include "thread.h"
 
 // class Workload;
 

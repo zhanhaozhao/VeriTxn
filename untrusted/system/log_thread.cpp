@@ -30,9 +30,9 @@ RC LogThread::run() {
   if (g_log_recover) {
     while (true)
 		{ //glob_manager->get_workload()->sim_done < g_thread_cnt) {
-			uint64_t bytes = logger.tryReadLog();
+			uint64_t bytes = logger->tryReadLog();
 			// total_log_data += bytes;
-			if (logger.iseof())
+			if (logger->iseof())
 				break;
 			if (bytes == 0)
 			{
@@ -47,7 +47,7 @@ RC LogThread::run() {
   } else {
     while (true) {
       // logger.processRecord(get_thd_id());
-      uint32_t bytes = (uint32_t)logger.tryFlush();
+      uint32_t bytes = (uint32_t)logger->tryFlush();
 
       // logger.flushBufferCheck();
       if (_wl->sim_done) {

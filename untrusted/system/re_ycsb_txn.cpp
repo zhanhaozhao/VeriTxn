@@ -14,7 +14,7 @@
 #include "re_ycsb_txn.h"
 #include "kvengine.h"
 
-void re_ycsb_txn_man::init(thread_t * h_thd, workload * h_wl, uint64_t thd_id) {
+void re_ycsb_txn_man::init(RPCThread * h_thd, workload * h_wl, uint64_t thd_id) {
 	re_txn_man::init(h_thd, h_wl, thd_id);
 	_wl = (ycsb_wl *) h_wl;
 }
@@ -93,18 +93,30 @@ re_ycsb_txn_man::recover_txn(char * log_entry, uint64_t tid)
 	uint64_t tt = get_sys_clock();
 #if LOG_TYPE == LOG_DATA
 	// Format 
-	// | N | (table_id | primary_key | data_length | data) * N
+	// | checksum:4 | size:4 | N:4 | (table_id | primary_key | data_length | data) * N
 	// predecessor_info has the following format
 	//   | num_raw_preds | raw_preds | num_waw_preds | waw_preds
 	uint32_t offset = 0;
+
+	uint32_t checksum;
+	UNPACK(log_entry, checksum, offset);
+	uint32_t entrysize;
+	UNPACK(log_entry, entrysize, offset);
 	uint32_t num_keys; 
 	UNPACK(log_entry, num_keys, offset);
+
+	// std::cout << "num_keys:" << num_keys << std::endl;
+
+#if USE_SGX != 1
+	rocksdb::WriteBatch batch;
+#endif
+
 	for (uint32_t i = 0; i < num_keys; i ++) {
-		uint32_t table_id;
+		uint64_t part_id, node_id, page_offset;
 		uint64_t key;
 		uint32_t data_length;
 		char * rockskey;
-		size_t rockskey_size = sizeof(table_id)+sizeof(key)+sizeof(data_length);
+		size_t rockskey_size = sizeof(part_id) *3 + sizeof(key);
 		char * data;
 
 		// UNPACK(log_entry, table_id, offset);
@@ -114,18 +126,27 @@ re_ycsb_txn_man::recover_txn(char * log_entry, uint64_t tid)
 		rockskey = (char *) malloc(rockskey_size);
 		UNPACK_SIZE(log_entry, rockskey, rockskey_size, offset);
 
+		// UNPACK(log_entry, data_length, offset);
 		data = log_entry + offset;
-		offset += data_length;
+		// offset += data_length;
 		
 		// Serial has log streams corresponding to the dependency order
 		// itemid_t * m_item = index_read(_wl->the_index, key, 0);
 		// base_row_t * row = ((base_row_t *)m_item->location);
 		// row->set_data(data, data_length);
-		std::cout << "key:" << key << ", data:" << data << std::endl;
+		
 #if USE_SGX != 1
-		eng->DBPut(rockskey, data);
+		batch.Put(rockskey, data);
+		// eng->DBPut(rockskey, data);
 #endif
 	}
+
+#if USE_SGX != 1
+	eng->DBWrite(&batch);
+	// std::cout << "num_keys:" << num_keys << std::endl;
+#endif
+	
+
 #elif LOG_TYPE == LOG_COMMAND
 	// Format
 	//  | stored_procedure_id | num_keys | (key, type) * num_keys

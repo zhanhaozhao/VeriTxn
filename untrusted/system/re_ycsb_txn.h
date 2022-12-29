@@ -8,7 +8,7 @@
 class re_ycsb_txn_man : public re_txn_man
 {
 public:
-	void init(thread_t * h_thd, workload * h_wl, uint64_t part_id); 
+	void init(RPCThread * h_thd, workload * h_wl, uint64_t part_id); 
 	RC run_txn(base_query * query);
 	void recover_txn(char * log_record, uint64_t tid = (uint64_t)-1); 
 private:

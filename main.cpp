@@ -85,11 +85,14 @@ int main(int argc, char* argv[])
 	}
 	std::string dir = "./logs/";
 
+    if (!g_log_recover) {
+        logger = new Logger();
 #if LOG_TYPE == LOG_DATA
-		logger.init(dir + "/SD_log" + std::to_string(0) + "_" + bench + "_S.data");
+		logger->init(dir + "/SD_log" + std::to_string(0) + "_" + bench + "_S.data");
 #else
-		logger.init(dir + "/SC_log" + std::to_string(0) + "_" + bench + "_S.data");
+		logger->init(dir + "/SC_log" + std::to_string(0) + "_" + bench + "_S.data");
 #endif
+    }
 
 	#if LOG_QUEUE_TYPE == LOG_CIRCUL_BUFF
 	log_queues = (Logqueue**) _mm_malloc(sizeof(Logqueue*), g_thread_cnt);
