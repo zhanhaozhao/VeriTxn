@@ -49,8 +49,11 @@ void index_init_ecall(int part_cnt, void * table, std::string iname, void * inde
 #else
 	index->init(part_cnt);
 	index->table = tbl;
+    assert(tbl);
 #endif
     std::string tname = std::string(tbl->get_table_name());
+    assert(tname.length() > 0);
+//    printf("init table %s\n", tname.c_str());
 	tab_map->_tables[tname] = table;
 	tab_map->_indexes[iname] = index;
 	inner_index_map->_indexes[iname] = index_ptr;

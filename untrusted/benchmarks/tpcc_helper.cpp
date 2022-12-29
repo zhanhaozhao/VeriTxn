@@ -16,13 +16,13 @@ std::vector<std::uniform_int_distribution<uint64_t> > tpccuid(g_thread_cnt, std:
 // 	return (distKey(c_d_id, c_w_id) * g_cust_per_dist + c_id);
 // }
 
-uint64_t orderlineKey(uint64_t w_id, uint64_t d_id, uint64_t o_id) {
-	return distKey(d_id, w_id) * g_cust_per_dist + o_id; 
-}
-
-uint64_t orderPrimaryKey(uint64_t w_id, uint64_t d_id, uint64_t o_id) {
-	return orderlineKey(w_id, d_id, o_id); 
-}
+//uint64_t orderlineKey(uint64_t w_id, uint64_t d_id, uint64_t o_id) {
+//	return distKey(d_id, w_id) * g_cust_per_dist + o_id;
+//}
+//
+//uint64_t orderPrimaryKey(uint64_t w_id, uint64_t d_id, uint64_t o_id) {
+//	return orderlineKey(w_id, d_id, o_id);
+//}
 
 // uint64_t custNPKey(char * c_last, uint64_t c_d_id, uint64_t c_w_id) {
 // 	uint64_t key = 0;

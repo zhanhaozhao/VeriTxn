@@ -23,6 +23,7 @@ private:
     bool
     stock_level_getStockCount(uint64_t ol_w_id, uint64_t ol_d_id, int64_t ol_o_id, uint64_t s_w_id, uint64_t threshold,
                               uint64_t *out_distinct_count);
+    RC get_new_row(std::string t_name, row_t *&row, uint64_t part_id, uint64_t &row_id);
 };
 
 #endif

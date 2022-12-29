@@ -25,12 +25,12 @@ public:
 
 	uint64_t get_table_size() { return cur_tab_size; };
 	Catalog * get_schema() { return schema; };
-	const char* get_table_name() { return schema->table_name; };
+	const char* get_table_name() { return table_name; };
 
 	Catalog * 		schema;
-    uint64_t  		cur_tab_size;
     char 			pad[CL_SIZE];
     char* 	table_name;
+    uint64_t  		cur_tab_size;
 };
 
 #endif

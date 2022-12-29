@@ -21,9 +21,20 @@
 
 #include "api.h"
 
+void myrand_enc::init(uint64_t seed) {
+    this->seed = seed;
+}
+
+uint64_t myrand_enc::next() {
+    seed = (seed * 1103515247UL + 12345UL) % (1UL<<63);
+    return (seed / 65537) % RAND_MAX;
+}
+
 void txn_man::init(thread_t * h_thd, workload * h_wl, uint64_t thd_id) {
 	this->h_thd = h_thd;
 	this->h_wl = h_wl;
+	mrand = new myrand_enc;
+	mrand->init(thd_id ^ 21312);
 	pthread_mutex_init(&txn_lock, NULL);
 	lock_ready = false;
 	ready_part = 0;
@@ -163,7 +174,7 @@ void txn_man::cleanup(RC rc) {
 
 	if (rc == Abort) {
 		for (UInt32 i = 0; i < insert_cnt; i ++) {
-			base_row_t * row = insert_rows[i];
+			row_t * row = insert_rows[i];
 			assert(g_part_alloc_enc == false);
 #if CC_ALG != HSTORE && CC_ALG != OCC
 			free(row->manager);
@@ -242,10 +253,10 @@ row_t * txn_man::get_row(row_t * row, access_t type) {
 	return accesses[row_cnt - 1]->data;
 }
 
-RC txn_man::insert_row(base_row_t * row, std::string iname) {
+RC txn_man::insert_row(row_t * row, std::string iname) {
 	if (CC_ALG == HSTORE)
 		return RCOK;
-#if INDEX_STRUCT != IDX_BTREE
+#if INDEX_STRUCT != IDX_BTREE or !FULL_TPCC
     assert(insert_cnt < MAX_ROW_PER_TXN);
 	insert_rows[insert_cnt ++] = row;
 	return RCOK;

@@ -262,11 +262,11 @@ extern enum TestCases					g_test_case;
 // #define SEPARATE_MERKLE
 #endif
 #define BUCKET_FACTOR 1
-#define PRE_LOAD     1
 
 #if INDEX_STRUCT == IDX_HASH
 #define PAGE BucketHeader
 #else
+#define PRE_LOAD 1
 #define PAGE bt_node
 #endif
 

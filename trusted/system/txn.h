@@ -41,6 +41,14 @@ public:
 
 };
 
+class myrand_enc {
+public:
+    void init(uint64_t seed);
+    uint64_t next();
+private:
+    uint64_t seed;
+};
+
 class txn_man
 {
 public:
@@ -49,7 +57,7 @@ public:
 	void release();
 	thread_t * h_thd;
 	workload * h_wl;
-	myrand * mrand;
+    myrand_enc * mrand;
 	uint64_t abort_cnt;
 
 	virtual RC 		run_txn(base_query * m_query) = 0;
@@ -109,14 +117,13 @@ public:
 	void 			index_read(std::string iname, idx_key_t key, int part_id, itemid_t *& item);
 	row_t * 		get_row(row_t * row, access_t type);
 protected:
-    RC insert_row(base_row_t *row, std::string iname);
-
+    RC insert_row(row_t *row, std::string iname);
     itemid_t *index_next(std::string iname, itemid_t *last);
 
 private:
 	// insert rows
 	uint64_t 		insert_cnt;
-	base_row_t *    insert_rows[MAX_ROW_PER_TXN];
+	row_t *         insert_rows[MAX_ROW_PER_TXN];
 	txnid_t 		txn_id;
 	ts_t 			timestamp;
 
