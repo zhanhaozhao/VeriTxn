@@ -23,8 +23,22 @@ inline uint64_t custKey(uint64_t c_id, uint64_t c_d_id, uint64_t c_w_id) {
 	return (distKey(c_d_id, c_w_id) * cust_per_dist + c_id);
 }
 
-uint64_t orderlineKey(uint64_t w_id, uint64_t d_id, uint64_t o_id);
-uint64_t orderPrimaryKey(uint64_t w_id, uint64_t d_id, uint64_t o_id);
+#if TPCC_SMALL
+const UInt32 g_cust_per_dist_enc = 2000;
+#else
+const UInt32 g_cust_per_dist_enc = 3000;
+#endif
+
+//uint64_t orderlineKey(uint64_t w_id, uint64_t d_id, uint64_t o_id);
+//uint64_t orderPrimaryKey(uint64_t w_id, uint64_t d_id, uint64_t o_id);
+
+inline uint64_t orderlineKey(uint64_t w_id, uint64_t d_id, uint64_t o_id) {
+    return distKey(d_id, w_id) * g_cust_per_dist_enc + o_id;
+}
+
+inline uint64_t orderPrimaryKey(uint64_t w_id, uint64_t d_id, uint64_t o_id) {
+    return orderlineKey(w_id, d_id, o_id);
+}
 
 // non-primary key
 // uint64_t custNPKey(char * c_last, uint64_t c_d_id, uint64_t c_w_id);

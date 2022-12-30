@@ -105,9 +105,7 @@ private:
     RC split_nl_insert(glob_param params, BTNode *old_node, UInt32 left_index, idx_key_t key, BTNode *right);
     UInt32 cut(UInt32 length);
     int leaf_has_key(BTNode *leaf, idx_key_t key);
-    RC make_node(uint64_t part_id, BTNode *&node);
-    RC make_nl(uint64_t part_id, BTNode *&node);
-    RC make_lf(uint64_t part_id, BTNode *&node);
+    RC make_node(uint64_t part_id, BTNode *&node, bool isleaf);
 };
 
 

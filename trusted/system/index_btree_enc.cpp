@@ -70,6 +70,7 @@ uint64_t flush_num = 0;
 // BTree is not suitable for your VeriTXN's verified cache since it needs to cache non-leaf nodes,
 // which increases cache miss rate and add-on Ecalls and Ocalls.
 void IndexBTEnc::flush_out(BTNode *c) {
+    assert(false);
     auto cur = ATOM_ADD_FETCH(flush_num, 1);
 #if VERI_TYPE == MERKLE_TREE
     // online updated hash.
@@ -223,6 +224,7 @@ BTNode* IndexBTEnc::load_next(BTNode *cur_node) {
 
 BTNode* IndexBTEnc::load_child(BTNode *cur_node, int i) {
     assert(cur_node->is_leaf == false || i == -1);
+#if !FULL_TPCC
     bt_node* origin_node = nullptr;
     uint64_t inner_node_id = 0;
     if (i>=0) {
@@ -241,6 +243,26 @@ BTNode* IndexBTEnc::load_child(BTNode *cur_node, int i) {
     if (origin_node == nullptr || inner_node_id == 0) {
         return nullptr;
     }
+#else
+    bt_node* origin_node = nullptr;
+    uint64_t inner_node_id = 0;
+    if (i>=0) {
+        if (i <= cur_node->origin->num_keys)
+            origin_node = ((bt_node*)cur_node->origin->pointers[i]);
+        inner_node_id = cur_node->child[i];
+    } else {    // -1 for parent.
+        assert(i == -1);
+        inner_node_id = cur_node->parent;
+        for (int j=0;j<part_cnt;j++) {
+            if (inner_node_id == roots[j]->node_id) {
+                return roots[j];
+            }
+        }
+    }
+    if (inner_node_id == 0) {
+        return nullptr;
+    }
+#endif
     auto cur = (BTNode*) _cache->try_load(cur_node->part, inner_node_id);
     if (cur != nullptr) {
         return cur;
@@ -527,16 +549,23 @@ latch_t IndexBTEnc::release_latch(BTNode * node) {
 //#if VERI_TYPE == PAGE_VERI
 //    _cache->release(node->part, node->node_id);
 //#endif
-    if (!ENABLE_LATCH)
+    if (!ENABLE_LATCH || node == nullptr)
         return LATCH_SH;
     latch_t type = node->latch_type;
 
     while ( !ATOM_CAS(node->latch, false, true) ) {}
 
+    if (node->latch_type == LATCH_NONE) {
+        assert(false);
+        bool ok = ATOM_CAS(node->latch, true, false);
+        assert(ok);
+        return LATCH_NONE;
+    }
     M_ASSERT_ENC((node->latch_type != LATCH_NONE), "release latch fault");
     if (node->latch_type == LATCH_EX)
         node->latch_type = LATCH_NONE;
     else if (node->latch_type == LATCH_SH) {
+        assert(node->share_cnt > 0);
         node->share_cnt --;
         if (node->share_cnt == 0) {
             node->latch_type = LATCH_NONE;
@@ -573,9 +602,9 @@ RC IndexBTEnc::cleanup(BTNode * node, BTNode * last_ex) {
     if (last_ex != NULL) {
         do {
             node = load_child(node, -1);
-            release_latch(node);
+            if (node != nullptr) release_latch(node);
         }
-        while (node != last_ex);
+        while (node != nullptr && node->node_id != last_ex->node_id);
     }
     return RCOK;
 }
@@ -612,16 +641,21 @@ RC IndexBTEnc::find_leaf(glob_param params, idx_key_t key, idx_acc_t access_type
     }
     if (!latch_node(c, LATCH_SH))
         return Abort;
+    assert(c->latch_type == LATCH_SH);
     while (!c->is_leaf) {
-        assert(get_part_id(c) == params.part_id);
-        assert(get_part_id(c->keys) == params.part_id);
+//        assert(get_part_id(c) == params.part_id);
+//        assert(get_part_id(c->keys) == params.part_id);
+        assert(c->latch_type == LATCH_SH);
         for (i = 0; i < c->num_keys; i++) {
             if (key < c->keys[i])
                 break;
         }
 //        assert(key <= c->keys[i] && i <= c->num_keys);
+//        assert(c->latch_type == LATCH_SH);
         child = load_child(c, i); // load pointer function.
+        assert(child->parent == c->node_id);
 //        assert(key <= child->keys[child->num_keys]);
+        assert(c->latch_type == LATCH_SH);
         if (!latch_node(child, LATCH_SH)) {
             release_latch(c);
             cleanup(c, last_ex);
@@ -641,14 +675,14 @@ RC IndexBTEnc::find_leaf(glob_param params, idx_key_t key, idx_acc_t access_type
                     last_ex = c;
             }
             else {
+                assert(c->latch_type != LATCH_NONE);
                 cleanup(c, last_ex);
                 last_ex = NULL;
                 release_latch(c);
             }
-        } else {
+        } else
             release_latch(c); // release the LATCH_SH on c
-            c = child;
-        }
+        c = child;
     }
     if (access_type == INDEX_INSERT) {
         if (upgrade_latch(c) != RCOK) {
@@ -749,7 +783,9 @@ RC IndexBTEnc::index_insert(idx_key_t key, itemid_t * item, int part_id) {
     BTNode * ex_list[100];
     BTNode * leaf = NULL;
     BTNode * last_ex = NULL;
-    rc = find_leaf(params, key, INDEX_INSERT, leaf, last_ex);
+    rc = Abort;
+    while (rc != RCOK)
+        rc = find_leaf(params, key, INDEX_INSERT, leaf, last_ex);
     assert(rc == RCOK);
 
     BTNode * tmp_node = leaf;
@@ -772,15 +808,17 @@ RC IndexBTEnc::index_insert(idx_key_t key, itemid_t * item, int part_id) {
         // only the leaf should be ex latched.
 //		assert( release_latch(leaf) == LATCH_EX );
         for (int i = 0; i < depth; i++)
-            release_latch(ex_list[i]);
-//			assert( release_latch(ex_list[i]) == LATCH_EX );
+//            release_latch(ex_list[i]);
+			assert( release_latch(ex_list[i]) == LATCH_EX );
     }
     else { // split the nodes when necessary
         rc = split_lf_insert(params, leaf, key, item);
         for (int i = 0; i < depth; i++)
-            release_latch(ex_list[i]);
-//			assert( release_latch(ex_list[i]) == LATCH_EX );
+//            release_latch(ex_list[i]);
+			assert( release_latch(ex_list[i]) == LATCH_EX );
     }
+    assert(leaf);
+    release_cache(leaf);
 //	assert(leaf->latch_type == LATCH_NONE);
     return rc;
 }
@@ -823,7 +861,7 @@ RC IndexBTEnc::split_lf_insert(glob_param params, BTNode * leaf, idx_key_t key, 
 //	printf("will make_lf(). part_id=%lld, key=%lld\n", part_id, key);
 //	pthread_t id = pthread_self();
 //	printf("%08x\n", id);
-    rc = make_lf(part_id, new_leaf);
+    rc = make_node(part_id, new_leaf, true);
     if (rc != RCOK) return rc;
 
     M_ASSERT_ENC(leaf->num_keys == order - 1, "trying to split non-full leaf!");
@@ -888,7 +926,7 @@ RC IndexBTEnc::split_lf_insert(glob_param params, BTNode * leaf, idx_key_t key, 
 }
 
 void IndexBTEnc::release_cache(BTNode* c) {
-    assert(c);
+    if (!c) return;
     _cache->release(c->part, c->node_id);
 }
 
@@ -934,7 +972,7 @@ RC IndexBTEnc::insert_into_new_root(
     uint64_t part_id = params.part_id;
     BTNode * new_root;
 //	printf("will make_nl(). part_id=%lld. key=%lld\n", part_id, key);
-    rc = make_nl(part_id, new_root);
+    rc = make_node(part_id, new_root, false);
     if (rc != RCOK) return rc;
     new_root->keys[0] = key;
     new_root->child[0] = left->node_id;
@@ -947,6 +985,14 @@ RC IndexBTEnc::insert_into_new_root(
     right->parent = new_root->node_id;
     left->next = right->node_id;
 
+    auto old = roots[part_id];
+    void* swapped = nullptr;
+    int sw_part = 0;
+    uint64_t sw_node_id = 0;
+    void *cur_void = nullptr;
+    rc = _cache->load_and_swap(old->part, old->node_id, sizeof (*old), (void *) old,
+                                  swapped, sw_part, sw_node_id, cur_void);
+    assert(rc == RCOK);
     this->roots[part_id] = new_root;
     return RCOK;
 }
@@ -964,7 +1010,7 @@ RC IndexBTEnc::split_nl_insert(
 //	idx_key_t * temp_keys;
 //	btUInt32 temp_pointers;
     uint64_t part_id = params.part_id;
-    rc = make_node(part_id, new_node);
+    rc = make_node(part_id, new_node, false);
 
     /* First create a temporary set of keys and pointers
      * to hold everything in order, including
@@ -1057,43 +1103,45 @@ UInt32 IndexBTEnc::cut(UInt32 length) {
         return length/2 + 1;
 }
 
-RC IndexBTEnc::make_lf(uint64_t part_id, BTNode *& node) {
-    RC rc = make_node(part_id, node);
-    if (rc != RCOK) return rc;
-    node->is_leaf = true;
-    return RCOK;
-}
-
-RC IndexBTEnc::make_nl(uint64_t part_id, BTNode *& node) {
-    RC rc = make_node(part_id, node);
-    if (rc != RCOK) return rc;
-    node->is_leaf = false;
-    return RCOK;
-}
-
-RC IndexBTEnc::make_node(uint64_t part_id, BTNode *& node) {
+RC IndexBTEnc::make_node(uint64_t part_id, BTNode *& node, bool is_leaf) {
 //	printf("make_node(). part_id=%lld\n", part_id);
     BTNode * new_node = (BTNode *) malloc(sizeof(BTNode));
     assert (new_node != NULL);
     new_node->child = NULL;
+    new_node->part = part_id;
     new_node->from = this;
+    new_node->origin = roots[part_id]->origin;
     new_node->node_id = new_node->node_id = ATOM_ADD_FETCH(roots[0]->origin->from->btree_node_id, 1);
-    new_node->keys = (idx_key_t *) malloc((order - 1) * sizeof(idx_key_t));
-    new_node->child = (uint64_t *) malloc(order * sizeof(uint64_t));
+    new_node->keys = (idx_key_t *) malloc(order * sizeof(idx_key_t));
+    if (is_leaf) {
+        new_node->data = (void **) malloc(order * sizeof(void*));
+        new_node->child = nullptr;
+        assert (new_node->keys != NULL && new_node->data != NULL);
+    } else {
+        new_node->child = (uint64_t *) malloc(order * sizeof(uint64_t));
+        new_node->data = nullptr;
+        assert (new_node->keys != NULL && new_node->child != NULL);
+    }
     new_node->share_cnt = 0;
     new_node->latch = false;
     new_node->latch_type = LATCH_NONE;
 #if VERI_TYPE == MERKLE_TREE
     assert(false);
 #endif
-    assert (new_node->keys != NULL && new_node->child != NULL);
-    new_node->is_leaf = false;
+    new_node->is_leaf = is_leaf;
     new_node->num_keys = 0;
     new_node->parent = NULL;
     new_node->next = NULL;
     new_node->latch = false;
     new_node->latch_type = LATCH_NONE;
     node = new_node;
+    void* swapped = nullptr;
+    int sw_part = 0;
+    uint64_t sw_node_id = 0;
+    void *cur_void = nullptr;
+    RC rc = _cache->load_and_swap(new_node->part, new_node->node_id, sizeof (*new_node), (void *) new_node,
+                                  swapped, sw_part, sw_node_id, cur_void);
+    assert(rc == RCOK);
     return RCOK;
 }
 

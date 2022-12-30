@@ -11,6 +11,7 @@
 #include "index_hash.h"
 #include "index_btree.h"
 #include "tpcc_const.h"
+#include <stdlib.h>
 
 #include "tpcc_txn.h"
 
@@ -230,7 +231,7 @@ RC tpcc_txn_man::run_payment(tpcc_query * query) {
 			WHERE c_w_id=:c_w_id AND c_d_id=:c_d_id AND c_id=:c_id;
 		+=====================================================*/
 	  	char c_new_data[501];
-	  	sprintf(c_new_data,"| %4lu %2lu %4lu %2lu %4lu $%7.2f",
+	  	snprintf(c_new_data, 500,"| %4lu %2lu %4lu %2lu %4lu $%7.2f",
 	      	query->c_id, query->c_d_id, c_w_id, query->d_id, w_id, query->h_amount);
 		char * c_data = r_cust->get_value(C_DATA);
 	  	strncat(c_new_data, c_data, 500 - strlen(c_new_data));
@@ -251,9 +252,9 @@ RC tpcc_txn_man::run_payment(tpcc_query * query) {
 	  history (h_c_d_id, h_c_w_id, h_c_id, h_d_id, h_w_id, h_date, h_amount, h_data)
 	  VALUES (:c_d_id, :c_w_id, :c_id, :d_id, :w_id, :datetime, :h_amount, :h_data);
 	  +=============================================================================*/
-	base_row_t *r_hist;
+	row_t *r_hist;
 	uint64_t row_id;
-	_wl->t_history->get_new_row(r_hist, 0, row_id);
+    get_new_row("HISTORY", r_hist, 0, row_id);
 	r_hist->set_value(H_C_ID, query->c_id);
 	r_hist->set_value(H_C_D_ID, query->c_d_id);
 	r_hist->set_value(H_C_W_ID, query->c_w_id);
@@ -265,10 +266,23 @@ RC tpcc_txn_man::run_payment(tpcc_query * query) {
 #if !TPCC_SMALL
 	r_hist->set_value(H_DATA, h_data);
 #endif
-//	insert_row(r_hist, _wl->t_history);
+//	insert_row(r_hist, _wl->i_history);
 
 	assert( rc == RCOK );
 	return finish(rc);
+}
+
+RC tpcc_txn_man::get_new_row(std::string t_name, row_t *& row, uint64_t part_id, uint64_t &row_id){
+    RC rc;
+    auto tab = (table_t*)tab_map->_tables[t_name];
+    assert(tab);
+    tab->cur_tab_size ++;
+    row_id = mrand->next() & 0xFFFFFFF;
+
+    row = (row_t *) malloc(sizeof(row_t));
+    rc = row->init(tab, part_id, row_id);
+    row->init_manager(row);
+    return rc;
 }
 
 RC tpcc_txn_man::run_new_order(tpcc_query * query) {
@@ -344,7 +358,7 @@ RC tpcc_txn_man::run_new_order(tpcc_query * query) {
 	//double d_tax;
 	int64_t o_id;
 	//d_tax = *(double *) r_dist_local->get_value(D_TAX);
-	o_id = *(int64_t *) r_dist_local->get_value(D_NEXT_O_ID);
+	r_dist_local->get_value(D_NEXT_O_ID, o_id);
 	o_id ++;
 	r_dist_local->set_value(D_NEXT_O_ID, o_id);
 
@@ -352,15 +366,17 @@ RC tpcc_txn_man::run_new_order(tpcc_query * query) {
 	EXEC SQL INSERT INTO ORDERS (o_id, o_d_id, o_w_id, o_c_id, o_entry_d, o_ol_cnt, o_all_local)
 		VALUES (:o_id, :d_id, :w_id, :c_id, :datetime, :o_ol_cnt, :o_all_local);
 	+========================================================================================*/
-	base_row_t * r_order;
+	row_t * r_order;
 	uint64_t row_id;
-	_wl->t_order->get_new_row(r_order, 0, row_id);
+    get_new_row("ORDER", r_order, 0, row_id);
+
 	r_order->set_value(O_ID, o_id);
 	r_order->set_value(O_C_ID, c_id);
 	r_order->set_value(O_D_ID, d_id);
 	r_order->set_value(O_W_ID, w_id);
 	r_order->set_value(O_ENTRY_D, query->o_entry_d);
 	r_order->set_value(O_OL_CNT, ol_cnt);
+	r_order->set_primary_key(orderPrimaryKey(w_id, d_id, o_id));
 	int64_t all_local = (remote? 0 : 1);
 	r_order->set_value(O_ALL_LOCAL, all_local);
 	insert_row(r_order, "ORDER_IDX");
@@ -368,8 +384,8 @@ RC tpcc_txn_man::run_new_order(tpcc_query * query) {
     EXEC SQL INSERT INTO NEW_ORDER (no_o_id, no_d_id, no_w_id)
         VALUES (:o_id, :d_id, :w_id);
     +=======================================================*/
-	base_row_t * r_no;
-	_wl->t_neworder->get_new_row(r_no, 0, row_id);
+	row_t * r_no;
+	get_new_row("NEW-ORDER", r_no, 0, row_id);
 	r_no->set_value(NO_O_ID, o_id);
 	r_no->set_value(NO_D_ID, d_id);
 	r_no->set_value(NO_W_ID, w_id);
@@ -466,14 +482,15 @@ RC tpcc_txn_man::run_new_order(tpcc_query * query) {
 				:ol_quantity, :ol_amount, :ol_dist_info);
 		+====================================================*/
 		// XXX district info is not inserted.
-		base_row_t * r_ol;
+		row_t * r_ol;
 		uint64_t row_id;
-		_wl->t_orderline->get_new_row(r_ol, 0, row_id);
+		get_new_row("ORDER-LINE", r_ol, 0, row_id);
 		r_ol->set_value(OL_O_ID, &o_id);
 		r_ol->set_value(OL_D_ID, &d_id);
 		r_ol->set_value(OL_W_ID, &w_id);
 		r_ol->set_value(OL_NUMBER, &ol_number);
 		r_ol->set_value(OL_I_ID, &ol_i_id);
+		r_ol->set_primary_key(orderlineKey(w_id, d_id, o_id));
 #if !TPCC_SMALL
 		int w_tax=1, d_tax=1;
 		int64_t ol_amount = ol_quantity * i_price * (1 + w_tax + d_tax) * (1 - c_discount);
