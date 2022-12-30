@@ -60,7 +60,7 @@
 #define ENABLE_LATCH				true
 #define CENTRAL_INDEX				false
 #define CENTRAL_MANAGER 			false
-#define INDEX_STRUCT				IDX_BTREE
+#define INDEX_STRUCT				IDX_HASH
 #define BTREE_ORDER 				16
 #define INDEX_NAME_LENGTH       	16
 #define INDEX_NAME_LENGTH       	16
@@ -147,7 +147,7 @@
 // For large warehouse count, the tables do not fit in memory
 // small tpcc schemas shrink the table size.
 #define TPCC_SMALL					false
-#define FULL_TPCC                   true
+#define FULL_TPCC                   false
 // Some of the transactions read the data but never use them.
 // If TPCC_ACCESS_ALL == fales, then these parts of the transactions
 // are not modeled.
@@ -255,6 +255,7 @@ extern enum TestCases					g_test_case;
 // cache parameters
 //#define VERIFIED_CACHE_SIZ      (1  * 1024 * 1024)  // 1MB
 #define VERIFIED_CACHE_SIZ      (1 * 1024  * 1024 * 1024)  // 1GB
+#define ENABLE_DATA_CACHE        false    // 4GB
 #define BASE_LEASE      100
 #define VERI_TYPE     PAGE_VERI
 #if VERI_TYPE == MERKLE_TREE

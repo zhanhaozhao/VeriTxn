@@ -120,6 +120,7 @@ void IndexEnc::update_verify_hash(int part_id, uint64_t bkt_idx, uint64_t hash) 
 #include "common/index_hash.h"
 #include "common/base_row.h"
 
+// flush_out the data to data cache.
 void flush_out(std::string iname, int part_id, uint64_t bkt_idx, BucketHeader_ENC *c) {
     auto res = new BucketHeader;
     res->init();
@@ -172,6 +173,9 @@ BucketHeader_ENC* IndexEnc::load_bucket(std::string iname, int part_id, uint64_t
         auto res_bucket = new BucketHeader_ENC;
         uint total_size = 0;
         auto idx = (IndexHash *) inner_index_map->_indexes[iname];
+#if !ENABLE_DATA_CACHE
+        idx->sync_bucket_from_disk(part_id, bkt_idx);
+#endif
         res_bucket->origin = &(idx->_buckets[part_id][bkt_idx]);
         idx->get_latch(res_bucket->origin);
         res_bucket->init();
@@ -250,7 +254,9 @@ BucketHeader_ENC* IndexEnc::load_bucket(std::string iname, int part_id, uint64_t
             get_latch(flushed_bkt); // TODO: cannot load this bucket when flushing out.
 //            _verify_hash[sw_pt][sw_bk] = flushed_bkt->get_hash();
             _verify_hash[sw_pt][sw_bk] = _default_verify_hash;
+#if ENABLE_DATA_CACHE
             flush_out(iname, sw_pt, sw_bk, flushed_bkt);
+#endif
             delete flushed_bkt;
         }
         if (cur != res_bucket) {    // concurrent index access has loaded the bucket.

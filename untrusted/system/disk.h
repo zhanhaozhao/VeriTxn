@@ -65,11 +65,13 @@ class PageLoaderClient {
     // Act upon its status.
     if (status.ok()) {
       int size = reply.dataitem_size();
+      std::string res = "";
       for (int i = 0; i < size; i++) {
         kvstore::Item item = reply.dataitem(i);
         // TODO: orgainize to a page
+        res.append("[" + item.key() + ":" + item.value() + "]");
       }
-      return "Get Page success";
+      return res;
     } else {
       std::cout << status.error_code() << ": " << status.error_message()
                 << std::endl;
@@ -130,6 +132,7 @@ class RemoteStorage {
 public:
     // storage the value of c to key <iname, part_id, bkt_idx>
     void flush_out_disk(std::string iname, int part_id, uint64_t pg_id, PAGE *c) {
+        assert(false);  // the data cache does not need to flush out data since updates are sent to disks via logs.
     }
 
     PAGE* load_page_disk(std::string iname, int part_id, uint64_t pg_id) {
@@ -140,10 +143,12 @@ public:
         // (use of InsecureChannelCredentials()).
         PageLoaderClient pageloader(grpc::CreateChannel(
             RPC_SERVER, grpc::InsecureChannelCredentials()));
-        std::string page_id("world");
+        auto keys = new char [50];
+        sprintf(keys, "%s_%d_%lu", iname.c_str(), part_id, pg_id);
+        std::string page_id(keys);
         std::string reply = pageloader.LoadPage(page_id);
 
-        std::cout << reply << std::endl;
+//        std::cout << reply << ' ' << page_id << std::endl;
         // std::cout << "kvstore::Greeter received: " << reply << std::endl;
 
         return nullptr;

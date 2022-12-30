@@ -15,7 +15,7 @@ INCLUDE = -I. -I./common/ -I./untrusted/system/ -I./untrusted/benchmarks/ -I./un
 # CFLAGS += $(INCLUDE) -D NOGRAPHITE=1 -no-pie -O0
 # LDFLAGS = -Wall -L. -L./libs -pthread -g -lrt -std=c++0x -O0 -ljemalloc
 
-# protoc --cpp_out=. --grpc_out=. --plugin=protoc-gen-grpc=`which grpc_cpp_plugin` hello.proto
+# protoc --cpp_out=. --grpc_out=. --plugin=protoc-gen-grpc=`which grpc_cpp_plugin` storage.proto
 CFLAGS += $(INCLUDE) -D NOGRAPHITE=1 -Werror -Wno-comment -O0 `pkg-config --cflags protobuf grpc`
 LDFLAGS = -Wall -L.  -L./libs -pthread -g -lrt -std=c++0x -O0 -ljemalloc -lnanomsg  -lrocksdb `pkg-config --libs protobuf grpc++ grpc`
 # LDFLAGS = -Wall -L. -pthread -g -lrt -std=c++0x -O0 -ljemalloc -fsanitize=address -fno-omit-frame-pointer -static-libasan
@@ -46,7 +46,6 @@ App : $(CCOBJS) $(OBJS)
 %.o: %.cpp
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-.PHONY: clean
 clean:
 	rm -f App ./trusted/*.o ./trusted/*.d ./trusted/system/*.o ./trusted/system/*.d ./trusted/concurrency_control/*.o trusted/concurrency_control/*.d ./untrusted/*.o ./untrusted/*.d ./untrusted/system/*.o ./untrusted/system/*.d ./untrusted/benchmarks/*.o ./untrusted/benchmarks/*.d ./untrusted/cache/*.o ./untrusted/cache/*.d ./common/*.o ./common/*.d $(OBJS) $(DEPS)
 
