@@ -139,7 +139,7 @@ public:
         // localhost at port 50051). We indicate that the channel isn't authenticated
         // (use of InsecureChannelCredentials()).
         PageLoaderClient pageloader(grpc::CreateChannel(
-            "localhost:50051", grpc::InsecureChannelCredentials()));
+            RPC_SERVER, grpc::InsecureChannelCredentials()));
         std::string page_id("world");
         std::string reply = pageloader.LoadPage(page_id);
 
@@ -151,13 +151,13 @@ public:
 
     void shutdown_server() {
       PageLoaderClient pageloader(grpc::CreateChannel(
-            "localhost:50051", grpc::InsecureChannelCredentials()));
+            RPC_SERVER, grpc::InsecureChannelCredentials()));
         pageloader.ShutdownServer();
     }
 
     void send_log(kvstore::LogReplayRequest &request) {
       PageLoaderClient pageloader(grpc::CreateChannel(
-            "localhost:50051", grpc::InsecureChannelCredentials()));
+            RPC_SERVER, grpc::InsecureChannelCredentials()));
         pageloader.SendLogBatch(request);
     }
 };

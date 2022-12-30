@@ -408,7 +408,7 @@ Logger::logTxn(char * log_entry, uint32_t size, uint64_t epoch, bool sync, uint6
     entry->set_data(std::string(log_entry, size));
     entry->set_size(size);
     batch_num ++;
-    if (batch_num >= 100) {
+    if (batch_num >= LOG_BATCH_SIZE) {
         // send batch
         remotestorage->send_log(*request);
         // request.Clear();

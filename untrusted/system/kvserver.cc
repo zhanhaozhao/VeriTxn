@@ -116,7 +116,7 @@ public:
 void kvserver::RunServer(RPCThread * thread) {
 
     // thread_ = thread;
-    std::string server_address("0.0.0.0:50051");
+    std::string server_address(RPC_SERVER);
     //   GreeterServiceImpl service;
     PageLoaderServiceImpl service(thread);
 
