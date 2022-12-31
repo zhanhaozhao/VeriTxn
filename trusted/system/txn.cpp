@@ -413,14 +413,16 @@ void txn_man::create_log_entry() {
 
 	uint32_t offset = 0;
 	uint32_t checksum = 0xbeef;  // we also use this to distinguish PSN items and log items
+	uint32_t num_keys = 0;
 	PACK(_log_entry, checksum, offset);
-	offset += sizeof(uint32_t); // make space for size;
-  	PACK(_log_entry, row_cnt, offset);
+    offset += sizeof(uint32_t); // make space for size;
+    offset += sizeof(uint32_t); // make space for N;
 	// std::cout << "num_keys:" << row_cnt << std::endl;
 
   	for (uint32_t i = 0; i < row_cnt; i ++) {
     	Access * access = accesses[i];
     	if (access->type != WR) continue;
+    	num_keys ++;
 		// row_t * orig_row = accesses[write_set[i]]->orig_row; 
 		// uint32_t table_id = access->orig_row->get_table()->get_table_id();
     	// uint32_t table_id = 0;
@@ -435,6 +437,7 @@ void txn_man::create_log_entry() {
         PACK(_log_entry, part_id, offset);        // part.
         PACK(_log_entry, ((PAGE_ENC*)access->orig_row->from_page)->bkt, offset);        // page id.
         PACK(_log_entry, access->orig_row->offset, offset); // invalid data.
+        assert(part_id == 0 && access->orig_row->offset == 0);
 #else
         PACK(_log_entry, part_id, offset);        // part.
         PACK(_log_entry, ((PAGE_ENC*)access->orig_row->from_page)->node_id, offset);        // page id.
@@ -449,7 +452,8 @@ void txn_man::create_log_entry() {
   	_log_entry_size = offset;
 	assert(_log_entry_size < 16384); // g_max_log_entry_size
   // update size. 
-	memcpy(_log_entry + sizeof(uint32_t), &_log_entry_size, sizeof(uint32_t));
+    memcpy(_log_entry + sizeof(uint32_t), &_log_entry_size, sizeof(uint32_t));
+    memcpy(_log_entry + 2*sizeof(uint32_t), &num_keys, sizeof(uint32_t));
   //cout << _log_entry_size << endl;
 
 #elif LOG_TYPE == LOG_COMMAND

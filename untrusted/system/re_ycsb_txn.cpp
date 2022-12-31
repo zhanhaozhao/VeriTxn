@@ -92,14 +92,15 @@ re_ycsb_txn_man::recover_txn(char * log_entry, uint64_t tid)
 {
 	uint64_t tt = get_sys_clock();
 #if LOG_TYPE == LOG_DATA
-	// Format 
-	// | checksum:4 | size:4 | N:4 | (table_id | primary_key | data_length | data) * N
+	// Format
+    // | checksum:4 | size:4 | N:4 | (part_id:8 | pgid:8 | offset:8 | primary_key:8 | data_length:4 | data:?) * N
 	// predecessor_info has the following format
 	//   | num_raw_preds | raw_preds | num_waw_preds | waw_preds
 	uint32_t offset = 0;
 
 	uint32_t checksum;
 	UNPACK(log_entry, checksum, offset);
+    assert(checksum == 0xbeef);
 	uint32_t entrysize;
 	UNPACK(log_entry, entrysize, offset);
 	uint32_t num_keys; 
@@ -116,19 +117,22 @@ re_ycsb_txn_man::recover_txn(char * log_entry, uint64_t tid)
 		uint64_t key;
 		uint32_t data_length;
 		char * rockskey;
-		size_t rockskey_size = sizeof(part_id) *3 + sizeof(key);
 		char * data;
 
-		// UNPACK(log_entry, table_id, offset);
-		// UNPACK(log_entry, key, offset);
-		// UNPACK(log_entry, data_length, offset);
+		UNPACK(log_entry, part_id, offset);
+		UNPACK(log_entry, node_id, offset);
+		UNPACK(log_entry, page_offset, offset);
+        assert(part_id == 0 && page_offset == 0);
 
-		rockskey = (char *) malloc(rockskey_size);
-		UNPACK_SIZE(log_entry, rockskey, rockskey_size, offset);
+        rockskey = new char [50];
+        sprintf(rockskey, "%lu_%lu_%lu", part_id, node_id, page_offset);
+        printf("insert key = %s\n", rockskey);
+		UNPACK(log_entry, key, offset);
 
-		// UNPACK(log_entry, data_length, offset);
+        UNPACK(log_entry, data_length, offset);
 		data = log_entry + offset;
-		// offset += data_length;
+		offset += data_length;
+        assert(offset <= entrysize);
 		
 		// Serial has log streams corresponding to the dependency order
 		// itemid_t * m_item = index_read(_wl->the_index, key, 0);

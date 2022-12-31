@@ -15,7 +15,7 @@ INCLUDE = -I. -I./common/ -I./untrusted/system/ -I./untrusted/benchmarks/ -I./un
 # CFLAGS += $(INCLUDE) -D NOGRAPHITE=1 -no-pie -O0
 # LDFLAGS = -Wall -L. -L./libs -pthread -g -lrt -std=c++0x -O0 -ljemalloc
 
-# protoc --cpp_out=. --grpc_out=. --plugin=protoc-gen-grpc=`which grpc_cpp_plugin` hello.proto
+# protoc --cpp_out=. --grpc_out=. --plugin=protoc-gen-grpc=`which grpc_cpp_plugin` storage.proto
 CFLAGS += $(INCLUDE) -D NOGRAPHITE=1 -Werror -Wno-comment -O0 `pkg-config --cflags protobuf grpc`
 LDFLAGS = -Wall -L.  -L./libs -pthread -g -lrt -std=c++0x -O0 -ljemalloc -lnanomsg  -lrocksdb `pkg-config --libs protobuf grpc++ grpc`
 # LDFLAGS = -Wall -L. -pthread -g -lrt -std=c++0x -O0 -ljemalloc -fsanitize=address -fno-omit-frame-pointer -static-libasan
@@ -67,3 +67,7 @@ sgx-debug:
 	cp ./sgx_files/debug/sgx_u.mk ./sgx_u.mk
 	cp ./sgx_files/debug/Enclave.config.xml ./trusted/Enclave.config.xml
 	cp ./sgx_files/Makefile.sgx Makefile
+
+exp:
+	cd ./untrusted/system && protoc --cpp_out=. --grpc_out=. --plugin=protoc-gen-grpc=`which grpc_cpp_plugin` storage.proto
+	cd ./script/ && pwd && python ./run_experiments.py -e -r -ns -c vcloud ycsb_debug

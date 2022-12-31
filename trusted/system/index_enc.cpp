@@ -192,6 +192,7 @@ BucketHeader_ENC* IndexEnc::load_bucket(std::string iname, int part_id, uint64_t
                 auto old_row = (base_row_t *) pt->location;
                 auto new_row = new row_t;
                 new_row->from_page = (void*) res_bucket;
+                new_row->offset = 0;
                 int n = old_row->table->get_schema()->get_tuple_size();
                 new_row->data = new char[n + 1];
                 memcpy(new_row->data, old_row->data, n + 1);

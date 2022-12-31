@@ -146,7 +146,7 @@ public:
         auto keys = new char [50];
         sprintf(keys, "%s_%d_%lu", iname.c_str(), part_id, pg_id);
         std::string page_id(keys);
-        std::string reply = pageloader.LoadPage(page_id);
+//        std::string reply = pageloader.LoadPage(page_id);
 
 //        std::cout << reply << ' ' << page_id << std::endl;
         // std::cout << "kvstore::Greeter received: " << reply << std::endl;
