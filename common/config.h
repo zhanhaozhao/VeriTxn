@@ -244,18 +244,18 @@ extern enum TestCases					g_test_case;
 #define TPORT_PORT 6000
 #define MAX_TPORT_NAME				128
 // turn on SGX
-#define USE_SGX 0
+#define USE_SGX 1
 #define TPORT_TYPE tcp
 #define USE_NANOMSG                 1
 #define USE_ASYNC_HASH              1
-#define USE_LOG                     1
+#define USE_LOG                     0
 #define RPC_SERVER                  "127.0.0.1:50051"
 #define LOG_BATCH_SIZE              100
 
 // cache parameters
 //#define VERIFIED_CACHE_SIZ      (1  * 1024 * 1024)  // 1MB
 #define VERIFIED_CACHE_SIZ      (1 * 1024  * 1024 * 1024)  // 1GB
-#define ENABLE_DATA_CACHE        false    // 4GB
+#define ENABLE_DATA_CACHE        true    // 4GB
 #define BASE_LEASE      100
 #define VERI_TYPE     PAGE_VERI
 #if VERI_TYPE == MERKLE_TREE

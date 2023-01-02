@@ -45,6 +45,7 @@ public:
     Status GetPage(ServerContext* context, const GetPageRequest* request,
                     GetPageReply* reply) override {
         std::string page_id = request->page_id();
+        printf("scanning prefix %s\n", page_id.c_str());
         // read from rocksdb
         // std::map<std::string> items;
         auto f_proc_entry = [this, reply](const rocksdb::Iterator * it) {
@@ -53,7 +54,7 @@ public:
             item->set_value(it->value().data());
             // items.emplace_back(it->value().data());
         };
-        eng->DBPrefixScan(page_id, f_proc_entry);
+//        eng->DBPrefixScan(page_id, f_proc_entry);
         return Status::OK;
     }
     Status ShutdownServer(ServerContext* context, const ShutdownRequest* request,

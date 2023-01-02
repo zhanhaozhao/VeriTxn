@@ -69,7 +69,7 @@ class PageLoaderClient {
       for (int i = 0; i < size; i++) {
         kvstore::Item item = reply.dataitem(i);
         // TODO: orgainize to a page
-        res.append("[" + item.key() + ":" + item.value() + "]");
+//        res.append("[" + item.key() + ":" + item.value() + "]");
       }
       return res;
     } else {
@@ -127,9 +127,20 @@ private:
 };
 
 
+#include <grpcpp/channel.h>
+
 class RemoteStorage {
 
+    std::shared_ptr<grpc::Channel> _channel;
+    PageLoaderClient *pageloader;
+
 public:
+    RemoteStorage() {
+        _channel = grpc::CreateChannel(
+                RPC_SERVER, grpc::InsecureChannelCredentials());
+        pageloader =  new PageLoaderClient(_channel);
+    }
+
     // storage the value of c to key <iname, part_id, bkt_idx>
     void flush_out_disk(std::string iname, int part_id, uint64_t pg_id, PAGE *c) {
         assert(false);  // the data cache does not need to flush out data since updates are sent to disks via logs.
@@ -141,29 +152,21 @@ public:
         // are created. This channel models a connection to an endpoint (in this case,
         // localhost at port 50051). We indicate that the channel isn't authenticated
         // (use of InsecureChannelCredentials()).
-        PageLoaderClient pageloader(grpc::CreateChannel(
-            RPC_SERVER, grpc::InsecureChannelCredentials()));
         auto keys = new char [50];
-        sprintf(keys, "%s_%d_%lu", iname.c_str(), part_id, pg_id);
+        sprintf(keys, "%d_%lu_", part_id, pg_id);
         std::string page_id(keys);
-//        std::string reply = pageloader.LoadPage(page_id);
-
+        std::string reply = pageloader->LoadPage(page_id);
 //        std::cout << reply << ' ' << page_id << std::endl;
         // std::cout << "kvstore::Greeter received: " << reply << std::endl;
-
         return nullptr;
     }
 
     void shutdown_server() {
-      PageLoaderClient pageloader(grpc::CreateChannel(
-            RPC_SERVER, grpc::InsecureChannelCredentials()));
-        pageloader.ShutdownServer();
+        pageloader->ShutdownServer();
     }
 
     void send_log(kvstore::LogReplayRequest &request) {
-      PageLoaderClient pageloader(grpc::CreateChannel(
-            RPC_SERVER, grpc::InsecureChannelCredentials()));
-        pageloader.SendLogBatch(request);
+        pageloader->SendLogBatch(request);
     }
 };
 

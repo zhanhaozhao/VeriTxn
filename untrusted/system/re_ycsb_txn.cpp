@@ -126,9 +126,9 @@ re_ycsb_txn_man::recover_txn(char * log_entry, uint64_t tid)
 
         rockskey = new char [50];
         sprintf(rockskey, "%lu_%lu_%lu", part_id, node_id, page_offset);
-        printf("insert key = %s\n", rockskey);
+//        printf("insert key = %s\n", rockskey);
 		UNPACK(log_entry, key, offset);
-
+		
         UNPACK(log_entry, data_length, offset);
 		data = log_entry + offset;
 		offset += data_length;
