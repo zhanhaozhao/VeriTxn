@@ -91,7 +91,7 @@ else
 	App_Link_Flags += -lsgx_uae_service
 endif
 
-	App_Link_Flags += -lprotobuf -lgrpc++ -lgrpc
+	App_Link_Flags +=  `pkg-config --libs protobuf grpc++ grpc`
 
 ### Linking setting ###
 
@@ -130,7 +130,7 @@ untrusted/Enclave_u.o: untrusted/Enclave_u.c
 ## build files needed from other directory
 
 %_u.o: %.cc
-	$(CXX) $(App_C_Cpp_Flags) -c $< -o $@
+	$(CXX) $(CFLAGS) -c $< -o $@
 	@echo "CXX  <=  $<"
 
 %_u.o: %.cpp

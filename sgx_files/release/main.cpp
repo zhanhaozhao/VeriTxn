@@ -161,8 +161,8 @@ int main(int argc, char* argv[])
 			query_queue->init(m_wl);
 		printf("query_queue initialized!\n");
 
-        // remotestorage = new RemoteStorage();
-        // printf("remotestorage client in main thread initialized!\n");
+        remotestorage = new RemoteStorage();
+        printf("remotestorage client in main thread initialized!\n");
 	}
 
 	pthread_barrier_init( &warmup_bar, NULL, all_thd_cnt );

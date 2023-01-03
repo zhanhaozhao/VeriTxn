@@ -124,4 +124,10 @@ enum RemReqType {
     NO_MSG
 };
 
+extern int MAX_LINE;
+extern int PORT;
+extern int BACKLOG;
+extern int LISTENQ;
+extern int MAX_CONNECT;
+
 #endif
