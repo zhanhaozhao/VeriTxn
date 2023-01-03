@@ -63,7 +63,7 @@ void index_init_ecall(int part_cnt, void * table, std::string iname, void * inde
 void index_load_ecall(int part_cnt, void * table, std::string iname, void * index_ptr, uint64_t bucket_cnt) {
     INDEX_ENC * index = (INDEX_ENC *)tab_map->_indexes[iname];
 #if INDEX_STRUCT == IDX_HASH
-    #ifdef PRE_LOAD
+    #if PRE_LOAD == 1
     for (int i=0;i<part_cnt;i++)
         for (uint64_t j=0;j<bucket_cnt;j++) {
             index->load_bucket(iname, i, j);

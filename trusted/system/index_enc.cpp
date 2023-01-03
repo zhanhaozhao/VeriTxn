@@ -224,7 +224,7 @@ BucketHeader_ENC* IndexEnc::load_bucket(std::string iname, int part_id, uint64_t
             }
             last_node = node;
         }
-        assert(last_node->next== nullptr);
+        assert(last_node == nullptr || last_node->next== nullptr);
         total_size += sizeof(*res_bucket);
         assert(res_bucket->get_hash() == res_bucket->origin->get_hash());
         void* swapped = nullptr;

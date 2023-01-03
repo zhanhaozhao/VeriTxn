@@ -104,6 +104,10 @@ RC tpcc_wl::init_table() {
                          BTREE_NODE_NUM);
 #endif
     }
+#if FULL_TPCC
+    index_init_ecall(g_part_cnt, (void *) (tables["HISTORY"]), "Invalid_INDEX", nullptr ,
+                     0);
+#endif
 	return RCOK;
 }
 

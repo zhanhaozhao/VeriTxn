@@ -126,6 +126,7 @@ RC workload::init_schema(std::string schema_file) {
 #endif
 			indexes[iname] = index;
 			index->index_name = (char*) malloc(sizeof (char) * (iname.length()+1));
+            index->index_name[iname.length()] = 0;
 			memcpy(index->index_name, iname.c_str(), iname.length());
 		}
     }
