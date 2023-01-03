@@ -244,13 +244,13 @@ extern enum TestCases					g_test_case;
 #define TPORT_PORT 6000
 #define MAX_TPORT_NAME				128
 // turn on SGX
-#define USE_SGX 1
+#define USE_SGX 0
 #define TPORT_TYPE tcp
 #define USE_NANOMSG                 1
 #define USE_ASYNC_HASH              1
 #define USE_LOG                     1
 #define RPC_SERVER                  "127.0.0.1:50051"
-#define LOG_BATCH_SIZE              100
+#define LOG_BATCH_SIZE              1
 
 // cache parameters
 //#define VERIFIED_CACHE_SIZ      (1  * 1024 * 1024)  // 1MB

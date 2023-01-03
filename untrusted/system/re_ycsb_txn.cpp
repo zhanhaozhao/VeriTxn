@@ -107,8 +107,6 @@ re_ycsb_txn_man::recover_txn(char * log_entry, uint64_t tid)
 	uint32_t num_keys; 
 	UNPACK(log_entry, num_keys, offset);
 
-	// std::cout << "num_keys:" << num_keys << std::endl;
-
 #if USE_SGX != 1
 	rocksdb::WriteBatch batch;
 #endif
