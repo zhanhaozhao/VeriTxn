@@ -14,7 +14,7 @@
    limitations under the License.
 */
 
-#include "global.h"
+#include "global_struct.h"
 #include "helper.h"
 #include "rpc_thread.h"
 #include "wl.h"

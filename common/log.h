@@ -1,8 +1,11 @@
 
 #ifndef LOGGER_TYPE_H
 #define LOGGER_TYPE_H
+
 // #include "global_enc.h"
 #include "helper.h"
+
+
 enum LogRecType {
   LRT_INVALID = 0,
   LRT_INSERT,

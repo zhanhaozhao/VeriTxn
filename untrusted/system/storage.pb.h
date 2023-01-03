@@ -404,7 +404,7 @@ class Item : public ::google::protobuf::Message /* @@protoc_insertion_point(clas
 
   // accessors -------------------------------------------------------
 
-  // string key = 1;
+  // bytes key = 1;
   void clear_key();
   static const int kKeyFieldNumber = 1;
   const ::std::string& key() const;
@@ -413,12 +413,12 @@ class Item : public ::google::protobuf::Message /* @@protoc_insertion_point(clas
   void set_key(::std::string&& value);
   #endif
   void set_key(const char* value);
-  void set_key(const char* value, size_t size);
+  void set_key(const void* value, size_t size);
   ::std::string* mutable_key();
   ::std::string* release_key();
   void set_allocated_key(::std::string* key);
 
-  // string value = 2;
+  // bytes value = 2;
   void clear_value();
   static const int kValueFieldNumber = 2;
   const ::std::string& value() const;
@@ -427,7 +427,7 @@ class Item : public ::google::protobuf::Message /* @@protoc_insertion_point(clas
   void set_value(::std::string&& value);
   #endif
   void set_value(const char* value);
-  void set_value(const char* value, size_t size);
+  void set_value(const void* value, size_t size);
   ::std::string* mutable_value();
   ::std::string* release_value();
   void set_allocated_value(::std::string* value);
@@ -1338,7 +1338,7 @@ inline void HelloReply::set_allocated_message(::std::string* message) {
 
 // Item
 
-// string key = 1;
+// bytes key = 1;
 inline void Item::clear_key() {
   key_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -1365,7 +1365,7 @@ inline void Item::set_key(const char* value) {
   key_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
   // @@protoc_insertion_point(field_set_char:kvstore.Item.key)
 }
-inline void Item::set_key(const char* value, size_t size) {
+inline void Item::set_key(const void* value, size_t size) {
   
   key_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
@@ -1391,7 +1391,7 @@ inline void Item::set_allocated_key(::std::string* key) {
   // @@protoc_insertion_point(field_set_allocated:kvstore.Item.key)
 }
 
-// string value = 2;
+// bytes value = 2;
 inline void Item::clear_value() {
   value_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -1418,7 +1418,7 @@ inline void Item::set_value(const char* value) {
   value_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
   // @@protoc_insertion_point(field_set_char:kvstore.Item.value)
 }
-inline void Item::set_value(const char* value, size_t size) {
+inline void Item::set_value(const void* value, size_t size) {
   
   value_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));

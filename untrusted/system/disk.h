@@ -1,9 +1,16 @@
-#include "common/config.h"
-#include "common/index_hash.h"
-#include "common/index_btree.h"
+#ifndef DBDISK_H_
+#define DBDISK_H_
+
+#include "config.h"
+// #include "common/index_hash.h"
+// #include "common/index_btree.h"
 
 #include <grpcpp/grpcpp.h>
+#include <grpcpp/channel.h>
 #include "storage.grpc.pb.h"
+
+// class index_btree;
+// class IndexHash;
 
 class GreeterClient {
  public:
@@ -12,29 +19,7 @@ class GreeterClient {
 
   // Assembles the client's payload, sends it and presents the response back
   // from the server.
-  std::string SayHello(const std::string& user) {
-    // Data we are sending to the server.
-    kvstore::HelloRequest request;
-    request.set_name(user);
-
-    // Container for the data we expect from the server.
-    kvstore::HelloReply reply;
-    // Context for the client. It could be used to convey extra information to
-    // the server and/or tweak certain RPC behaviors.
-    grpc::ClientContext context;
-
-    // The actual RPC.
-    grpc::Status status = stub_->SayHello(&context, request, &reply);
-
-    // Act upon its status.
-    if (status.ok()) {
-      return reply.message();
-    } else {
-      std::cout << status.error_code() << ": " << status.error_message()
-                << std::endl;
-      return "RPC failed";
-    }
-  }
+  std::string SayHello(const std::string& user);
 
  private:
   std::unique_ptr<kvstore::Greeter::Stub> stub_;
@@ -127,49 +112,43 @@ private:
 };
 
 
-#include <grpcpp/channel.h>
-
 class RemoteStorage {
 
     std::shared_ptr<grpc::Channel> _channel;
     PageLoaderClient *pageloader;
+    uint64_t batch_num;
+	  kvstore::LogReplayRequest * request;
 
 public:
-    RemoteStorage() {
-        _channel = grpc::CreateChannel(
-                RPC_SERVER, grpc::InsecureChannelCredentials());
-        pageloader =  new PageLoaderClient(_channel);
-    }
+    RemoteStorage();
 
     // storage the value of c to key <iname, part_id, bkt_idx>
-    void flush_out_disk(std::string iname, int part_id, uint64_t pg_id, PAGE *c) {
-        assert(false);  // the data cache does not need to flush out data since updates are sent to disks via logs.
-    }
+    // void flush_out_disk(std::string iname, int part_id, uint64_t pg_id, PAGE *c) {
+    //     assert(false);  // the data cache does not need to flush out data since updates are sent to disks via logs.
+    // }
 
-    PAGE* load_page_disk(std::string iname, int part_id, uint64_t pg_id) {
-
-        // Instantiate the client. It requires a channel, out of which the actual RPCs
-        // are created. This channel models a connection to an endpoint (in this case,
-        // localhost at port 50051). We indicate that the channel isn't authenticated
-        // (use of InsecureChannelCredentials()).
-        auto keys = new char [50];
-        sprintf(keys, "%d_%lu_", part_id, pg_id);
-        std::string page_id(keys);
-        std::string reply = pageloader->LoadPage(page_id);
-//        std::cout << reply << ' ' << page_id << std::endl;
-        // std::cout << "kvstore::Greeter received: " << reply << std::endl;
-        return nullptr;
-    }
+    void load_page_disk(std::string iname, int part_id, uint64_t pg_id);
 
     void shutdown_server() {
-        pageloader->ShutdownServer();
+      pageloader->ShutdownServer();
     }
 
-    void send_log(kvstore::LogReplayRequest &request) {
-        pageloader->SendLogBatch(request);
+    void send_log(char * log_entry, uint32_t size) {
+      kvstore::LogEntry * entry = request->add_entry();
+      entry->set_data(std::string(log_entry, size));
+      entry->set_size(size);
+      batch_num ++;
+      if (batch_num >= LOG_BATCH_SIZE) {
+        // request.Clear();
+        pageloader->SendLogBatch(*request);
+        delete request;
+        request = new kvstore::LogReplayRequest();
+        batch_num = 0;
+        assert(request->entry_size() == 0);
+      }
     }
 };
 
 
 
-
+#endif

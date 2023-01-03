@@ -2,7 +2,7 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
-#include "global.h"
+// #include "global.h"
 #include "helper.h"
 #include "log.h"
 // #include "concurrentqueue.h"
@@ -10,8 +10,8 @@
 #include <queue>
 #include <fstream>
 
-#include <grpcpp/grpcpp.h>
-#include "storage.grpc.pb.h"
+// #include <grpcpp/grpcpp.h>
+// #include "storage.grpc.pb.h"
 
 #if USE_AZURE == 1
 #include <iostream>
@@ -46,10 +46,6 @@ private:
     std::set<uint64_t> txns_to_notify;
     uint64_t last_flush;
     uint64_t log_buf_cnt;
-
-	uint64_t batch_num;
-	kvstore::LogReplayRequest * request;
-	// std::shared_ptr<kvstore::LogReplayRequest> request;
 
     #if USE_AZURE == 1
     const char* connectionString;

@@ -14,7 +14,7 @@
    limitations under the License.
 */
 
-#include "global.h"
+#include "global_struct.h"
 #include "helper.h"
 #include "thread.h"
 #include "log_thread.h"

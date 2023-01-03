@@ -11,7 +11,7 @@
 #include "untrusted/system/io_thread.h"
 #include "untrusted/system/msg_queue.h"
 #include "untrusted/system/log_thread.h"
-#include "untrusted/system/logger.h"
+// #include "untrusted/system/logger.h"
 // #include "manager.h"
 // #include "common/mem_alloc.h"
 // #include "common/query.h"
@@ -30,7 +30,7 @@
 extern sgx_enclave_id_t enclave_id;
 #endif // USE_SGX
 
-#include "untrusted/system/kvengine.h"
+// #include "untrusted/system/kvengine.h"
 #include "untrusted/system/rpc_thread.h"
 
 void * f(void *);

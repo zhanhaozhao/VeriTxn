@@ -1,4 +1,5 @@
 #include "global.h"
+#include "global_struct.h"
 #include "common/helper.h"
 #include "ycsb.h"
 #include "ycsb_query.h"

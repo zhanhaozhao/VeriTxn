@@ -11,5 +11,14 @@ Manager * glob_manager;
 Query_queue * query_queue;
 table_map * global_table_map = new table_map;
 
+Logger * logger;
+RemoteStorage * remotestorage = new RemoteStorage;
+
+#if USE_SGX != 1
+kvengine * eng;
+#endif
+kvserver * server;
+
+
 // Plock part_lock_man;
 // OptCC occ_man;

@@ -6,6 +6,7 @@
 
 // #include "common/mem_alloc.h"
 #include "table.h"
+#include "disk.h"
 
 RC IndexHash::init(uint64_t bucket_cnt, int part_cnt) {
 //	_bucket_cnt = bucket_cnt;

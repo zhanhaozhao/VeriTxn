@@ -8,9 +8,7 @@
 #include "common/helper.h"
 #include "common/config.h"
 #include "common/global_common.h"
-#include "kvengine.h"
-#include "kvserver.h"
-#include "disk.h"
+// #include "logger.h"
 // #include "logger.h"
 // #ifndef NOGRAPHITE
 // #include "carbon_user.h"
@@ -34,9 +32,11 @@
 class table_map;
 class MessageQueue;
 class Transport;
-class Logger;
+// class Logger;
 class SimManager;
 class Logqueue;
+// class kvserver;
+// class RemoteStorage;
 // /******************************************/
 // // Global Data Structure 
 // /******************************************/
@@ -49,13 +49,9 @@ class Logqueue;
 // // extern OptCC occ_man;
 extern Transport tport_man;
 extern MessageQueue msg_queue;
-extern Logger * logger;
+
 extern SimManager * simulation;
-#if USE_SGX != 1
-extern kvengine * eng;
-#endif
-extern kvserver * server;
-extern RemoteStorage *remotestorage;
+
 #if LOG_QUEUE_TYPE == LOG_CIRCUL_BUFF
 extern Logqueue **log_queues;
 #endif

@@ -248,7 +248,7 @@ extern enum TestCases					g_test_case;
 #define TPORT_TYPE tcp
 #define USE_NANOMSG                 1
 #define USE_ASYNC_HASH              1
-#define USE_LOG                     0
+#define USE_LOG                     1
 #define RPC_SERVER                  "127.0.0.1:50051"
 #define LOG_BATCH_SIZE              100
 
