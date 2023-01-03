@@ -35,10 +35,9 @@ public:
     INDEX * 	i_order; // key = (w_id, d_id, o_id)
     INDEX * 	i_neworder;
 	INDEX * 	i_orderline; // key = (w_id, d_id, o_id)
-	INDEX * 	i_orderline_wd; // key = (w_id, d_id).
 	// TODO: do not verify the cache for secondary indexes.
 	
-	bool ** delivering;
+	bool * delivering;
 	uint32_t next_tid;
 private:
 	uint64_t num_wh;

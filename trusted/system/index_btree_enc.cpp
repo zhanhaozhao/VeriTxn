@@ -417,7 +417,9 @@ RC IndexBTEnc::index_read(idx_key_t key, itemid_t *& item, int part_id, int thd_
 #endif
             return RCOK;
         }
+#if !FULL_TPCC
     M_ASSERT_ENC(false, "the key does not exist!");
+#endif
     return rc;
 }
 

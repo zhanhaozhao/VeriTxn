@@ -18,6 +18,9 @@
 void tpcc_txn_man::init(thread_t * h_thd, workload * h_wl, uint64_t thd_id) {
 	txn_man::init(h_thd, h_wl, thd_id);
 	_wl = (tpcc_wl *) h_wl;
+#if FULL_TPCC
+	_wl->delivering = new bool [NUM_WH+1];
+#endif
 }
 
 RC tpcc_txn_man::run_txn(base_query * query) {
@@ -59,7 +62,6 @@ RC tpcc_txn_man::run_payment(tpcc_query * query) {
 	// TODO for variable length variable (string). Should store the size of 
 	// the variable.
 	key = query->w_id;
-//	INDEX * index = _wl->i_warehouse;
 	item = index_read("WAREHOUSE_IDX", key, wh_to_part(w_id));
     if (item == nullptr) {
         return finish(Abort);
@@ -136,7 +138,6 @@ RC tpcc_txn_man::run_payment(tpcc_query * query) {
 		uint64_t key = custNPKey(query->c_last, query->c_d_id, query->c_w_id);
 		// XXX: the list is not sorted. But let's assume it's sorted... 
 		// The performance won't be much different.
-//		INDEX * index = _wl->i_customer_last;
 		item = index_read("CUSTOMER_LAST_IDX", key, wh_to_part(c_w_id));
         if (item == nullptr) {
             return finish(Abort);
@@ -182,8 +183,8 @@ RC tpcc_txn_man::run_payment(tpcc_query * query) {
         if (item == nullptr) {
             return finish(Abort);
         }
-        assert(item != NULL);
-        while (item != NULL) {
+        assert(item != nullptr);
+        while (item != nullptr) {
             r_cust = (row_t*) item -> location;
             r_cust->get_value(C_FIRST);
             r_cust->get_value(C_MIDDLE);
@@ -198,7 +199,6 @@ RC tpcc_txn_man::run_payment(tpcc_query * query) {
             r_cust->get_value(C_SINCE);
             item = item->next;
         }
-		r_cust = (row_t *) item->location;
 	}
 
   	/*======================================================================+
@@ -220,6 +220,7 @@ RC tpcc_txn_man::run_payment(tpcc_query * query) {
 	r_cust_local->get_value(C_PAYMENT_CNT, c_payment_cnt);
 	r_cust_local->set_value(C_PAYMENT_CNT, c_payment_cnt + 1);
 
+#if FULL_TPCC
 	char * c_credit = r_cust_local->get_value(C_CREDIT);
 
 	if ( strstr(c_credit, "BC") ) {
@@ -266,8 +267,8 @@ RC tpcc_txn_man::run_payment(tpcc_query * query) {
 #if !TPCC_SMALL
 	r_hist->set_value(H_DATA, h_data);
 #endif
-//	insert_row(r_hist, _wl->i_history);
-
+//	no need to update the history.
+#endif
 	assert( rc == RCOK );
 	return finish(rc);
 }
@@ -296,6 +297,8 @@ RC tpcc_txn_man::run_new_order(tpcc_query * query) {
     uint64_t d_id = query->d_id;
     uint64_t c_id = query->c_id;
 	uint64_t ol_cnt = query->ol_cnt;
+    uint64_t ol_delivery_d = query->ol_delivery_d;
+    uint64_t part_id = wh_to_part(w_id);
 	/*=======================================================================+
 	EXEC SQL SELECT c_discount, c_last, c_credit, w_tax
 		INTO :c_discount, :c_last, :c_credit, :w_tax
@@ -303,7 +306,6 @@ RC tpcc_txn_man::run_new_order(tpcc_query * query) {
 		WHERE w_id = :w_id AND c_w_id = w_id AND c_d_id = :d_id AND c_id = :c_id;
 	+========================================================================*/
 	key = w_id;
-//	index = _wl->i_warehouse;
 	item = index_read("WAREHOUSE_IDX", key, wh_to_part(w_id));
     if (item == nullptr) {
         return finish(Abort);
@@ -319,7 +321,6 @@ RC tpcc_txn_man::run_new_order(tpcc_query * query) {
 	double w_tax;
 	r_wh_local->get_value(W_TAX, w_tax); 
 	key = custKey(c_id, d_id, w_id);
-//	index = _wl->i_customer_id;
 	item = index_read("CUSTOMER_ID_IDX", key, wh_to_part(w_id));
     if (item == nullptr) {
         return finish(Abort);
@@ -366,6 +367,7 @@ RC tpcc_txn_man::run_new_order(tpcc_query * query) {
 	EXEC SQL INSERT INTO ORDERS (o_id, o_d_id, o_w_id, o_c_id, o_entry_d, o_ol_cnt, o_all_local)
 		VALUES (:o_id, :d_id, :w_id, :c_id, :datetime, :o_ol_cnt, :o_all_local);
 	+========================================================================================*/
+#if FULL_TPCC
 	row_t * r_order;
 	uint64_t row_id;
     get_new_row("ORDER", r_order, 0, row_id);
@@ -386,10 +388,12 @@ RC tpcc_txn_man::run_new_order(tpcc_query * query) {
     +=======================================================*/
 	row_t * r_no;
 	get_new_row("NEW-ORDER", r_no, 0, row_id);
+	r_no->set_primary_key(neworderKey(o_id, d_id, w_id));
 	r_no->set_value(NO_O_ID, o_id);
 	r_no->set_value(NO_D_ID, d_id);
 	r_no->set_value(NO_W_ID, w_id);
 	insert_row(r_no, "NEW-ORDER_IDX");
+#endif
 	for (UInt32 ol_number = 0; ol_number < ol_cnt; ol_number++) {
 
 		uint64_t ol_i_id = query->items[ol_number].ol_i_id;
@@ -482,6 +486,7 @@ RC tpcc_txn_man::run_new_order(tpcc_query * query) {
 				:ol_quantity, :ol_amount, :ol_dist_info);
 		+====================================================*/
 		// XXX district info is not inserted.
+#if FULL_TPCC
 		row_t * r_ol;
 		uint64_t row_id;
 		get_new_row("ORDER-LINE", r_ol, 0, row_id);
@@ -493,12 +498,13 @@ RC tpcc_txn_man::run_new_order(tpcc_query * query) {
 		r_ol->set_primary_key(orderlineKey(w_id, d_id, o_id));
 #if !TPCC_SMALL
 		int w_tax=1, d_tax=1;
-		int64_t ol_amount = ol_quantity * i_price * (1 + w_tax + d_tax) * (1 - c_discount);
+		int64_t ol_amount = ol_quantity * i_price * (1 + w_tax + d_tax) * (1 - query->c_discount);
 		r_ol->set_value(OL_SUPPLY_W_ID, &ol_supply_w_id);
 		r_ol->set_value(OL_QUANTITY, &ol_quantity);
 		r_ol->set_value(OL_AMOUNT, &ol_amount);
 #endif
 		insert_row(r_ol, "ORDER-LINE_IDX");
+#endif
 	}
 	assert( rc == RCOK );
 	return finish(rc);
@@ -585,7 +591,7 @@ tpcc_txn_man::run_order_status(tpcc_query * query) {
 	key = orderlineKey(query->w_id, query->d_id, o_id);
 	index = _wl->i_orderline;
 	item = index_read(index, key, wh_to_part(query->w_id));
-	assert(item != NULL);
+//	assert(item != NULL);
 
 final:
 	assert( rc == RCOK );
@@ -604,7 +610,7 @@ tpcc_txn_man::run_delivery(tpcc_query * query) {
 
 	for (int d_id = 1; d_id <= DIST_PER_WARE; d_id++) {
 		uint64_t key = distKey(d_id, query->w_id);
-		INDEX * index = _wl->i_orderline_wd;
+		INDEX * index = _wl->i_orderline;
 		itemid_t * item = index_read(index, key, wh_to_part(query->w_id));
 		assert(item != NULL);
 		while (item->next != NULL) {
