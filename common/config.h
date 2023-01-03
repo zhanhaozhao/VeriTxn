@@ -114,7 +114,7 @@
 // #define LOG_REDO					false
 #define LOG_BATCH_TIME				10 // in ms
 #define LOG_TYPE                    LOG_DATA
-#define LOG_BUFFER_SIZE				(1048576 * 50)	// in bytes
+#define LOG_BUFFER_SIZE				(1048576 * 200)	// in bytes, 200MB
 #define MAX_LOG_ENTRY_SIZE			16384 // in Bytes
 #define LOG_RECOVER                 false
 #define NUM_LOGGER					1 // the number of loggers
@@ -259,22 +259,18 @@ extern enum TestCases					g_test_case;
 #define BASE_LEASE      100
 #define VERI_TYPE     PAGE_VERI
 #if VERI_TYPE == MERKLE_TREE
-// calculate the merkle hash in batch to avoid too costly init table.
-#define BATCH_MERKLE 1
-// calculate the merkle hash online.
-// #define SEPARATE_MERKLE
+#define BATCH_MERKLE 1 // calculate the merkle hash in batch to avoid too costly init.
+// #define SEPARATE_MERKLE // calculate the merkle hash online.
 #endif
 #define BUCKET_FACTOR 1
 
 #if INDEX_STRUCT == IDX_HASH
 #define PAGE BucketHeader
 #else
-#define PRE_LOAD 1
 #define PAGE bt_node
 #endif
 
-
-// #define READ_ONLY 1
+#define PRE_LOAD 1
 
 // Log queue type
 #define LOG_CIRCUL_BUFF 1

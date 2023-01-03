@@ -362,7 +362,7 @@ RC IndexBTEnc::load_all(std::string iname) {
     for (UInt32 part_id = 0; part_id < part_cnt; part_id ++) {
         roots[part_id] = make_node(((index_btree *) inner_index_map->_indexes[iname])->roots[part_id], part_id);
     }
-#ifdef PRE_LOAD
+#if PRE_LOAD == 1
     for (UInt32 part_id = 0; part_id < part_cnt; part_id ++) {
         dfs(roots[part_id]);
     }

@@ -289,7 +289,7 @@ RC tpcc_txn_man::run_new_order(tpcc_query * query) {
 	RC rc = RCOK;
 	uint64_t key;
 	itemid_t * item;
-//	INDEX * index;
+	INDEX * index;
 	
 	bool remote = query->remote;
 	uint64_t w_id = query->w_id;
