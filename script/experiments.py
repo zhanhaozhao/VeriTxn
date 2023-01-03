@@ -97,6 +97,73 @@ def ycsb_writes():
     exp = [[wl,n,algo,base_table_size*n,write_perc,1-write_perc,ld,sk,thr] for thr,write_perc,ld,n,sk,algo in itertools.product(tcnt,write_perc,load,nnodes,skew,algos)]
     return fmt,exp
 
+
+def ycsb_varying_cache_size():
+    wl = 'YCSB'
+    nnodes = [1]
+    algos=['OCC']
+    base_table_size=1048576
+    write_perc = [0.5]
+    load = [10000]
+    tcnt = [4]
+    skew = [0.5]
+    cache_size = [1, 4, 8, 64, 256, 512, 1024] * 1024 * 1024
+    cache_algo = [[True,"PAGE_VERI","IDX_HASH", 1],
+                  [True,"PAGE_VERI","IDX_BTREE", 1],
+                  [True,"PAGE_VERI","IDX_BTREE", 0],
+                  [True,"MERKLE_TREE","IDX_BTREE", 0]]
+    fmt = ["WORKLOAD","NODE_CNT","CC_ALG","SYNTH_TABLE_SIZE","WRITE_PERC",
+           "READ_PERC","MAX_TXN_IN_FLIGHT","ZIPF_THETA","THREAD_CNT",
+           "CACHE_SIZE", "ENABLE_DATA_CACHE", "VERI_TYPE", "INDEX_STRUCT", "PRE_LOAD"]
+    exp = [[wl,n,algo,base_table_size*n,write_perc,1-write_perc,ld,sk,thr,
+            cs].append(ca) for
+           thr,write_perc,ld,n,sk,algo,cs,ca in itertools.product(tcnt,write_perc,load,nnodes,skew,algos,cache_size,cache_algo)]
+    return fmt,exp
+
+def ycsb_fixed_cache_varying_database_size():
+    wl = 'YCSB'
+    nnodes = [1]
+    algos=['OCC']
+    base_table_size=[1, 8, 32, 128, 512, 1024, 2048] * 1024
+    write_perc = [0.5]
+    load = [10000]
+    tcnt = [4]
+    skew = [0.5]
+    cache_size = [64] * 1024 * 1024
+    cache_algo = [[True,"PAGE_VERI","IDX_HASH", 1],
+                  [True,"PAGE_VERI","IDX_BTREE", 1],
+                  [True,"PAGE_VERI","IDX_BTREE", 0],
+                  [True,"MERKLE_TREE","IDX_BTREE", 0]]
+    fmt = ["WORKLOAD","NODE_CNT","CC_ALG","SYNTH_TABLE_SIZE","WRITE_PERC",
+           "READ_PERC","MAX_TXN_IN_FLIGHT","ZIPF_THETA","THREAD_CNT",
+           "CACHE_SIZE", "ENABLE_DATA_CACHE", "VERI_TYPE", "INDEX_STRUCT", "PRE_LOAD"]
+    exp = [[wl,n,algo,base_table_size*n,write_perc,1-write_perc,ld,sk,thr,
+            cs].append(ca) for
+           thr,write_perc,ld,n,sk,algo,cs,ca in itertools.product(tcnt,write_perc,load,nnodes,skew,algos,cache_size,cache_algo)]
+    return fmt,exp
+
+def ycsb_fixed_cache_varying_skew():
+    wl = 'YCSB'
+    nnodes = [1]
+    algos=['OCC']
+    base_table_size=1048576
+    write_perc = [0.5]
+    load = [10000]
+    tcnt = [4]
+    skew = [0.1, 0.3, 0.5, 0.8, 0.9]
+    cache_size = [64] * 1024 * 1024
+    cache_algo = [[True,"PAGE_VERI","IDX_HASH", 1],
+                  [True,"PAGE_VERI","IDX_BTREE", 1],
+                  [True,"PAGE_VERI","IDX_BTREE", 0],
+                  [True,"MERKLE_TREE","IDX_BTREE", 0]]
+    fmt = ["WORKLOAD","NODE_CNT","CC_ALG","SYNTH_TABLE_SIZE","WRITE_PERC",
+           "READ_PERC","MAX_TXN_IN_FLIGHT","ZIPF_THETA","THREAD_CNT",
+           "CACHE_SIZE", "ENABLE_DATA_CACHE", "VERI_TYPE", "INDEX_STRUCT", "PRE_LOAD"]
+    exp = [[wl,n,algo,base_table_size*n,write_perc,1-write_perc,ld,sk,thr,
+            cs].append(ca) for
+           thr,write_perc,ld,n,sk,algo,cs,ca in itertools.product(tcnt,write_perc,load,nnodes,skew,algos,cache_size,cache_algo)]
+    return fmt,exp
+
 def tpcc_thread():
     wl = 'TPCC'
     nnodes = [1]
