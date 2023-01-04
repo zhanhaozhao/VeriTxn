@@ -53,8 +53,8 @@ int main(int argc, char* argv[])
   memset(t, 0, sizeof(sgx_launch_token_t));
   printf("Initializing Enclave.\n");
   sgx_status_t enclave_status = sgx_create_enclave(ENCLAVE_FILENAME,
-    SGX_DEBUG_FLAG, &t, &updated, &enclave_id, NULL);
-//    0, &t, &updated, &enclave_id, NULL);
+//     SGX_DEBUG_FLAG, &t, &updated, &enclave_id, NULL);
+   0, &t, &updated, &enclave_id, NULL);
   if (enclave_status != SGX_SUCCESS) {
     printf("Failed to create Enclave : error %d - %#x.\n", enclave_status,
       enclave_status);
@@ -114,6 +114,14 @@ int main(int argc, char* argv[])
     tport_man.init();
     printf("Done\n");
 
+	if (!g_log_recover)
+	{
+#if USE_LOG == 1
+        remotestorage = new RemoteStorage();
+#endif
+        printf("remotestorage client in main thread initialized!\n");
+    }
+
     printf("Initializing simulation... ");
     fflush(stdout);
     simulation = new SimManager;
@@ -135,7 +143,7 @@ int main(int argc, char* argv[])
             assert(false);
     }
     m_wl->init();
-	printf("workload initialized!\n");
+//	printf("workload initialized!\n");
 
     uint64_t thd_cnt = g_thread_cnt;
     uint64_t rthd_cnt = NODE_CNT > 1 ? INPUT_CNT : 0;
@@ -160,11 +168,6 @@ int main(int argc, char* argv[])
 		if (WORKLOAD != TEST)
 			query_queue->init(m_wl);
 		printf("query_queue initialized!\n");
-
-#if USE_LOG == 1
-        remotestorage = new RemoteStorage();
-#endif
-        printf("remotestorage client in main thread initialized!\n");
 	}
 
 	pthread_barrier_init( &warmup_bar, NULL, all_thd_cnt );

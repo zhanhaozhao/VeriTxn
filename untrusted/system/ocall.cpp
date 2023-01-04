@@ -63,3 +63,15 @@ void untrust_send_logs(std::string logs, uint64_t thd_id) {
 	// 	logger.enqueueRecord(logs[i]);
 	// }
 }
+
+void sync_bucket_from_disk(std::string index_name, size_t len, int part_id, uint64_t pg_id) {
+
+	remotestorage->load_page_disk(index_name, part_id, pg_id);
+
+}
+
+void sync_bucket_from_disk_internal(std::string index_name, size_t len, int part_id, uint64_t pg_id) {
+
+	remotestorage->load_page_disk(index_name, part_id, pg_id);
+
+}

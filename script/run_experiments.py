@@ -175,7 +175,7 @@ for exp in exps:
                 os.system(cmd)
 
                 if cluster == 'vcloud':
-                    cmd = './vcloud_make.sh \'{}\' /{}/ {} {} {}'.format(' '.join(machines), uname, cfgs["NODE_CNT"], perfTime, uname2)
+                    cmd = './vcloud_make.sh \'{}\' /{}/ {} {} {} {}'.format(' '.join(machines), uname, cfgs["NODE_CNT"], perfTime, uname2, sgx)
                 print cmd
                 os.system(cmd)
 

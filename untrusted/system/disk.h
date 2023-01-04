@@ -148,6 +148,7 @@ private:
     uint32_t    batch_size;
     char *      log_buffer;
     int         sockfd;
+    pthread_mutex_t mtx;
 };
 
 

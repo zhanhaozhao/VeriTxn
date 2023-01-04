@@ -114,6 +114,14 @@ int main(int argc, char* argv[])
     tport_man.init();
     printf("Done\n");
 
+	if (!g_log_recover)
+	{
+#if USE_LOG == 1
+        remotestorage = new RemoteStorage();
+#endif
+        printf("remotestorage client in main thread initialized!\n");
+    }
+
     printf("Initializing simulation... ");
     fflush(stdout);
     simulation = new SimManager;
@@ -160,11 +168,6 @@ int main(int argc, char* argv[])
 		if (WORKLOAD != TEST)
 			query_queue->init(m_wl);
 		printf("query_queue initialized!\n");
-
-#if USE_LOG == 1
-        remotestorage = new RemoteStorage();
-#endif
-        printf("remotestorage client in main thread initialized!\n");
 	}
 
 	pthread_barrier_init( &warmup_bar, NULL, all_thd_cnt );

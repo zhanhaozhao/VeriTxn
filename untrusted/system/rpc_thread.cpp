@@ -82,6 +82,7 @@ RC RPCThread::run() {
         close(listenfd);
         ssize_t n;
         char buff[MAX_LINE];
+
         while((n = read(connfd, buff, MAX_LINE)) > 0) {
           // std::cout<< "received from client:" << buff << std::endl;
           char * prefix = (char *) malloc(4);
@@ -102,6 +103,11 @@ RC RPCThread::run() {
               // TODO: encode keys into a page
             };
   //        eng->DBPrefixScan(page_id, f_proc_entry);
+
+            char * response = (char *) malloc(sizeof(long));
+            sprintf(response, "%d", n);
+            std::string str(response);
+            write(connfd, str.c_str(), str.size());
 
           } else {
             uint32_t batch_size = 0;

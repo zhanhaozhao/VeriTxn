@@ -55,4 +55,9 @@ void oc_send_logs(const char* logs, size_t len, int thd_id) {
   untrust_send_logs(std::string{logs, len}, thd_id);
 }
 
+void oc_sync_bucket_from_disk(const char* index_name, size_t len, int part_id, int pg_id) {
+
+  sync_bucket_from_disk_internal(std::string{index_name, len}, len, part_id, pg_id);
+}
+
 #endif // USE_SGX

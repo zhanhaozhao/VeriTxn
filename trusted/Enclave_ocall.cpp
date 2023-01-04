@@ -44,4 +44,9 @@ void send_logs(std::string logs, int size, uint64_t thd_id) {
   oc_send_logs(logs.c_str(), logs.size(), thd_id);
 }
 
+void sync_bucket_from_disk(std::string index_name, size_t len, int part_id, uint64_t pg_id){
+
+  oc_sync_bucket_from_disk(index_name.c_str(), len, part_id, pg_id);
+}
+
 #endif // USE_SGX

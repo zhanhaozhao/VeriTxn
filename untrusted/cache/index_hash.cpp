@@ -121,11 +121,11 @@ BucketHeader *	IndexHash::load_bucket(int part_id, int bkt_idx) {
 	return cur_bkt;
 }
 
-RC * IndexHash::sync_bucket_from_disk(int part_id, int bkt_idx) {
+// RC * IndexHash::sync_bucket_from_disk(int part_id, int bkt_idx) {
     // Since current tables are kept in memory and not flushed into disk during init_table.
     // We call a load disk to simulate one layer cache.
-    remotestorage->load_page_disk(index_name, part_id, bkt_idx);
-}
+    // remotestorage->load_page_disk(index_name, part_id, bkt_idx);
+// }
 
 /************** BucketHeader Operations ******************/
 

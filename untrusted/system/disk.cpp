@@ -63,17 +63,20 @@ RemoteStorage::RemoteStorage() {
 		exit(1);
 	}
 
+    pthread_mutex_init(&mtx, NULL);
     std::cout<< "Connecting to the storage suceess." << std::endl;
 
 }
 
 void RemoteStorage::load_page_disk(std::string iname, int part_id, uint64_t pg_id) {
 
+    pthread_mutex_lock(&mtx);
     // Instantiate the client. It requires a channel, out of which the actual RPCs
     // are created. This channel models a connection to an endpoint (in this case,
     // localhost at port 50051). We indicate that the channel isn't authenticated
     // (use of InsecureChannelCredentials()).
-    
+    // std::cout<< "entering load disk" << std::endl;
+
     auto keys = new char [50];
     sprintf(keys, "%d_%lu_", part_id, pg_id);
     std::string page_id(keys);
@@ -81,21 +84,23 @@ void RemoteStorage::load_page_disk(std::string iname, int part_id, uint64_t pg_i
 
     write(sockfd, page_id.data(), page_id.size());
 
-    char recvline[MAX_LINE];
+    char * recvline = (char *) malloc(sizeof(long));
 
-	if(read(sockfd, recvline, MAX_LINE) == 0)
-	{
+	if(read(sockfd, recvline, sizeof(long)) == 0) {
 		perror("server terminated prematurely");
 		exit(1);
-	}//if
-
-
+	}
+    // std::cout<< "received from client:" << atol(recvline) << std::endl;
+    pthread_mutex_unlock(&mtx);
 }
 
 void RemoteStorage::send_log(char * log_entry, uint32_t size){
 
     // Format for a log message
 	// | LOGS | entry_num:4 | (entry_size:4 | log_entry_data:?) * BATCH_SIZE
+
+    pthread_mutex_lock(&mtx);
+    // std::cout<< "entering send logs" << std::endl;
 
     if (batch_num == 0) { // init buffer prefix
         batch_size = 0;
@@ -128,6 +133,7 @@ void RemoteStorage::send_log(char * log_entry, uint32_t size){
 //        std::cout<< "received from client:" << atoi(recvline) << std::endl;
         batch_num = 0;
     }
+    pthread_mutex_unlock(&mtx);
 
     //   kvstore::LogEntry * entry = request->add_entry();
     //   entry->set_data(std::string(log_entry, size));

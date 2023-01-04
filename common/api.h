@@ -19,4 +19,8 @@ void update_hash_value(std::string index_name, int part_id, uint64_t bkt_idx, ui
 void send_logs(std::string logs, int size, uint64_t thd_id);
 void async_hash(std::string index_name, int part_id, uint64_t bkt_idx, uint64_t hash);
 void untrust_send_logs(std::string logs, uint64_t thd_id);
+
+void sync_bucket_from_disk(std::string index_name, size_t len, int part_id, uint64_t pg_id);
+void sync_bucket_from_disk_internal(std::string index_name, size_t len, int part_id, uint64_t pg_id);
+
 #endif

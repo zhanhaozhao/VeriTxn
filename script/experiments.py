@@ -46,6 +46,23 @@ def ycsb_debug():
     exp = [[wl,n,algo,base_table_size,wr_perc,1-wr_perc,ld,sk,thr] for thr,wr_perc,ld,n,sk,algo in itertools.product(tcnt,write_perc,load,nnodes,skew,algos)]
     return fmt,exp
 
+def ycsb_single_layer_cache():
+    wl = 'YCSB'
+    nnodes = [1]
+    algos=['OCC']
+    # algos=['NO_WAIT']
+    # base_table_size=1048576*10
+    base_table_size=1048576
+    write_perc = [0.5]
+    load = [10000]
+    tcnt = [4]
+    skew = [0.6]
+    data_cache = 'false'
+    use_log = 1
+    fmt = ["WORKLOAD","NODE_CNT","CC_ALG","SYNTH_TABLE_SIZE","WRITE_PERC","READ_PERC","MAX_TXN_IN_FLIGHT","ZIPF_THETA","THREAD_CNT", "ENABLE_DATA_CACHE", "USE_LOG"]
+    exp = [[wl,n,algo,base_table_size,wr_perc,1-wr_perc,ld,sk,thr, data_cache, use_log] for thr,wr_perc,ld,n,sk,algo in itertools.product(tcnt,write_perc,load,nnodes,skew,algos)]
+    return fmt,exp
+
 def ycsb_scaling():
     wl = 'YCSB'
     #nnodes = [1,2,4,8,16,32,64]
@@ -241,7 +258,8 @@ experiment_map = {
     'tpcc_scaling_whset': tpcc_scaling_whset,
     'ycsb_varying_cache_size': ycsb_varying_cache_size,
     'ycsb_fixed_cache_varying_database_size': ycsb_fixed_cache_varying_database_size,
-    'ycsb_fixed_cache_varying_skew': ycsb_fixed_cache_varying_skew
+    'ycsb_fixed_cache_varying_skew': ycsb_fixed_cache_varying_skew,
+    'ycsb_single_layer_cache': ycsb_single_layer_cache
 }
 
 
@@ -266,6 +284,8 @@ configs = {
     "READ_PERC":0.0,
     "WRITE_PERC":0.0,
     "ISOLATION_LEVEL":"SERIALIZABLE",
+    "USE_LOG": 0,
+    "ENABLE_DATA_CACHE": "true",
 #YCSB
     "INIT_PARALLELISM" : 8,
     "ZIPF_THETA":0.3,
