@@ -121,11 +121,12 @@ re_ycsb_txn_man::recover_txn(char * log_entry, uint64_t tid)
 		UNPACK(log_entry, part_id, offset);
 		UNPACK(log_entry, node_id, offset);
 		UNPACK(log_entry, page_offset, offset);
+#if INDEX_STRUCT == IDX_HASH and WORKLOAD == YCSB
         assert(part_id == 0 && page_offset == 0);
+#endif
 
         rockskey = new char [50];
         sprintf(rockskey, "%lu_%lu_%lu", part_id, node_id, page_offset);
-//        printf("insert key = %s\n", rockskey);
 		UNPACK(log_entry, key, offset);
 		
         UNPACK(log_entry, data_length, offset);

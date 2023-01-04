@@ -173,7 +173,7 @@ BucketHeader_ENC* IndexEnc::load_bucket(std::string iname, int part_id, uint64_t
         auto res_bucket = new BucketHeader_ENC;
         uint total_size = 0;
         auto idx = (IndexHash *) inner_index_map->_indexes[iname];
-#if !ENABLE_DATA_CACHE
+#if !ENABLE_DATA_CACHE and USE_LOG
         idx->sync_bucket_from_disk(part_id, bkt_idx);
 #endif
         res_bucket->origin = &(idx->_buckets[part_id][bkt_idx]);

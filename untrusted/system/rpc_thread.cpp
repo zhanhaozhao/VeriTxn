@@ -90,7 +90,7 @@ RC RPCThread::run() {
           if (strcmp(prefix, "LOGS")) {
             // read page
             std::string page_id(buff);
-            printf("scanning prefix %s\n", page_id.c_str());
+//            printf("scanning prefix %s\n", page_id.c_str());
             // read from rocksdb
             // std::map<std::string> items;
             std::vector<std::string> reply;
@@ -147,10 +147,10 @@ RC RPCThread::run() {
             }
 
             // construct reposnse
-            char * response = (char *) malloc(sizeof(uint32_t));
-            sprintf(response, "%d", batch_size);
-            std::string str(response);
-            write(connfd, str.c_str(), str.size());
+//            char * response = (char *) malloc(sizeof(uint32_t));
+//            sprintf(response, "%d", batch_size);
+//            std::string str(response);
+//            write(connfd, str.c_str(), str.size());
           }
 
         }

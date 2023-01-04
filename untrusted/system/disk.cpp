@@ -117,15 +117,15 @@ void RemoteStorage::send_log(char * log_entry, uint32_t size){
         memcpy(log_buffer + sizeof(uint32_t), &batch_num, sizeof(uint32_t));
         write(sockfd, log_buffer, batch_size);
 
-        char * recvline = (char *) malloc(sizeof(uint32_t));
-        if(read(sockfd, recvline, sizeof(uint32_t)) == 0) {
-            perror("server terminated prematurely");
-		    exit(1);
-	    }
+//        char * recvline = (char *) malloc(sizeof(uint32_t));
+//        if(read(sockfd, recvline, sizeof(uint32_t)) == 0) {
+//            perror("server terminated prematurely");
+//		    exit(1);
+//	    }
         // uint32_t process_count = 0;
         // uint32_t offset = 0;
         // UNPACK(&recvline, process_count, offset);
-        std::cout<< "received from client:" << atoi(recvline) << std::endl;
+//        std::cout<< "received from client:" << atoi(recvline) << std::endl;
         batch_num = 0;
     }
 

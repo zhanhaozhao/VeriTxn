@@ -94,7 +94,8 @@ def ycsb_writes():
     tcnt = [4]
     skew = [0.5]
     fmt = ["WORKLOAD","NODE_CNT","CC_ALG","SYNTH_TABLE_SIZE","WRITE_PERC","READ_PERC","MAX_TXN_IN_FLIGHT","ZIPF_THETA","THREAD_CNT"]
-    exp = [[wl,n,algo,base_table_size*n,write_perc,1-write_perc,ld,sk,thr] for thr,write_perc,ld,n,sk,algo in itertools.product(tcnt,write_perc,load,nnodes,skew,algos)]
+    exp = [[wl,n,algo,base_table_size*n,write_perc,1-write_perc,ld,sk,thr]
+           for thr,write_perc,ld,n,sk,algo in itertools.product(tcnt,write_perc,load,nnodes,skew,algos)]
     return fmt,exp
 
 
@@ -107,18 +108,24 @@ def ycsb_varying_cache_size():
     load = [10000]
     tcnt = [4]
     skew = [0.5]
-    cache_size = [1, 4, 8, 64, 256, 512, 1024] * 1024 * 1024
-    cache_algo = [[True,"PAGE_VERI","IDX_HASH", 1],
-                  [True,"PAGE_VERI","IDX_BTREE", 1],
-                  [True,"PAGE_VERI","IDX_BTREE", 0],
-                  [True,"MERKLE_TREE","IDX_BTREE", 0]]
+    cache_size = [1* 1024 * 1024, 4* 1024 * 1024, 8* 1024 * 1024, 64* 1024 * 1024, 256* 1024 * 1024, 512* 1024 * 1024, 1024* 1024 * 1024]
+    cache_algo = [[True,"PAGE_VERI","IDX_HASH", 1]]
+                  # [True,"PAGE_VERI","IDX_BTREE", 1],
+                  # [True,"PAGE_VERI","IDX_BTREE", 0],
+                  # [True,"MERKLE_TREE","IDX_BTREE", 0]]
     fmt = ["WORKLOAD","NODE_CNT","CC_ALG","SYNTH_TABLE_SIZE","WRITE_PERC",
            "READ_PERC","MAX_TXN_IN_FLIGHT","ZIPF_THETA","THREAD_CNT",
            "CACHE_SIZE", "ENABLE_DATA_CACHE", "VERI_TYPE", "INDEX_STRUCT", "PRE_LOAD"]
     exp = [[wl,n,algo,base_table_size*n,write_perc,1-write_perc,ld,sk,thr,
-            cs].append(ca) for
-           thr,write_perc,ld,n,sk,algo,cs,ca in itertools.product(tcnt,write_perc,load,nnodes,skew,algos,cache_size,cache_algo)]
-    return fmt,exp
+            cs] for
+           thr,write_perc,ld,n,sk,algo,cs in itertools.product(tcnt,write_perc,load,nnodes,skew,algos,cache_size)]
+    print( "exp = ", exp)
+    exps = []
+    for a in exp:
+        for b in cache_algo:
+            exps.append(a+b)
+    print( "exp = ", exps)
+    return fmt,exps
 
 def ycsb_fixed_cache_varying_database_size():
     wl = 'YCSB'
@@ -232,6 +239,9 @@ experiment_map = {
     'tpcc_scaling': tpcc_scaling,
     'tpcc_thread': tpcc_thread,
     'tpcc_scaling_whset': tpcc_scaling_whset,
+    'ycsb_varying_cache_size': ycsb_varying_cache_size,
+    'ycsb_fixed_cache_varying_database_size': ycsb_fixed_cache_varying_database_size,
+    'ycsb_fixed_cache_varying_skew': ycsb_fixed_cache_varying_skew
 }
 
 

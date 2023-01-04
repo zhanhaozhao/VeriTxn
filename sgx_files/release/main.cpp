@@ -161,7 +161,9 @@ int main(int argc, char* argv[])
 			query_queue->init(m_wl);
 		printf("query_queue initialized!\n");
 
+#if USE_LOG == 1
         remotestorage = new RemoteStorage();
+#endif
         printf("remotestorage client in main thread initialized!\n");
 	}
 

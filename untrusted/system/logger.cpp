@@ -402,7 +402,7 @@ Logger::logTxn(char * log_entry, uint32_t size, uint64_t epoch, bool sync, uint6
     // TODOzzh: generate log batch
     pthread_mutex_lock(&mtx);
     // send log
-//    remotestorage->send_log(log_entry, size);
+    remotestorage->send_log(log_entry, size);
     pthread_mutex_unlock(&mtx);
 
 	COMPILER_BARRIER

@@ -135,7 +135,7 @@ int main(int argc, char* argv[])
             assert(false);
     }
     m_wl->init();
-//	printf("workload initialized!\n");
+	printf("workload initialized!\n");
 
     uint64_t thd_cnt = g_thread_cnt;
     uint64_t rthd_cnt = NODE_CNT > 1 ? INPUT_CNT : 0;
@@ -161,7 +161,9 @@ int main(int argc, char* argv[])
 			query_queue->init(m_wl);
 		printf("query_queue initialized!\n");
 
+#if USE_LOG == 1
         remotestorage = new RemoteStorage();
+#endif
         printf("remotestorage client in main thread initialized!\n");
 	}
 
