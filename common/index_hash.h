@@ -81,7 +81,7 @@ public:
 	RC	 		index_read(idx_key_t key, itemid_t * &item,
 							int part_id=-1, int thd_id=0);
     BucketHeader *	load_bucket(int part_id, int bkt_idx);
-    RC *	sync_bucket_from_disk(int part_id, int bkt_idx);
+    // RC *	sync_bucket_from_disk(int part_id, int bkt_idx);
 	char*	index_name;
     BucketHeader ** 	_buckets;
 	uint64_t 			_bucket_cnt_per_part;
