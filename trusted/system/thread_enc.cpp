@@ -67,6 +67,8 @@ void index_load_ecall(int part_cnt, void * table, std::string iname, void * inde
     for (int i=0;i<part_cnt;i++)
         for (uint64_t j=0;j<bucket_cnt;j++) {
             index->load_bucket(iname, i, j);
+            if (!index->_cache->can_force_load())
+                break;
         }
     #endif
 #else

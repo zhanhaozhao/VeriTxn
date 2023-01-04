@@ -93,6 +93,7 @@ public:
 //    static void flush_disk(int part_id, uint64_t bkt_idx, const DFlow & e);
     void release_up_cache(BucketHeader_ENC *c);
 
+    lru_cache*           _cache;
 private:
     void get_latch(BucketHeader_ENC * bucket);
     void release_latch(BucketHeader_ENC * bucket);
@@ -103,7 +104,6 @@ private:
     uint64_t 			_bucket_cnt_per_part;
     uint64_t 			_default_verify_hash;
     uint64_t**          _verify_hash;
-    lru_cache*           _cache;
 #ifndef SGX_DISK
     BucketHeader_ENC**      _buckets;
 #endif

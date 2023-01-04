@@ -60,7 +60,7 @@
 #define ENABLE_LATCH				true
 #define CENTRAL_INDEX				false
 #define CENTRAL_MANAGER 			false
-#define INDEX_STRUCT				IDX_BTREE
+#define INDEX_STRUCT				IDX_HASH
 #define BTREE_ORDER 				16
 #define INDEX_NAME_LENGTH       	16
 #define INDEX_NAME_LENGTH       	16
@@ -250,7 +250,7 @@ extern enum TestCases					g_test_case;
 #define USE_ASYNC_HASH              1
 #define USE_LOG                     0
 #define RPC_SERVER                  "127.0.0.1:50051"
-#define LOG_BATCH_SIZE              1
+#define LOG_BATCH_SIZE              100
 
 // cache parameters
 //#define VERIFIED_CACHE_SIZ      (1  * 1024 * 1024)  // 1MB

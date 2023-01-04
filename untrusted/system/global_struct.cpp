@@ -17,7 +17,6 @@ RemoteStorage * remotestorage;
 #if USE_SGX != 1
 kvengine * eng;
 #endif
-kvserver * server;
 
 
 // Plock part_lock_man;

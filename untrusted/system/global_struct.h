@@ -14,7 +14,6 @@
 #include "logger.h"
 #include "disk.h"
 #include "kvengine.h"
-#include "kvserver.h"
 
 // #include "common/stats.h"
 // #include "dl_detect.h"
@@ -38,7 +37,6 @@ extern RemoteStorage *remotestorage;
 #if USE_SGX != 1
 extern kvengine * eng;
 #endif
-extern kvserver * server;
 // extern Plock part_lock_man;
 // extern OptCC occ_man;
 

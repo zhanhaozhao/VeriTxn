@@ -133,3 +133,7 @@ RC lru_cache::load_and_swap(int part_id, uint64_t bkt_idx, uint bytes_size,  voi
     release_latch();
     return RCOK;
 }
+
+bool lru_cache::can_force_load() const {
+    return _cached_bytes * 2 <= _limit;
+}

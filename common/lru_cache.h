@@ -22,6 +22,7 @@ public:
     RC 	init(uint64_t bucket_cnt, int part_cnt, uint64_t siz);
     void *try_load(uint part_id, uint64_t bkt_idx);
     void release(int part_id, uint64_t bkt_idx);
+    bool can_force_load() const; // if half of the place is occupied, then stop force loading.
     void inc_lease(int part_id, uint64_t bkt_idx);
     void reset_lease(int part_id, uint64_t bkt_idx);
 

@@ -348,6 +348,7 @@ BTNode* IndexBTEnc::load_child(BTNode *cur_node, int i) {
 
 RC IndexBTEnc::dfs(BTNode* c) { // force load BTree nodes.
     assert(c != nullptr);
+    if (!_cache->can_force_load()) return RCOK; // should leave N/2 space for loading path.
     if (c->is_leaf) {
         _cache->release(c->part, c->node_id);// do not force load leaf nodes.
         return RCOK;

@@ -16,10 +16,13 @@ def replace(filename, pattern, replacement):
 
 jobs = OrderedDict()
 dbms_cfg = ["config-std.h", "common/config.h"]
-algs = ['Silo']
-def insert_job(alg="Silo", workload="YCSB", thread_num=4, theta=0.6, bkt_fac = 1, read_perc=0.5, use_sgx=True,
+algs = ['OCC']
+count_job = 0
+def insert_job(alg="OCC", workload="YCSB", thread_num=4, theta=0.6, bkt_fac = 1, read_perc=0.5, use_sgx=True,
 			   cs=1024*1024*1024, veri="PAGE_VERI", index="IDX_HASH", pre_load=1, use_log=0):
-	jobs[workload + '_th_num=' + str(thread_num) + '_theta=' + str(theta) + '_bkt_fac=' + str(bkt_fac) + "_readP=" + str(read_perc) + "SGX=" + str(use_sgx)] = {
+	global count_job
+	count_job = count_job + 1
+	jobs[count_job] = {
 		"WORKLOAD"			: workload,
 		"CORE_CNT"			: thread_num,
 		"CC_ALG"			: alg,
@@ -30,7 +33,7 @@ def insert_job(alg="Silo", workload="YCSB", thread_num=4, theta=0.6, bkt_fac = 1
 		"WRITE_PERC"		: 1-read_perc,
 		"USE_SGX"			: 1 if use_sgx else 0,
 		"CACHE_SIZE"		: cs,
-		"ENABLE_DATA_CACHE" : True,
+		"ENABLE_DATA_CACHE" : "true",
 		"VERI_TYPE"			: veri,
 		"INDEX_STRUCT"		: index,
 		"PRE_LOAD"			: pre_load,
@@ -42,9 +45,9 @@ def test_compile(job):
 	os.system("cp "+ dbms_cfg[0] +' ' + dbms_cfg[1])
 
 	if job["USE_SGX"] == 1:
-		os.system("make sgx-release")
+		os.system("make sgx-release 2>&1")
 	else:
-		os.system("make no-sgx")
+		os.system("make no-sgx 2>&1")
 
 	for (param, value) in job.items():
 		pattern = r"\#define\s*" + re.escape(param) + r'.*'
@@ -81,10 +84,14 @@ def test_run(job, fimeName, test = ''):
 	if job["USE_LOG"] == 1:
 		process_store = subprocess.Popen("./Store>./store.log", stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
 		time.sleep(5)
-	cmd = "./App %s" % (app_flags) + fimeName
-	print(cmd)
-	cmd = cmd
+	cmd = "./App %s" % (app_flags)# + fimeName
 	process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+	result = process.communicate()
+	print(result)
+	f = open(fimeName, 'rw+')
+	print("input", result[0][result[0].find('[summary]'):])
+	f.write(result[0][result[0].find('[summary]'):])
+	f.close()
 	process.wait()
 	if job["USE_LOG"] == 1:
 		process_store.kill()
@@ -94,12 +101,12 @@ testRound = 1
 def run_all_test(jobs, filename) :
 	filename = "./results/" + filename
 	os.system("echo 'thread_cnt, txn_cnt, abort_cnt, execution_time, latency' > %s" % filename)
-	for (jobname, job) in jobs.items():
+	for (_, job) in jobs.items():
 		for ii in range(testRound):
 			while True:
 				if test_compile(job):
 					break
-			test_run(job, ">> %s" % filename)
+			test_run(job, filename)
 			os.system("make clean> temp.out 2>&1")
 
 # run YCSB tests
@@ -180,19 +187,21 @@ def run_common_test():
 	global jobs
 	jobs = OrderedDict()
 	# for th in [3, 6, 7]:
-	insert_job("NO_WAIT", 'YCSB', thread_num=1, read_perc=0.5, theta=0.6, use_sgx=False)
-	# insert_job("NO_WAIT", 'YCSB', thread_num=1, read_perc=0.5, theta=0.6, use_sgx=True)
+	# insert_job("OCC", 'YCSB', use_sgx=False)
+	insert_job("OCC", 'YCSB', use_sgx=True)
 	# print(jobs)
 	run_all_test(jobs, "comparison.csv")
 
-run_common_test()
+def run_cache_size_test():
+	global jobs
+	jobs = OrderedDict()
+	for cs in [1*1024*1024, 4*1024*1024, 16*1024*1024, 64*1024*1024, 256*1024*1024, 1024*1024*1024]:
+		insert_job('OCC', 'YCSB', use_sgx=True, cs=cs)
+	run_all_test(jobs, "cache_size_hash.csv")
+
+run_cache_size_test()
 # run_rw_exp()
 # run_thread_exp()
 # run_tpc_exp()
 # run_theta_exp()
 # run_bktsiz_exp()
-
-# os.system('cp config-std.h ./common/config.h')
-# os.system("cp Makefile.sgx Makefile")
-# os.system('make clean > temp.out 2>&1')
-# os.system('rm temp.out')
