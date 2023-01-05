@@ -19,7 +19,8 @@ dbms_cfg = ["config-std.h", "common/config.h"]
 algs = ['OCC']
 count_job = 0
 def insert_job(alg="OCC", workload="YCSB", thread_num=4, theta=0.6, bkt_fac = 1, read_perc=0.5, use_sgx=True,
-			   cs=1024*1024*1024, veri="PAGE_VERI", index="IDX_HASH", pre_load=1, use_log=0):
+			   cs=1024*1024*1024, veri="PAGE_VERI", index="IDX_HASH", pre_load=1, use_log=0, txn_per_thd=10000,
+			   database_size=1024*1024, txn_length=64, enable_data_cache=True):
 	global count_job
 	count_job = count_job + 1
 	jobs[count_job] = {
@@ -32,16 +33,20 @@ def insert_job(alg="OCC", workload="YCSB", thread_num=4, theta=0.6, bkt_fac = 1,
 		"READ_PERC"			: read_perc,
 		"WRITE_PERC"		: 1-read_perc,
 		"USE_SGX"			: 1 if use_sgx else 0,
-		"CACHE_SIZE"		: cs,
-		"ENABLE_DATA_CACHE" : "true",
+		"VERIFIED_CACHE_SIZ": cs,
+		"ENABLE_DATA_CACHE" : "true" if enable_data_cache else "false",
 		"VERI_TYPE"			: veri,
 		"INDEX_STRUCT"		: index,
 		"PRE_LOAD"			: pre_load,
-		"USE_LOG"			: use_log
+		"USE_LOG"			: use_log,
+		"MAX_TXN_PER_PART"	: txn_per_thd,
+		"SYNTH_TABLE_SIZE"	: database_size,
+		"REQ_PER_QUERY"		: txn_length
 	}
 
 
 def test_compile(job):
+	os.system("make clean> temp.out 2>&1")
 	os.system("cp "+ dbms_cfg[0] +' ' + dbms_cfg[1])
 
 	if job["USE_SGX"] == 1:
@@ -55,10 +60,16 @@ def test_compile(job):
 		replace(dbms_cfg[1], pattern, replacement)
 
 	os.system("make clean> temp.out 2>&1")
+	os.system("cat common/config.h | grep USE_SGX")
 	# print("clean finished!!!!")
 	time.sleep(0.5)
 	if job["USE_LOG"] == 1:
 		ret = os.system("cd script && bash ./storage_compile.sh> temp.out 2>&1")
+		if ret != 0:
+			print ("ERROR in compiling job=")
+			print (job)
+			return False
+		ret = os.system("rm storage/rocksdb/* 2>&1")
 		if ret != 0:
 			print ("ERROR in compiling job=")
 			print (job)
@@ -72,7 +83,7 @@ def test_compile(job):
 	print ("PASS Compile")
 	return True
 
-def test_run(job, fimeName, test = ''):
+def test_run(job, f, test = ''):
 	global process_store
 	print(job)
 	app_flags = "" #m_txn->run_txn
@@ -83,16 +94,15 @@ def test_run(job, fimeName, test = ''):
 
 	if job["USE_LOG"] == 1:
 		process_store = subprocess.Popen("./Store>./store.log", stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-		time.sleep(5)
+		time.sleep(7)
 	cmd = "./App %s" % (app_flags)# + fimeName
 	process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
 	result = process.communicate()
 	print(result)
-	f = open(fimeName, 'rw+')
 	print("input", result[0][result[0].find('[summary]'):])
 	f.write(result[0][result[0].find('[summary]'):])
-	f.close()
 	process.wait()
+	f.flush()
 	if job["USE_LOG"] == 1:
 		process_store.kill()
 
@@ -101,13 +111,15 @@ testRound = 1
 def run_all_test(jobs, filename) :
 	filename = "./results/" + filename
 	os.system("echo 'thread_cnt, txn_cnt, abort_cnt, execution_time, latency' > %s" % filename)
+	f = open(filename, 'w+')
 	for (_, job) in jobs.items():
 		for ii in range(testRound):
 			while True:
 				if test_compile(job):
 					break
-			test_run(job, filename)
+			test_run(job, f)
 			os.system("make clean> temp.out 2>&1")
+	f.close()
 
 # run YCSB tests
 def run_thread_exp():
@@ -192,14 +204,91 @@ def run_common_test():
 	# print(jobs)
 	run_all_test(jobs, "comparison.csv")
 
-def run_cache_size_test():
+def run_cache_size_impact_for_different_methods_test():
 	global jobs
 	jobs = OrderedDict()
-	for cs in [1*1024*1024, 4*1024*1024, 16*1024*1024, 64*1024*1024, 256*1024*1024, 1024*1024*1024]:
-		insert_job('OCC', 'YCSB', use_sgx=True, cs=cs)
+	#1*1024*1024, 64*1024*1024,256*1024*1024,  1024*1024*1024
+	x_con = [1*1024*1024, 64*1024*1024, 128*1024*1024, 256*1024*1024, 512*1024*1024, 1024*1024*1024]
+	for cs in x_con:
+		insert_job('NO_WAIT', 'YCSB', use_sgx=True, cs=cs)
 	run_all_test(jobs, "cache_size_hash.csv")
+	jobs.clear()
+	for cs in x_con:
+		insert_job('NO_WAIT', 'YCSB', use_sgx=True, index="IDX_BTREE", cs=cs)
+	run_all_test(jobs, "cache_size_bt.csv")
+	jobs.clear()
+	for cs in x_con:
+		insert_job('NO_WAIT', 'YCSB', use_sgx=True, index="IDX_BTREE", cs=cs, pre_load=0)
+	run_all_test(jobs, "cache_size_enclage.csv")
+	jobs.clear()
+	for cs in x_con:
+		insert_job('NO_WAIT', 'YCSB', use_sgx=True, index="IDX_BTREE", veri="MERKLE_TREE", cs=cs, pre_load=0, txn_per_thd=1000)
+	run_all_test(jobs, "cache_size_merkle.csv")
 
-run_cache_size_test()
+# def run_database_cache_size_impact_under_different_skew_test():
+# 	global jobs
+# 	jobs = OrderedDict()
+# 	# [1*1024*1024, 4*1024*1024, 16*1024*1024, 64*1024*1024, 256*1024*1024, 1024*1024*1024]
+# 	x_con = [128*1024*1024, 512*1024*1024]
+# 	for theta in [0, 0.9]:	# 8kb per bucket.
+# 		for cs in x_con:
+# 			insert_job('OCC', 'YCSB', use_sgx=True, theta=theta, cs=cs)
+# 	run_all_test(jobs, "db_skew_cache.csv")
+
+def run_database_skew_test():
+	global jobs
+	jobs = OrderedDict()
+	x_con = [0.0, 0.3, 0.5, 0.6, 0.8, 0.9]
+	# for cs in x_con:
+	# 	insert_job('NO_WAIT', 'YCSB', use_sgx=True, theta=cs)
+	# for cs in x_con:
+	# 	insert_job('NO_WAIT', 'YCSB', use_sgx=True, index="IDX_BTREE", theta=cs, pre_load=0)
+	for cs in x_con:
+		insert_job('NO_WAIT', 'YCSB', use_sgx=True, index="IDX_BTREE", veri="MERKLE_TREE", theta=cs, pre_load=0, txn_per_thd=1000)
+	run_all_test(jobs, "cache_skew.log")
+
+def run_database_size_test():
+	global jobs
+	jobs = OrderedDict()
+	x_con = [1*1024*1024, 8*1024*1024, 16*1024*1024, 32*1024*1024, 32*1024*1024, 48*1024*1024, 64*1024*1024]
+	for cs in x_con:
+		insert_job('NO_WAIT', 'YCSB', use_sgx=True, database_size=cs)
+	for cs in x_con:
+		insert_job('NO_WAIT', 'YCSB', use_sgx=True, index="IDX_BTREE", database_size=cs, pre_load=0)
+	for cs in x_con:
+		insert_job('NO_WAIT', 'YCSB', use_sgx=True, index="IDX_BTREE", veri="MERKLE_TREE", database_size=cs, pre_load=0)
+	run_all_test(jobs, "db_size.log")
+
+def run_database_varying_txn_length():
+	global jobs
+	jobs = OrderedDict()
+	x_con = [1, 4, 16, 32, 64]
+	for cs in x_con:
+		insert_job('NO_WAIT', 'YCSB', use_sgx=True, txn_length=cs)
+	for cs in x_con:
+		insert_job('NO_WAIT', 'YCSB', use_sgx=True, index="IDX_BTREE", txn_length=cs, pre_load=0)
+	for cs in x_con:
+		insert_job('NO_WAIT', 'YCSB', use_sgx=True, index="IDX_BTREE", veri="MERKLE_TREE", txn_length=cs, pre_load=0, txn_per_thd=1000)
+	run_all_test(jobs, "txn_length.log")
+
+def run_single_layer_cache_exp():
+	global jobs
+	jobs = OrderedDict()
+	insert_job('NO_WAIT', 'YCSB', use_sgx=True, use_log=1)
+	insert_job('NO_WAIT', 'YCSB', use_sgx=True, use_log=1, enable_data_cache=False)
+	insert_job('NO_WAIT', 'YCSB', use_sgx=True, use_log=1, database_size=1024*8)	#small db.
+	insert_job('NO_WAIT', 'YCSB', use_sgx=True, use_log=1, enable_data_cache=False, database_size=1024*8)
+	insert_job('NO_WAIT', 'YCSB', use_sgx=True, use_log=1, theta=0.9)	#small db.
+	insert_job('NO_WAIT', 'YCSB', use_sgx=True, use_log=1, enable_data_cache=False, theta=0.9)
+	run_all_test(jobs, "single_layer.log")
+
+# run_cache_size_impact_for_different_methods_test()
+# run_database_skew_test()
+run_database_size_test()
+# run_database_varying_txn_length()
+run_single_layer_cache_exp()
+# run_database_skew_test()
+# run_cache_size_test()
 # run_rw_exp()
 # run_thread_exp()
 # run_tpc_exp()

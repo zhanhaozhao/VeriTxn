@@ -90,7 +90,10 @@ void RemoteStorage::load_page_disk(std::string iname, int part_id, uint64_t pg_i
 		perror("server terminated prematurely");
 		exit(1);
 	}
-    // std::cout<< "received from client:" << atol(recvline) << std::endl;
+#if INDEX_STRUCT != IDX_HASH
+	assert(false);  // currently, we only support to load log from disk for hash index.
+#endif
+    std::cout<< "received from client:" << atol(recvline) << std::endl;
     pthread_mutex_unlock(&mtx);
 }
 

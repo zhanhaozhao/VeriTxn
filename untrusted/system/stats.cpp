@@ -27,6 +27,7 @@ void Stats_thd::clear() {
 	time_index = 0;
 	time_abort = 0;
 	time_cleanup = 0;
+	time_cache = 0;
 	time_wait = 0;
 	time_ts_alloc = 0;
 	latency = 0;
@@ -122,6 +123,7 @@ void Stats::print() {
 	double total_time_ts_alloc = 0;
 	double total_latency = 0;
 	double total_time_query = 0;
+	double total_time_cache = 0;
 	for (uint64_t tid = 0; tid < g_thread_cnt; tid ++) {
 		total_txn_cnt += _stats[tid]->txn_cnt;
 		total_abort_cnt += _stats[tid]->abort_cnt;
@@ -135,6 +137,7 @@ void Stats::print() {
 		total_time_index += _stats[tid]->time_index;
 		total_time_abort += _stats[tid]->time_abort;
 		total_time_cleanup += _stats[tid]->time_cleanup;
+		total_time_cache += _stats[tid]->time_cache;
 		total_time_wait += _stats[tid]->time_wait;
 		total_time_ts_alloc += _stats[tid]->time_ts_alloc;
 		total_latency += _stats[tid]->latency;
@@ -163,7 +166,7 @@ void Stats::print() {
 	}
 	printf("[summary] total_txn_cnt=%ld, total_abort_cnt=%ld"
 		", run_time=%f, time_wait=%f, time_ts_alloc=%f"
-		", time_man=%f, time_index=%f, time_abort=%f, time_cleanup=%f, latency=%f"
+		", time_man=%f, time_index=%f, time_abort=%f, time_cleanup=%f, time_cache=%f, latency=%f"
 		", deadlock_cnt=%ld, cycle_detect=%ld, dl_detect_time=%f, dl_wait_time=%f"
 		", time_query=%f, debug1=%f, debug2=%f, debug3=%f, debug4=%f, debug5=%f\n", 
 		total_txn_cnt, 
@@ -175,6 +178,7 @@ void Stats::print() {
 		total_time_index / BILLION,
 		total_time_abort / BILLION,
 		total_time_cleanup / BILLION,
+		total_time_cache / BILLION,
 		total_latency / BILLION / total_txn_cnt,
 		deadlock,
 		cycle_detect,

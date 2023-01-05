@@ -70,7 +70,6 @@ uint64_t flush_num = 0;
 // BTree is not suitable for your VeriTXN's verified cache since it needs to cache non-leaf nodes,
 // which increases cache miss rate and add-on Ecalls and Ocalls.
 void IndexBTEnc::flush_out(BTNode *c) {
-    assert(false);
     auto cur = ATOM_ADD_FETCH(flush_num, 1);
 #if VERI_TYPE == MERKLE_TREE
     // online updated hash.

@@ -101,7 +101,9 @@ void txn_man::cleanup(RC rc) {
 	insert_cnt = 0;
 	return;
 #endif
-
+#if PROFILING
+    uint64_t starttime = get_cur_time_ocall();
+#endif
     PAGE_ENC ** pages = new PAGE_ENC* [row_cnt];
     for (int i = 0; i < row_cnt; i ++) {
         Access *access = accesses[i];
@@ -189,12 +191,18 @@ void txn_man::cleanup(RC rc) {
 #if CC_ALG == DL_DETECT
 	dl_detector.clear_dep(get_txn_id());
 #endif
+#if PROFILING
+	uint64_t timespan = get_cur_time_ocall() - starttime;
+    INC_STATS_ENC(get_thd_id(), time_cache,  timespan)
+#endif
 }
 
 row_t * txn_man::get_row(row_t * row, access_t type) {
 	if (CC_ALG == HSTORE)
 		return row;
-//	uint64_t starttime = get_cur_time_ocall();
+#if PROFILING
+	uint64_t starttime = get_cur_time_ocall();
+#endif
 	RC rc = RCOK;
 	if (accesses[row_cnt] == NULL) {
 		// Access * access = (Access *) aligned_alloc(64, sizeof(Access));
@@ -248,8 +256,10 @@ row_t * txn_man::get_row(row_t * row, access_t type) {
 	if (type == WR)
 		wr_cnt ++;
 
-//	uint64_t timespan = get_cur_time_ocall() - starttime;
-//	INC_TMP_STATS_ENC(get_thd_id(), time_man, timespan);
+#if PROFILING
+	uint64_t timespan = get_cur_time_ocall() - starttime;
+	INC_TMP_STATS_ENC(get_thd_id(), time_man, timespan);
+#endif
 	return accesses[row_cnt - 1]->data;
 }
 
@@ -304,7 +314,9 @@ txn_man::index_read(std::string iname, idx_key_t key, int part_id) {
 
 itemid_t *
 txn_man::index_next(std::string iname, itemid_t* last) {
-//	uint64_t starttime = get_cur_time_ocall();
+#if PROFILING
+	uint64_t starttime = get_cur_time_ocall();
+#endif
 //    assert(false);
     itemid_t * item;
     assert(last != nullptr);
@@ -320,13 +332,17 @@ txn_man::index_next(std::string iname, itemid_t* last) {
 #endif
     assert(((row_t*)item->location)->get_table());
     // index->index_read(key, item, part_id, get_thd_id());
-//	INC_TMP_STATS_ENC(get_thd_id(), time_index, get_cur_time_ocall() - starttime);
+#if PROFILING
+	INC_TMP_STATS_ENC(get_thd_id(), time_index, get_cur_time_ocall() - starttime);
+#endif
     return item;
 }
 
 void 
 txn_man::index_read(std::string iname, idx_key_t key, int part_id, itemid_t *& item) {
-//	uint64_t starttime = get_cur_time_ocall();
+#if PROFILING
+	uint64_t starttime = get_cur_time_ocall();
+#endif
 	INDEX_ENC * index_enc = (INDEX_ENC *) tab_map->_indexes[iname];
     if (index_enc == nullptr) {
         assert(false);
@@ -340,11 +356,14 @@ txn_man::index_read(std::string iname, idx_key_t key, int part_id, itemid_t *& i
     index_enc->index_read(key, item, part_id, get_thd_id());
 #endif
 	// index->index_read(key, item, part_id, get_thd_id());
-//	INC_TMP_STATS_ENC(get_thd_id(), time_index, get_cur_time_ocall() - starttime);
+#if PROFILING
+	INC_TMP_STATS_ENC(get_thd_id(), time_index, get_cur_time_ocall() - starttime);
+#endif
 }
 
 RC txn_man::finish(RC rc) {
-	// uint64_t t1 = get_cur_time_ocall();
+#if PROFILING
+	uint64_t t1 = get_cur_time_ocall();
 
 	// for (int i = 0; i < 10; i ++) {
 	// 	// char* buf = (char*)malloc(1000);
@@ -352,14 +371,17 @@ RC txn_man::finish(RC rc) {
 	// 	// free(buf);
 	// 	delete buf;
 	// }
-	// uint64_t t2 = get_cur_time_ocall();
-	// uint64_t t3 = get_cur_time_ocall();
-	// INC_TMP_STATS_ENC(0, time_index, t2-t1);
-	// INC_TMP_STATS_ENC(0, time_man, t3-t2);
+	 uint64_t t2 = get_cur_time_ocall();
+	uint64_t t3 = get_cur_time_ocall();
+	INC_TMP_STATS_ENC(0, time_index, t2-t1);
+	INC_TMP_STATS_ENC(0, time_man, t3-t2);
+#endif
 #if CC_ALG == HSTORE
 	return RCOK;
 #endif
-//	uint64_t starttime = get_cur_time_ocall();
+#if PROFILING
+	uint64_t starttime = get_cur_time_ocall();
+#endif
 #if CC_ALG == OCC
 	if (rc == RCOK)
 		rc = occ_man.validate(this);
@@ -381,9 +403,11 @@ RC txn_man::finish(RC rc) {
 #else 
 	cleanup(rc);
 #endif
-//	uint64_t timespan = get_cur_time_ocall() - starttime;
-//	INC_TMP_STATS_ENC(get_thd_id(), time_man,  timespan);
-//	INC_STATS_ENC(get_thd_id(), time_cleanup,  timespan);
+#if PROFILING
+	uint64_t timespan = get_cur_time_ocall() - starttime;
+	INC_TMP_STATS_ENC(get_thd_id(), time_man,  timespan);
+	INC_STATS_ENC(get_thd_id(), time_cleanup,  timespan);
+#endif
 	return rc;
 }
 

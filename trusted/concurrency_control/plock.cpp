@@ -87,7 +87,9 @@ void Plock::init() {
 
 RC Plock::lock(txn_man * txn, uint64_t * parts, uint64_t part_cnt) {
 	RC rc = RCOK;
-//	ts_t starttime = get_cur_time_ocall();
+#if PROFILING
+    ts_t starttime = get_cur_time_ocall();
+#endif
 	UInt32 i;
 	for (i = 0; i < part_cnt; i ++) {
 		uint64_t part_id = parts[i];
@@ -101,24 +103,36 @@ RC Plock::lock(txn_man * txn, uint64_t * parts, uint64_t part_cnt) {
 			part_mans[part_id]->unlock(txn);
 		}
 		assert(txn->ready_part == 0);
-//		INC_TMP_STATS_ENC(txn->get_thd_id(), time_man, get_cur_time_ocall() - starttime);
+#if PROFILING
+        INC_TMP_STATS_ENC(txn->get_thd_id(), time_man, get_cur_time_ocall() - starttime);
+#endif
 		return Abort;
 	}
 	if (txn->ready_part > 0) {
-//		ts_t t = get_cur_time_ocall();
+#if PROFILING
+        ts_t t = get_cur_time_ocall();
+#endif
 		while (txn->ready_part > 0) {}
-//		INC_TMP_STATS_ENC(txn->get_thd_id(), time_wait, get_cur_time_ocall() - t);
+#if PROFILING
+        INC_TMP_STATS_ENC(txn->get_thd_id(), time_wait, get_cur_time_ocall() - t);
+#endif
 	}
 	assert(txn->ready_part == 0);
-//	INC_TMP_STATS_ENC(txn->get_thd_id(), time_man, get_cur_time_ocall() - starttime);
+#if PROFILING
+    INC_TMP_STATS_ENC(txn->get_thd_id(), time_man, get_cur_time_ocall() - starttime);
+#endif
 	return RCOK;
 }
 
 void Plock::unlock(txn_man * txn, uint64_t * parts, uint64_t part_cnt) {
-//	ts_t starttime = get_cur_time_ocall();
+#if PROFILING
+    ts_t starttime = get_cur_time_ocall();
+#endif
 	for (UInt32 i = 0; i < part_cnt; i ++) {
 		uint64_t part_id = parts[i];
 		part_mans[part_id]->unlock(txn);
 	}
-//	INC_TMP_STATS_ENC(txn->get_thd_id(), time_man, get_cur_time_ocall() - starttime);
+#if PROFILING
+    INC_TMP_STATS_ENC(txn->get_thd_id(), time_man, get_cur_time_ocall() - starttime);
+#endif
 }

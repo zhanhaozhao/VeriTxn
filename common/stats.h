@@ -20,6 +20,7 @@ public:
 	double time_cleanup;
 	uint64_t time_ts_alloc;
 	double time_query;
+	double time_cache;
 	uint64_t wait_cnt;
 	uint64_t debug1;
 	uint64_t debug2;

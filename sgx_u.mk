@@ -4,7 +4,8 @@ PROJECT_ROOT_DIR ?= $(shell readlink -f .)
 SGX_SDK ?= /opt/intel/sgxsdk
 SGX_MODE ?= HW
 SGX_ARCH ?= x64
-SGX_DEBUG ?= 1
+SGX_DEBUG ?= 0
+SGX_PRERELEASE ?= 1
 ifeq ($(shell getconf LONG_BIT), 32)
 	SGX_ARCH := x86
 else ifeq ($(findstring -m32, $(CXXFLAGS)), -m32)
@@ -74,15 +75,13 @@ else
 endif
 
 App_C_Cpp_Flags := $(Common_C_Cpp_Flags) $(SGX_RA_TLS_Extra_Flags) -Iuntrusted -I$(SGX_SDK)/include -I$(PROJECT_ROOT_DIR) 
-App_C_Cpp_Flags += -I$(PROJECT_ROOT_DIR)/common -I$(PROJECT_ROOT_DIR)/untrusted -I$(PROJECT_ROOT_DIR)/untrusted/benchmarks -I$(PROJECT_ROOT_DIR)/untrusted/cache -I$(PROJECT_ROOT_DIR)/untrusted/system
+App_C_Cpp_Flags += -I$(PROJECT_ROOT_DIR)/common -I$(PROJECT_ROOT_DIR)/untrusted -I$(PROJECT_ROOT_DIR)/untrusted/benchmark -I$(PROJECT_ROOT_DIR)/untrusted/cache -Iuntrusted/system
 App_C_Cpp_Flags += `pkg-config --cflags protobuf grpc`
 ### Project Settings ###
 
 ### Linking setting ###
-App_Link_Flags := -L/usr/local/lib -L$(SGX_LIBRARY_PATH) -l$(Urts_Library_Name) \
-	-lpthread -lz -lm -lcrypto -lrt -lnanomsg -lrocksdb 
-
-# App_Link_Flags += $(App_C_Cpp_Flags)
+App_Link_Flags := -L$(SGX_LIBRARY_PATH)	-l$(Urts_Library_Name) \
+	-lpthread -lz -lm -lcrypto -lrt -lnanomsg  -lrocksdb `pkg-config --libs protobuf grpc++ grpc`
 
 ## Add sgx_uae_service library to link ##
 ifneq ($(SGX_MODE), HW)
@@ -90,13 +89,7 @@ ifneq ($(SGX_MODE), HW)
 else
 	App_Link_Flags += -lsgx_uae_service
 endif
-
-	App_Link_Flags += -lprotobuf -lgrpc++ -lgrpc
-
 ### Linking setting ###
-
-INCLUDE := -I$(PROJECT_ROOT_DIR) -I$(PROJECT_ROOT_DIR)/common/ -I$(PROJECT_ROOT_DIR)/untrusted/system/ -I$(PROJECT_ROOT_DIR)/untrusted/benchmarks/ -I$(PROJECT_ROOT_DIR)/untrusted/cache/ -I$(PROJECT_ROOT_DIR)/trusted/system/ -I$(PROJECT_ROOT_DIR)/trusted/concurrency_control/
-CFLAGS := -w -g -no-pie $(INCLUDE) -D NOGRAPHITE=1 -D_GLIBCXX_USE_CXX11_ABI -Werror -Wno-comment -O0 `pkg-config --cflags protobuf grpc`
 
 ### Phony targets ###
 .PHONY: all clean
@@ -151,9 +144,9 @@ App.o: main.cpp
 
 SRC_DIRS = ./common/ ./untrusted/system/ ./untrusted/cache/ ./untrusted/benchmarks/
 CPPS = $(foreach dir, $(SRC_DIRS), $(wildcard $(dir)*.cpp))
-OBJS = $(CPPS:.cpp=_u.o)
 CCS = $(foreach dir, $(SRC_DIRS), $(wildcard $(dir)*.cc))
-CCOBJS = $(CCS:.cc=_u.o)
+CCOBJS = $(CCS:.cc=.o)
+OBJS = $(CPPS:.cpp=_u.o)
 
 # libuntrusted.a: $(OBJS) untrusted/Enclave_u.o untrusted/Enclave_ecall.o
 # 	ar -rcs $@ $^
@@ -161,11 +154,11 @@ CCOBJS = $(CCS:.cc=_u.o)
 
 ## Build worker app ##
 # App: App.o libuntrusted.a 
-App: App.o $(OBJS) untrusted/Enclave_u.o untrusted/Enclave_ecall.o untrusted/ocall_patches.o untrusted/system/storage.pb_u.o untrusted/system/storage.grpc.pb_u.o 
+App: App.o $(CCOBJS) $(OBJS) untrusted/Enclave_u.o untrusted/Enclave_ecall.o untrusted/ocall_patches.o
 	$(CXX) $^ -o $@ -L. $(App_Link_Flags)
 	@echo "LINK =>  $@"
 ### Sources ###
 
 ### Clean command ###
 clean:
-	rm -f App *.o untrusted/*.o $(CCOBJS) $(OBJS) untrusted/Enclave_u.* libuntrusted.a
+	rm -f App *.o untrusted/*.o $(OBJS) untrusted/Enclave_u.* libuntrusted.a

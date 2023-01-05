@@ -53,7 +53,7 @@ RC ycsb_txn_man::run_txn(base_query * query) {
 			row_t * row = ((row_t *)m_item->location);
 			row_t * row_local; 
 			access_t type = req->rtype;
-
+            assert(row->get_primary_key() == req->key);
             assert(row->get_table());
 			row_local = get_row(row, type);
 			if (row_local == NULL) {
