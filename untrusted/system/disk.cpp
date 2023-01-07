@@ -124,6 +124,7 @@ void RemoteStorage::send_log(char * log_entry, uint32_t size){
         // memcpy(log_buffer + sizeof(uint32_t), &batch_size, sizeof(uint32_t));
         memcpy(log_buffer + sizeof(uint32_t), &batch_num, sizeof(uint32_t));
         write(sockfd, log_buffer, batch_size);
+        // std::cout<< "batch size:" << batch_size << std::endl;
 
 //        char * recvline = (char *) malloc(sizeof(uint32_t));
 //        if(read(sockfd, recvline, sizeof(uint32_t)) == 0) {
