@@ -5,22 +5,22 @@
 // Simulation + Hardware
 /***********************************************/
 #define NODE_CNT 1
-#define THREAD_CNT 4
-#define PART_CNT 1
+#define THREAD_CNT 3
+#define PART_CNT 16
 #define INPUT_CNT					1
 #define OUTPUT_CNT					1
 // each transaction only accesses 1 virtual partition. But the lock/ts manager and index are not aware of such partitioning. VIRTUAL_PART_CNT describes the request distribution and is only used to generate queries. For HSTORE, VIRTUAL_PART_CNT should be the same as PART_CNT.
 #define VIRTUAL_PART_CNT			1
 #define PAGE_SIZE					4096
 #define CL_SIZE						64
-// CPU_FREQ is used to get accurate timing info 
+// CPU_FREQ is used to get accurate timing info
 #define CPU_FREQ 					2 	// in GHz/s
 
 
 // # of transactions to run for warmup
 #define WARMUP						0
 // YCSB or TPCC
-#define WORKLOAD YCSB
+#define WORKLOAD TPCC
 // print the transaction latency distribution
 #define PRT_LAT_DISTR				false
 #define STATS_ENABLE				true
@@ -248,7 +248,7 @@ extern enum TestCases					g_test_case;
 #define TPORT_TYPE tcp
 #define USE_NANOMSG                 1
 #define USE_ASYNC_HASH              1
-#define USE_LOG 1
+#define USE_LOG 0
 #define RPC_SERVER                  "127.0.0.1:50051"
 #define LOG_BATCH_SIZE              10
 

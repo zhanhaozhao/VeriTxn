@@ -73,19 +73,25 @@ RC tpcc_wl::init_table() {
 /**********************************/
 	// tpcc_buffer = new drand48_data * [g_num_wh];
 	// pthread_t * p_thds = new pthread_t[g_num_wh - 1];
-	pthread_t * p_thds = new pthread_t[g_init_parallelism - 1];
-	thr_args * tt = new thr_args[g_init_parallelism];
-	for (UInt32 i = 0; i < g_init_parallelism ; i++) {
-		tt[i].wl = this;
-		tt[i].id = i;
-  	}
-	for (uint32_t i = 0; i < g_init_parallelism - 1; i++) 
-		pthread_create(&p_thds[i], NULL, threadInitWarehouse, &tt[i]);
-	threadInitWarehouse(&tt[g_init_parallelism-1]);
-	for (uint32_t i = 0; i < g_init_parallelism - 1; i++) 
-		pthread_join(p_thds[i], NULL);
+//	pthread_t * p_thds = new pthread_t[g_init_parallelism - 1];
+//	thr_args * tt = new thr_args[g_init_parallelism];
+//	for (UInt32 i = 0; i < g_init_parallelism ; i++) {
+//		tt[i].wl = this;
+//		tt[i].id = i;
+//  	}
+    assert(std::string(t_warehouse->get_table_name()) == "WAREHOUSE");
+//    for (uint32_t i = 0; i < g_init_parallelism - 1; i++)
+//		pthread_create(&p_thds[i], NULL, threadInitWarehouse, &tt[i]);
+    auto tt = new thr_args;
+    tt->wl = this;
+    tt->tot = 0;
+    tt->id = 0;
+	threadInitWarehouse(tt);
+//	for (uint32_t i = 0; i < g_init_parallelism - 1; i++)
+//		pthread_join(p_thds[i], NULL);
+    assert(std::string(t_warehouse->get_table_name()) == "WAREHOUSE");
 
-	printf("TPCC Data Initialization Complete!\n");
+    printf("TPCC Data Initialization Complete!\n");
     for (auto it = indexes.begin(); it != indexes.end(); it++) {
         std::string iname = it->first;
         std::string tname = iname;
@@ -435,29 +441,29 @@ tpcc_wl::init_permutation(uint64_t * perm_c_id, uint64_t wid) {
 void * tpcc_wl::threadInitWarehouse(void * This) {
 	// tpcc_wl * wl = (tpcc_wl *) This;
 	tpcc_wl * wl = ((thr_args*) This)->wl;
-	int id = ((thr_args*) This)->id;
-	int init_warehouse_count = g_num_wh / g_init_parallelism;
-	if (id == g_init_parallelism - 1) init_warehouse_count += g_num_wh % g_init_parallelism;
-	for (int i = 0; i < init_warehouse_count; i++) {
-		int tid = ATOM_FETCH_ADD(wl->next_tid, 1);
+//	int id = ((thr_args*) This)->id;
+//	int init_warehouse_count = g_num_wh / g_init_parallelism;
+//	if (id == g_init_parallelism - 1) init_warehouse_count += g_num_wh % g_init_parallelism;
+	for (int i = 0; i < g_num_wh; i++) {
+        int tid = ATOM_FETCH_ADD(wl->next_tid, 1);
 		
 		uint32_t wid = tid + 1;
 		// tpcc_buffer[tid] = (drand48_data *) aligned_alloc(64, sizeof(drand48_data));
 		assert((uint64_t)tid < g_num_wh);
 		// srand48_r(wid, tpcc_buffer[tid]);
-		tpccdre[tid] = std::default_random_engine(wid);
+		tpccdre.emplace_back(std::default_random_engine(wid));
 		// tpccurd[tid] = std::uniform_real_distribution<double>(0.0, 100.0);
-		tpccuid[tid] = std::uniform_int_distribution<uint64_t>(0, 10);
+		tpccuid.emplace_back(std::uniform_int_distribution<uint64_t>(0, 10));
 
 		if (tid == 0)
 			wl->init_tab_item();
 		wl->init_tab_wh( wid );
 		wl->init_tab_dist( wid );
 		wl->init_tab_stock( wid );
-		for (uint64_t did = 1; did <= DIST_PER_WARE; did++) {
+        for (uint64_t did = 1; did <= DIST_PER_WARE; did++) {
 			wl->init_tab_cust(did, wid);
 			wl->init_tab_order(did, wid);
-			for (uint64_t cid = 1; cid <= g_cust_per_dist; cid++) 
+			for (uint64_t cid = 1; cid <= g_cust_per_dist; cid++)
 				wl->init_tab_hist(cid, did, wid);
 		}
 	}

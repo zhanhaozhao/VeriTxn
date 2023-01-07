@@ -59,7 +59,7 @@ private:
 	static void * threadInitHist(void * This);
 	static void * threadInitOrder(void * This);
 
-	static void * threadInitWarehouse(void * This);
+	void * threadInitWarehouse(void * This);
 };
 
 struct thr_args{

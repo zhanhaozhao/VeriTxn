@@ -88,6 +88,7 @@ void init_txn_in_enc(txn_man *& m_txn, thread_t * h_thd) {
 			// m_txn = (tpcc_txn_man *) aligned_alloc(64, sizeof(tpcc_txn_man));
 			m_txn = (tpcc_txn_man *) malloc(sizeof(tpcc_txn_man));
 			new(m_txn) tpcc_txn_man();
+            assert(m_txn->row_cnt == 0);
 			break;
 		case TEST :
 			// m_txn = (TestTxnMan *) aligned_alloc(64, sizeof(TestTxnMan));

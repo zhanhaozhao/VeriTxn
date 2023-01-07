@@ -34,7 +34,7 @@ void ManagerEnc::init() {
 	_all_txns = new txn_man * [g_thread_cnt_enc];
 	for (UInt32 i = 0; i < g_thread_cnt_enc; i++) {
 		*all_ts[i] = UINT64_MAX;
-		_all_txns[i] = NULL;
+		_all_txns[i] = nullptr;
 	}
 	_thd_txn_ids = new uint64_t [g_thread_cnt_enc];
 	for (UInt32 i = 0; i < g_thread_cnt_enc; i++) {

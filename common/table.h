@@ -27,10 +27,10 @@ public:
 	Catalog * get_schema() { return schema; };
 	const char* get_table_name() { return table_name; };
 
-	Catalog * 		schema;
-    char 			pad[CL_SIZE];
     char* 	table_name;
     uint64_t  		cur_tab_size;
+	Catalog * 		schema;
+    char 			pad[CL_SIZE * 2];
 };
 
 #endif

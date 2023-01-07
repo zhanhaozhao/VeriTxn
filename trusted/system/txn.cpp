@@ -461,7 +461,7 @@ void txn_man::create_log_entry() {
         PACK(_log_entry, part_id, offset);        // part.
         PACK(_log_entry, ((PAGE_ENC*)access->orig_row->from_page)->bkt, offset);        // page id.
         PACK(_log_entry, access->orig_row->offset, offset); // invalid data.
-        assert(part_id == 0 && access->orig_row->offset == 0);
+        assert(access->orig_row->offset == 0);
 #else
         PACK(_log_entry, part_id, offset);        // part.
         PACK(_log_entry, ((PAGE_ENC*)access->orig_row->from_page)->node_id, offset);        // page id.

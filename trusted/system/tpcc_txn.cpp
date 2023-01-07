@@ -186,17 +186,17 @@ RC tpcc_txn_man::run_payment(tpcc_query * query) {
         assert(item != nullptr);
         while (item != nullptr) {
             r_cust = (row_t*) item -> location;
-            r_cust->get_value(C_FIRST);
+//            r_cust->get_value(C_FIRST);
             r_cust->get_value(C_MIDDLE);
             r_cust->get_value(C_LAST);
-            r_cust->get_value(C_STREET_1);
-            r_cust->get_value(C_STREET_2);
-            r_cust->get_value(C_CITY);
+//            r_cust->get_value(C_STREET_1);
+//            r_cust->get_value(C_STREET_2);
+//            r_cust->get_value(C_CITY);
             r_cust->get_value(C_CREDIT);
-            r_cust->get_value(C_CREDIT_LIM);
+//            r_cust->get_value(C_CREDIT_LIM);
             r_cust->get_value(C_DISCOUNT);
             r_cust->get_value(C_BALANCE);
-            r_cust->get_value(C_SINCE);
+//            r_cust->get_value(C_SINCE);
             item = item->next;
         }
 	}
@@ -637,8 +637,8 @@ tpcc_txn_man::run_delivery(tpcc_query * query) {
 		while (item != NULL) {
 			// TODO the row is not locked
 			row_t * r_orderline = (row_t *)item->location;
-			r_orderline->set_value(OL_DELIVERY_D, query->ol_delivery_d);
-			r_orderline->get_value(OL_AMOUNT, ol_amount);
+//			r_orderline->set_value(OL_DELIVERY_D, query->ol_delivery_d);
+//			r_orderline->get_value(OL_AMOUNT, ol_amount);
 			sum_ol_amount += ol_amount;
 		}
 
@@ -721,7 +721,7 @@ bool tpcc_txn_man::stock_level_getStockCount(uint64_t ol_w_id, uint64_t ol_d_id,
         if (row == nullptr) return false;
 
         uint64_t ol_i_id, ol_supply_w_id;
-        orderline_shared->get_value(OL_SUPPLY_W_ID, ol_supply_w_id);
+//        orderline_shared->get_value(OL_SUPPLY_W_ID, ol_supply_w_id);
         if (ol_supply_w_id != s_w_id) continue;
 
         orderline_shared->get_value(OL_I_ID, ol_i_id);

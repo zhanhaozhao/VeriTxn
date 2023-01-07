@@ -93,7 +93,7 @@ void RemoteStorage::load_page_disk(std::string iname, int part_id, uint64_t pg_i
 #if INDEX_STRUCT != IDX_HASH
 	assert(false);  // currently, we only support to load log from disk for hash index.
 #endif
-    std::cout<< "received from client:" << atol(recvline) << std::endl;
+//    std::cout<< "received from client:" << atol(recvline) << std::endl;
     pthread_mutex_unlock(&mtx);
 }
 
