@@ -63,8 +63,8 @@ RC RPCThread::run() {
         exit(1);
       }
 
-      // if((childpid = fork()) == 0) {
-        // close(listenfd);
+      if((childpid = fork()) == 0) {
+        close(listenfd);
         ssize_t n;
         char buff[MAX_LINE];
 
@@ -147,8 +147,8 @@ RC RPCThread::run() {
           }
 
         }
-        // exit(0);
-      // }
+        exit(0);
+      }
       close(connfd);
     }
     close(listenfd);

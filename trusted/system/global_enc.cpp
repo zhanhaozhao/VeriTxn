@@ -58,6 +58,7 @@ UInt32 g_thread_cnt_enc = THREAD_CNT;
 // UInt32 g_num_wh = NUM_WH;
 // double g_perc_payment = PERC_PAYMENT;
 bool g_wh_update_enc = WH_UPDATE;
+uint32_t g_max_log_entry_size_enc = MAX_LOG_ENTRY_SIZE;
 // char * output_file = NULL;
 
 // map<string, string> g_params;
