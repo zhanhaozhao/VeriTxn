@@ -63,7 +63,7 @@ void txn_man::init(thread_t * h_thd, workload * h_wl, uint64_t thd_id) {
 	_cur_tid = 0;
 #endif
 
-	_log_entry = new char [16384]; //g_max_log_entry_size
+	_log_entry = new char [g_max_log_entry_size_enc]; //g_max_log_entry_size
 	_log_entry_size = 0;
 
 }
@@ -474,7 +474,7 @@ void txn_man::create_log_entry() {
 	}
 
   	_log_entry_size = offset;
-	assert(_log_entry_size < 16384); // g_max_log_entry_size
+	assert(_log_entry_size < g_max_log_entry_size_enc); // g_max_log_entry_size
   // update size. 
     memcpy(_log_entry + sizeof(uint32_t), &_log_entry_size, sizeof(uint32_t));
     memcpy(_log_entry + 2*sizeof(uint32_t), &num_keys, sizeof(uint32_t));
@@ -495,7 +495,7 @@ void txn_man::create_log_entry() {
 	// internally, the following function will update _log_entry_size and _log_entry
 	get_cmd_log_entry();
 	
-	assert(_log_entry_size < 16384); // g_max_log_entry_size
+	assert(_log_entry_size < g_max_log_entry_size_enc); // g_max_log_entry_size
 	assert(_log_entry_size > sizeof(uint32_t) * 2);
 	memcpy(_log_entry + sizeof(uint32_t), &_log_entry_size, sizeof(uint32_t));
   // INC_FLOAT_STATS(log_total_size, _log_entry_size);

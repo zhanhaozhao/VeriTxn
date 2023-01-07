@@ -29,6 +29,9 @@ RC re_ycsb_txn_man::run_txn(base_query * query) {
 	itemid_t * m_item = NULL;
   	row_cnt = 0;
 
+#if USE_SGX != 1
+	rocksdb::WriteBatch batch;
+
 	for (uint32_t rid = 0; rid < m_query->request_cnt; rid ++) {
 		ycsb_request * req = &m_query->requests[rid];
 		int part_id = wl->key_to_part( req->key );
@@ -50,6 +53,12 @@ RC re_ycsb_txn_man::run_txn(base_query * query) {
 			// row_t * row_local; 
 			// access_t type = req->rtype;
 
+			std::string data;
+			char * rockskey = new char [50];
+        	sprintf(rockskey, "%lu_%lu",  req->key, part_id);
+			const auto key_slice = rocksdb::Slice(rockskey);
+			eng->DBGet(key_slice, &data);
+
             // assert(row->get_table());
 			// row_local = get_row(row, type);
 			// if (row_local == NULL) {
@@ -67,12 +76,16 @@ RC re_ycsb_txn_man::run_txn(base_query * query) {
 						// __attribute__((unused)) uint64_t fval = *(uint64_t *)(&data[fid * 10]);
 //                  }
                 } else {
-                    assert(req->rtype == WR);
+					// std::cout << req->rtype << std::endl;
+                    // assert(req->rtype == WR || req->rtype == XP);
 //					for (int fid = 0; fid < schema->get_field_cnt(); fid++) {
 						int fid = 0;
-						char * data; // readfrom rocksdb
+						// char * data = malloc (10); // readfrom rocksdb
 						// char * data = row->get_data();
-						*(uint64_t *)(&data[fid * 10]) = 0;
+						// *(uint64_t *)(&data[fid * 10]) = 0;
+						batch.Put(rockskey, data);
+						// eng->DBPut(rockskey, data);
+
 //					}
                 } 
             }
@@ -82,9 +95,16 @@ RC re_ycsb_txn_man::run_txn(base_query * query) {
 		}
 	}
 	rc = RCOK;
+
+#endif
+
 final:
 	assert (g_log_recover);
 	// construct writebatch and write to rocksdb
+#if USE_SGX != 1
+	eng->DBWrite(&batch);
+	// std::cout << "num_keys:" << num_keys << std::endl;
+#endif
 	return RCOK;
 }
 
@@ -153,14 +173,14 @@ re_ycsb_txn_man::recover_txn(char * log_entry, uint64_t tid)
 
 #elif LOG_TYPE == LOG_COMMAND
 	// Format
-	//  | stored_procedure_id | num_keys | (key, type) * num_keys
+	// | checksum:4 | size:4 | stored_procedure_id:4 | num_keys:4 | (key, type) * num_keys
 	if (!_query) {
 		// these are only executed once. 
 		_query = new ycsb_query;
 		_query->request_cnt = 0;
 		_query->requests = new ycsb_request [g_req_per_query];
 	}
-	uint32_t offset = sizeof(uint32_t);
+	uint32_t offset = sizeof(uint32_t) * 3;
 	UNPACK(log_entry, _query->request_cnt, offset);
 	for (uint32_t i = 0; i < _query->request_cnt; i ++) {
 		UNPACK(log_entry, _query->requests[i].key, offset);
@@ -169,6 +189,7 @@ re_ycsb_txn_man::recover_txn(char * log_entry, uint64_t tid)
 //	uint64_t tt = get_sys_clock();
     uint64_t ttrt = get_sys_clock();
 	run_txn(_query);
+
 	// INC_INT_STATS(time_debug8, get_sys_clock() - ttrt);
 //	INC_STATS(GET_THD_ID, debug8, get_sys_clock() - tt);
 

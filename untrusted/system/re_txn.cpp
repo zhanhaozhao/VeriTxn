@@ -52,7 +52,7 @@ void re_txn_man::init(RPCThread * h_thd, workload * h_wl, uint64_t thd_id) {
 	_cur_tid = 0;
 #endif
 
-	_log_entry = new char [16384]; //g_max_log_entry_size
+	_log_entry = new char [g_max_log_entry_size]; //g_max_log_entry_size
 	_log_entry_size = 0;
 
 }
@@ -89,7 +89,7 @@ void re_txn_man::insert_row(row_t * row, table_t * table) {
 }
 
 void re_txn_man::recover() {
-	char default_entry[16384]; // g_max_log_entry_size
+	char default_entry[g_max_log_entry_size]; // g_max_log_entry_size
 	// right now, only a single thread does the recovery job.
 	if (get_thd_id() > 0)
 		return;

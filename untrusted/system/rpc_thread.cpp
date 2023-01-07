@@ -1,18 +1,3 @@
-/*
-   Copyright 2016 Massachusetts Institute of Technology
-
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-*/
 
 #include "global_struct.h"
 #include "helper.h"
@@ -110,6 +95,7 @@ RC RPCThread::run() {
             write(connfd, str.c_str(), str.size());
 
           } else {
+            uint64_t tt = get_sys_clock();
             uint32_t batch_size = 0;
             UNPACK(buff, batch_size, offset);
             // std::cout<< "received from client:" << prefix << " number of logs:" << batch_size <<std::endl;
@@ -151,6 +137,7 @@ RC RPCThread::run() {
               m_txn->recover_txn(entry);
               COMPILER_BARRIER
             }
+            // std::cout << "time consumed:" << get_sys_clock() - tt << std::endl;
 
             // construct reposnse
 //            char * response = (char *) malloc(sizeof(uint32_t));

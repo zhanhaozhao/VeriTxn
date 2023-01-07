@@ -100,6 +100,7 @@ extern bool g_no_dl_enc;
 // extern ts_t g_dl_loop_detect;
 extern bool g_ts_batch_alloc_enc;
 extern UInt32 g_ts_batch_num_enc;
+extern uint32_t g_max_log_entry_size_enc;
 
 // extern map<string, string> g_params;
 
