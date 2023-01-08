@@ -63,11 +63,10 @@ inline uint64_t stockKey(uint64_t s_i_id, uint64_t s_w_id) {
 
 uint64_t Lastname(uint64_t num, char* name);
 
-// extern drand48_data ** tpcc_buffer;
+extern myrand ** tpcc_buffer;
 
-extern std::vector<std::default_random_engine> tpccdre;
-// extern std::vector<std::uniform_real_distribution<double> > tpccurd;
-extern std::vector<std::uniform_int_distribution<uint64_t> > tpccuid;
+//extern std::vector<std::default_random_engine> tpccdre;
+//extern std::vector<std::uniform_int_distribution<uint64_t> > tpccuid;
 
 // return random data from [0, max-1]
 uint64_t RAND(uint64_t max, uint64_t thd_id);

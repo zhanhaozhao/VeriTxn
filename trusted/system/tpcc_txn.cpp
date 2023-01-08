@@ -319,7 +319,7 @@ RC tpcc_txn_man::run_new_order(tpcc_query * query) {
 
 
 	double w_tax;
-	r_wh_local->get_value(W_TAX, w_tax); 
+	r_wh_local->get_value(W_TAX, w_tax);
 	key = custKey(c_id, d_id, w_id);
 	item = index_read("CUSTOMER_ID_IDX", key, wh_to_part(w_id));
     if (item == nullptr) {
@@ -448,7 +448,7 @@ RC tpcc_txn_man::run_new_order(tpcc_query * query) {
 		if (r_stock_local == NULL) {
 			return finish(Abort);
 		}
-		
+
 		// XXX s_dist_xx are not retrieved.
 		UInt64 s_quantity;
 		int64_t s_remote_cnt;

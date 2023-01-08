@@ -70,7 +70,8 @@ ManagerEnc::get_ts(uint64_t thread_id) {
 // #endif
 		break;
 	case TS_CLOCK :
-		time = get_cur_time_ocall() * g_thread_cnt_enc + thread_id;
+        assert(false);
+//		time = get_cur_time_ocall() * g_thread_cnt_enc + thread_id;
 		break;
 	default :
 		assert(false);
@@ -80,18 +81,19 @@ ManagerEnc::get_ts(uint64_t thread_id) {
 }
 
 ts_t ManagerEnc::get_min_ts(uint64_t tid) {
-	uint64_t now = get_cur_time_ocall();
-	uint64_t last_time = _last_min_ts_time; 
-	if (tid == 0 && now - last_time > MIN_TS_INTVL)
-	{ 
-		ts_t min = UINT64_MAX;
-    		for (UInt32 i = 0; i < g_thread_cnt_enc; i++)
-			if (*all_ts[i] < min)
-		    	    	min = *all_ts[i];
-		if (min > _min_ts)
-			_min_ts = min;
-	}
-	return _min_ts;
+    assert(false);
+//	uint64_t now = get_cur_time_ocall();
+//	uint64_t last_time = _last_min_ts_time;
+//	if (tid == 0 && now - last_time > MIN_TS_INTVL)
+//	{
+//		ts_t min = UINT64_MAX;
+//    		for (UInt32 i = 0; i < g_thread_cnt_enc; i++)
+//			if (*all_ts[i] < min)
+//		    	    	min = *all_ts[i];
+//		if (min > _min_ts)
+//			_min_ts = min;
+//	}
+//	return _min_ts;
 }
 
 void ManagerEnc::add_ts(uint64_t thd_id, ts_t ts) {
@@ -124,9 +126,10 @@ void ManagerEnc::release_row(row_t * row) {
 void
 ManagerEnc::update_epoch()
 {
-	ts_t time = get_cur_time_ocall();
-	if (time - *_last_epoch_update_time > LOG_BATCH_TIME * 1000 * 1000) {
-		*_epoch = *_epoch + 1;
-		*_last_epoch_update_time = time;
-	}
+    assert(false);
+//	ts_t time = get_cur_time_ocall();
+//	if (time - *_last_epoch_update_time > LOG_BATCH_TIME * 1000 * 1000) {
+//		*_epoch = *_epoch + 1;
+//		*_last_epoch_update_time = time;
+//	}
 }

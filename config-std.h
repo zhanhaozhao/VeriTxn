@@ -271,6 +271,7 @@ extern enum TestCases					g_test_case;
 #endif
 
 #define PRE_LOAD 1
+#define PROFILING false
 
 // Log queue type
 #define LOG_CIRCUL_BUFF 1

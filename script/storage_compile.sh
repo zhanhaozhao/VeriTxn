@@ -2,7 +2,7 @@
 
 pwd
 cd ../untrusted/system/
-protoc --cpp_out=. --grpc_out=. --plugin=protoc-gen-grpc=`which grpc_cpp_plugin` storage.proto
+#protoc --cpp_out=. --grpc_out=. --plugin=protoc-gen-grpc=`which grpc_cpp_plugin` storage.proto
 
 cd ../../common/
 pwd

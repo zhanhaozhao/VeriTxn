@@ -2,11 +2,10 @@
 #include "tpcc_helper.h"
 #include "global.h"
 
-// drand48_data ** tpcc_buffer;
+myrand ** tpcc_buffer;
 
-std::vector<std::default_random_engine> tpccdre(g_thread_cnt, std::default_random_engine(0));
-// extern std::vector<std::uniform_real_distribution<double> > tpccurd;
-std::vector<std::uniform_int_distribution<uint64_t> > tpccuid(g_thread_cnt, std::uniform_int_distribution<uint64_t>(0, 1));
+//std::vector<std::default_random_engine> tpccdre(g_thread_cnt, std::default_random_engine(0));
+//std::vector<std::uniform_int_distribution<uint64_t> > tpccuid(g_thread_cnt, std::uniform_int_distribution<uint64_t>(0, 1));
 
 // uint64_t distKey(uint64_t d_id, uint64_t d_w_id)  {
 // 	return d_w_id * DIST_PER_WARE + d_id; 
@@ -49,9 +48,8 @@ uint64_t Lastname(uint64_t num, char* name) {
 }
 
 uint64_t RAND(uint64_t max, uint64_t thd_id) {
-	int64_t rint64 = tpccuid[thd_id](tpccdre[thd_id]);
-	// lrand48_r(tpcc_buffer[thd_id], &rint64);
-	return rint64 % max;
+    uint64_t res = tpcc_buffer[thd_id]->next();
+	return (uint64_t(res)) % max;
 }
 
 uint64_t URand(uint64_t x, uint64_t y, uint64_t thd_id) {

@@ -24,7 +24,7 @@ count_job = 0
 
 def insert_job(alg="OCC", workload="YCSB", thread_num=4, theta=0.6, bkt_fac=1, read_perc=0.5, use_sgx=True,
                cs=1024 * 1024 * 1024, veri="PAGE_VERI", index="IDX_HASH", pre_load=1, use_log=0, txn_per_thd=10000,
-               database_size=1024 * 1024, txn_length=64, enable_data_cache=True, pt=1):
+               database_size=1024 * 1024, txn_length=64, enable_data_cache=True, pt=1, prof="false", wh=4):
     global count_job
     count_job = count_job + 1
     jobs[count_job] = {
@@ -46,7 +46,9 @@ def insert_job(alg="OCC", workload="YCSB", thread_num=4, theta=0.6, bkt_fac=1, r
 		"MAX_TXN_PER_PART"	: txn_per_thd,
 		"SYNTH_TABLE_SIZE"	: database_size,
 		"REQ_PER_QUERY"		: txn_length,
-        "PART_CNT"          : pt
+        "PART_CNT"          : pt,
+        "PROFILING"         : "false",
+        "NUM_WH"            : wh
 	}
 
 
@@ -157,10 +159,10 @@ def run_tpc_exp():
     jobs = OrderedDict()
     for th in [1, 2, 3, 4, 5, 6, 7, 8]:
         for alg in algs:
-            insert_job(alg, 'TPCC', thread_num=th, use_sgx=False, pt=16)
-    # for th in [1, 2, 3, 4, 5, 6, 7, 8]:
-    #     for alg in algs:
-    #         insert_job(alg, 'TPCC', thread_num=th, use_sgx=True, pt=16)
+            insert_job(alg, 'TPCC', thread_num=th, use_sgx=False, pt=8)
+    for th in [1, 2, 3, 4, 5, 6, 7, 8]:
+        for alg in algs:
+            insert_job(alg, 'TPCC', thread_num=th, use_sgx=True, pt=8)
     run_all_test(jobs, "thread_tpc.log")
 
 
@@ -223,7 +225,8 @@ def run_common_test():
     jobs = OrderedDict()
     # for th in [3, 6, 7]:
     # insert_job("OCC", 'YCSB', use_sgx=False)
-    insert_job("OCC", 'YCSB', use_sgx=True)
+    insert_job("NO_WAIT", 'YCSB', use_sgx=True)
+    insert_job("NO_WAIT", 'TPCC', use_sgx=True)
     # print(jobs)
     run_all_test(jobs, "comparison.csv")
 
@@ -324,17 +327,34 @@ def run_single_layer_cache_exp():
     insert_job('NO_WAIT', 'YCSB', use_sgx=True, use_log=1, enable_data_cache=False, theta=0)
     run_all_test(jobs, "single_layer.log")
 
+def run_profiling():
+    global jobs
+    jobs = OrderedDict()
+    for th in [1]:
+        for alg in ["NO_WAIT"]:
+            insert_job(alg, 'TPCC', thread_num=th, use_sgx=False, prof="true", txn_per_thd=1000)
+    run_all_test(jobs, "profiling.log")
+    # for th in [1, 2, 3, 4, 5, 6, 7, 8]:
+    #     for alg in ["NO_WAIT"]:
+    #         insert_job(alg, 'TPCC', thread_num=th, use_sgx=True, prof="true", txn_per_thd=1000)
+    # for th in [1, 2, 3, 4, 5, 6, 7, 8]:
+    #     for alg in ["NO_WAIT"]:
+    #         insert_job(alg, 'TPCC', thread_num=th, use_sgx=False, prof="true", txn_per_thd=1000)
+    # run_all_test(jobs, "profiling.log")
+
 
 # run_cache_size_impact_for_different_methods_test()
 # run_database_skew_test()
 # run_database_size_test()
 # run_database_varying_txn_length()
 # run_single_layer_cache_exp()
-run_database_varying_txn_length_no_sgx()
+# run_database_varying_txn_length_no_sgx()
 # run_database_skew_test()
 # run_rw_exp()
 # run_thread_exp()
-# run_tpc_exp()
+run_tpc_exp()
+# run_common_test()
+# run_profiling()
 # run_theta_exp()
 # run_bktsiz_exp()
 # test()

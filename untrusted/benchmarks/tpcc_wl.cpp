@@ -71,7 +71,7 @@ RC tpcc_wl::init_table() {
 //		- new order
 //		- order line
 /**********************************/
-	// tpcc_buffer = new drand48_data * [g_num_wh];
+	tpcc_buffer = new myrand* [g_num_wh];
 	// pthread_t * p_thds = new pthread_t[g_num_wh - 1];
 //	pthread_t * p_thds = new pthread_t[g_init_parallelism - 1];
 //	thr_args * tt = new thr_args[g_init_parallelism];
@@ -448,12 +448,12 @@ void * tpcc_wl::threadInitWarehouse(void * This) {
         int tid = ATOM_FETCH_ADD(wl->next_tid, 1);
 		
 		uint32_t wid = tid + 1;
-		// tpcc_buffer[tid] = (drand48_data *) aligned_alloc(64, sizeof(drand48_data));
+		tpcc_buffer[tid] = new myrand;
+        tpcc_buffer[tid]->init(wid);
 		assert((uint64_t)tid < g_num_wh);
-		// srand48_r(wid, tpcc_buffer[tid]);
-		tpccdre.emplace_back(std::default_random_engine(wid));
-		// tpccurd[tid] = std::uniform_real_distribution<double>(0.0, 100.0);
-		tpccuid.emplace_back(std::uniform_int_distribution<uint64_t>(0, 10));
+//		tpccdre.emplace_back(std::default_random_engine(wid));
+//		tpccurd[tid] = std::uniform_real_distribution<double>(0.0, 100.0);
+//		tpccuid.emplace_back(std::uniform_int_distribution<uint64_t>(0, 10));
 
 		if (tid == 0)
 			wl->init_tab_item();
