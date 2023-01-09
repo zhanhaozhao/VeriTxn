@@ -24,7 +24,8 @@ count_job = 0
 
 def insert_job(alg="OCC", workload="YCSB", thread_num=4, theta=0.6, bkt_fac=1, read_perc=0.5, use_sgx=True,
                cs=1024 * 1024 * 1024, veri="PAGE_VERI", index="IDX_HASH", pre_load=1, use_log=0, txn_per_thd=10000,
-               database_size=1024 * 1024, txn_length=64, enable_data_cache=True, pt=1, prof="false", wh=16):
+               database_size=1024 * 1024, txn_length=64, enable_data_cache=True, pt=1, prof="false", wh=16,
+               full_tpcc="false"):
     global count_job
     count_job = count_job + 1
     jobs[count_job] = {
@@ -48,7 +49,8 @@ def insert_job(alg="OCC", workload="YCSB", thread_num=4, theta=0.6, bkt_fac=1, r
 		"REQ_PER_QUERY"		: txn_length,
         "PART_CNT"          : pt,
         "PROFILING"         : "false",
-        "NUM_WH"            : wh
+        "NUM_WH"            : wh,
+        "FULL_TPCC"         : full_tpcc
 	}
 
 
@@ -56,7 +58,10 @@ def test_compile(job):
     os.system("make clean> temp.out 2>&1")
     os.system("cp "+ dbms_cfg[0] +' ' + dbms_cfg[1])
     if job["USE_SGX"] == 1:
-        os.system("make sgx-debug 2>&1")
+        if job["WORKLOAD"] == "TPCC":   # TODO: sgx pre release has bug.
+            os.system("make sgx-debug 2>&1")
+        else:
+            os.system("make sgx-release 2>&1")
     else:
         os.system("make no-sgx 2>&1")
 
@@ -223,11 +228,7 @@ def run_rw_exp():
 def run_common_test():
     global jobs
     jobs = OrderedDict()
-    # for th in [3, 6, 7]:
-    # insert_job("OCC", 'YCSB', use_sgx=False)
-    insert_job("NO_WAIT", 'YCSB', use_sgx=True)
-    insert_job("NO_WAIT", 'TPCC', use_sgx=True)
-    # print(jobs)
+    insert_job("NO_WAIT", 'TPCC', use_sgx=True, full_tpcc="true")
     run_all_test(jobs, "comparison.csv")
 
 
@@ -352,9 +353,10 @@ def run_profiling():
 # run_database_skew_test()
 # run_rw_exp()
 # run_thread_exp()
-run_tpc_exp()
-# run_common_test()
+# run_tpc_exp()
+run_common_test()
 # run_profiling()
 # run_theta_exp()
+# run_read_only()
 # run_bktsiz_exp()
 # test()

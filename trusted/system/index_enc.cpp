@@ -362,10 +362,10 @@ void BucketHeader_ENC::read_item(idx_key_t key, itemid_t * &item) const {
             break;
         cur_node = cur_node->next;
     }
-//    if (cur_node == nullptr) {
-//        item = nullptr;
-//        return;
-//    }
+    if (cur_node == nullptr) {
+        item = nullptr;
+        return;
+    }
     // , "Key does not exist!"
     assert(cur_node->key == key);
     

@@ -392,6 +392,8 @@ void tpcc_wl::init_tab_order(uint64_t did, uint64_t wid) {
 			char ol_dist_info[24];
 	        MakeAlphaString(24, 24, ol_dist_info, wid-1);
 			row->set_value(OL_DIST_INFO, ol_dist_info);
+			row->set_primary_key(distKey(did, wid));
+            index_insert(i_orderline, distKey(did, wid), row, wh_to_part(wid));
 		}
 #endif
 		// NEW ORDER

@@ -282,8 +282,8 @@ RC txn_man::insert_row(row_t * row, std::string iname) {
     index_enc->index_insert(row->get_primary_key(), item, row->get_part_id());
 //    auto new_row = (row_t*)item->location;
 //    index_enc->release_up_cache((PAGE_ENC*)new_row->from_page);
-	assert(insert_cnt < MAX_ROW_PER_TXN);
-	insert_rows[insert_cnt ++] = row;
+//	assert(insert_cnt < MAX_ROW_PER_TXN);
+//	insert_rows[insert_cnt ++] = row;
     return Abort;
 }
 

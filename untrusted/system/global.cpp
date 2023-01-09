@@ -93,8 +93,6 @@ UInt32 g_cust_per_dist = 3000;
 sgx_enclave_id_t enclave_id = 0;
 #endif // USE_SGX
 
-uint64_t g_max_orderline = uint64_t(1) << 32;
-
 int MAX_LINE = 1024*1024;
 int PORT = 50001;
 int BACKLOG = 10;
