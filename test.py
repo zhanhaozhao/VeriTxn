@@ -24,7 +24,7 @@ count_job = 0
 
 def insert_job(alg="OCC", workload="YCSB", thread_num=4, theta=0.6, bkt_fac=1, read_perc=0.5, use_sgx=True,
                cs=1024 * 1024 * 1024, veri="PAGE_VERI", index="IDX_HASH", pre_load=1, use_log=0, txn_per_thd=10000,
-               database_size=1024 * 1024, txn_length=64, enable_data_cache=True, pt=1, prof="false", wh=4):
+               database_size=1024 * 1024, txn_length=64, enable_data_cache=True, pt=1, prof="false", wh=16):
     global count_job
     count_job = count_job + 1
     jobs[count_job] = {
@@ -56,7 +56,7 @@ def test_compile(job):
     os.system("make clean> temp.out 2>&1")
     os.system("cp "+ dbms_cfg[0] +' ' + dbms_cfg[1])
     if job["USE_SGX"] == 1:
-        os.system("make sgx-release 2>&1")
+        os.system("make sgx-debug 2>&1")
     else:
         os.system("make no-sgx 2>&1")
 
@@ -157,12 +157,12 @@ def run_thread_exp():
 def run_tpc_exp():
     global jobs
     jobs = OrderedDict()
+    # for th in [1, 2, 3, 4, 5, 6, 7, 8]:
+    #     for alg in algs:
+    #         insert_job(alg, 'TPCC', thread_num=th, use_sgx=False, pt=1)
     for th in [1, 2, 3, 4, 5, 6, 7, 8]:
         for alg in algs:
-            insert_job(alg, 'TPCC', thread_num=th, use_sgx=False, pt=8)
-    for th in [1, 2, 3, 4, 5, 6, 7, 8]:
-        for alg in algs:
-            insert_job(alg, 'TPCC', thread_num=th, use_sgx=True, pt=8)
+            insert_job(alg, 'TPCC', thread_num=th, use_sgx=True, pt=1)
     run_all_test(jobs, "thread_tpc.log")
 
 

@@ -445,16 +445,13 @@ void * tpcc_wl::threadInitWarehouse(void * This) {
 //	int init_warehouse_count = g_num_wh / g_init_parallelism;
 //	if (id == g_init_parallelism - 1) init_warehouse_count += g_num_wh % g_init_parallelism;
 	for (int i = 0; i < g_num_wh; i++) {
-        int tid = ATOM_FETCH_ADD(wl->next_tid, 1);
+        int tid = i;
+        wl->next_tid++;
 		
 		uint32_t wid = tid + 1;
 		tpcc_buffer[tid] = new myrand;
         tpcc_buffer[tid]->init(wid);
 		assert((uint64_t)tid < g_num_wh);
-//		tpccdre.emplace_back(std::default_random_engine(wid));
-//		tpccurd[tid] = std::uniform_real_distribution<double>(0.0, 100.0);
-//		tpccuid.emplace_back(std::uniform_int_distribution<uint64_t>(0, 10));
-
 		if (tid == 0)
 			wl->init_tab_item();
 		wl->init_tab_wh( wid );

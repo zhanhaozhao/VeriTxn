@@ -48,7 +48,7 @@ uint64_t Lastname(uint64_t num, char* name) {
 }
 
 uint64_t RAND(uint64_t max, uint64_t thd_id) {
-    uint64_t res = tpcc_buffer[thd_id]->next();
+    uint64_t res = tpcc_buffer[thd_id % g_num_wh]->next();
 	return (uint64_t(res)) % max;
 }
 
