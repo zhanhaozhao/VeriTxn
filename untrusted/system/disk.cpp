@@ -53,8 +53,8 @@ RemoteStorage::RemoteStorage() {
 	servaddr.sin_family = AF_INET;
 	servaddr.sin_port = htons(PORT);
 
-	if(inet_pton(AF_INET, "127.0.0.1", &servaddr.sin_addr) < 0) {
-		printf("inet_pton error for %s\n", "127.0.0.1");
+	if(inet_pton(AF_INET, RPC_SERVER, &servaddr.sin_addr) < 0) {
+		printf("inet_pton error for %s\n", RPC_SERVER);
 		exit(1);
 	}
 

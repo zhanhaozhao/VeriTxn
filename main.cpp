@@ -109,13 +109,13 @@ int main(int argc, char* argv[])
     msg_queue.init();
     printf("Done\n");
 
-    printf("Initializing transport manager... ");
-    fflush(stdout);
-    tport_man.init();
-    printf("Done\n");
-
 	if (!g_log_recover)
 	{
+        printf("Initializing transport manager... ");
+        fflush(stdout);
+        tport_man.init();
+        printf("Done\n");
+
 #if USE_LOG == 1
         remotestorage = new RemoteStorage();
 #endif
@@ -148,6 +148,12 @@ int main(int argc, char* argv[])
     uint64_t thd_cnt = g_thread_cnt;
     uint64_t rthd_cnt = NODE_CNT > 1 ? INPUT_CNT : 0;
     uint64_t sthd_cnt = NODE_CNT > 1 ? OUTPUT_CNT : 0;
+
+    if (g_log_recover) {
+        rthd_cnt = 0;
+        sthd_cnt = 0;
+    }
+
     uint64_t log_cnt = 1;
     uint64_t all_thd_cnt = thd_cnt + rthd_cnt + sthd_cnt + log_cnt;
     input_thds = new InputThread[rthd_cnt];
