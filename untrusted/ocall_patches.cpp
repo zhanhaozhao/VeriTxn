@@ -46,8 +46,8 @@ void oc_debug_print(const char* str) {
   printf("ocall debug print: %s\n", str);
 }
 
-void oc_async_hash_value(const char* iname, size_t len, int part_id, uint64_t bkt_idx, uint64_t hash) {
-  async_hash(std::string{iname, len}, part_id, bkt_idx, hash);
+void oc_async_hash_value(const char* iname, size_t len, int part_id, uint64_t bkt_idx, uint64_t hash, uint64_t ts) {
+  async_hash(std::string{iname, len}, part_id, bkt_idx, hash, ts);
 }
 
 void oc_send_logs(const char* logs, size_t len, int thd_id) {

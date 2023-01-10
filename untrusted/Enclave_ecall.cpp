@@ -51,8 +51,8 @@ int run_txn_ecall(void * h_thd, uint64_t start_time) {
   return ret;
 }
 
-void update_hash_value(std::string index_name, int part_id, uint64_t bkt_idx, uint64_t hash) {
-  ec_update_hash_value(enclave_id, part_id, bkt_idx, hash, index_name.c_str(), index_name.size());
+void update_hash_value(std::string index_name, int part_id, uint64_t bkt_idx, uint64_t hash, uint64_t ts) {
+  ec_update_hash_value(enclave_id, part_id, bkt_idx, hash, ts, index_name.c_str(), index_name.size());
 }
 
 #endif // USE_SGX

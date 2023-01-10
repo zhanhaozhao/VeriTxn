@@ -115,12 +115,13 @@ void Message::release_message(Message * msg) {
 }
 /************************/
 
-void AsyncHashMessage::init(std::string name, int pid, uint64_t bid, uint64_t h) {
+void AsyncHashMessage::init(std::string name, int pid, uint64_t bid, uint64_t h, uint64_t _ts) {
     // index_name = name;
     strcpy(index_name, name.c_str());
     part_id = pid;
     bkt_idx = bid;
     hash = h;
+    ts = _ts;
 }
 
 uint64_t AsyncHashMessage::get_size() {

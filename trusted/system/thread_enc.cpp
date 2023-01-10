@@ -139,11 +139,13 @@ int run_txn_ecall(void * thd, ts_t txn_ts) {
 	m_txn->set_txn_id(thd_id + glob_manager_enc->get_thd_txn_id(thd_id) * g_thread_cnt_enc);
 	glob_manager_enc->set_thd_txn_id(thd_id);
 
-	if ((CC_ALG == HSTORE && !HSTORE_LOCAL_TS)
-			|| CC_ALG == MVCC 
-			|| CC_ALG == HEKATON
-			|| CC_ALG == TIMESTAMP) 
-		m_txn->set_ts(txn_ts);
+    m_txn->set_ts(txn_ts);  // always needed for VeriTXN.
+
+//	if ((CC_ALG == HSTORE && !HSTORE_LOCAL_TS)
+//			|| CC_ALG == MVCC
+//			|| CC_ALG == HEKATON
+//			|| CC_ALG == TIMESTAMP)
+//		m_txn->set_ts(txn_ts);
 
 	rc = RCOK;
 #if CC_ALG == HSTORE
@@ -182,9 +184,9 @@ int run_txn_ecall(void * thd, ts_t txn_ts) {
 }
 
 
-void update_hash_value(std::string index_name, int part_id, uint64_t bkt_idx, uint64_t hash) {
+void update_hash_value(std::string index_name, int part_id, uint64_t bkt_idx, uint64_t hash, uint64_t ts) {
 	IndexEnc * index_enc = (IndexEnc *) tab_map->_indexes[index_name];
-  	index_enc->update_verify_hash(part_id, bkt_idx, hash);
+  	index_enc->update_verify_hash(part_id, bkt_idx, hash, ts);
 }
 
 

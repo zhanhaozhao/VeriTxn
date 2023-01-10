@@ -185,6 +185,14 @@ void txn_man::cleanup(RC rc) {
 			free(row);
 		}
 	}
+// batch update hash
+#if INDEX_STRUCT == IDX_HASH
+    for (int i = 0; i < row_cnt; i++) {
+        if (i == 0 || pages[i] != pages[i-1])
+            pages[i]->from->sync_version(pages[i], get_cur_time_ocall()); // propagate the page version.
+    }
+//	delete pages;
+#endif
 	row_cnt = 0;
 	wr_cnt = 0;
 	insert_cnt = 0;
