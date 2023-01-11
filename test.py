@@ -25,7 +25,7 @@ count_job = 0
 def insert_job(alg="OCC", workload="YCSB", thread_num=4, theta=0.6, bkt_fac=1, read_perc=0.5, use_sgx=True,
                cs=1024 * 1024 * 1024, veri="PAGE_VERI", index="IDX_HASH", pre_load=1, use_log=0, txn_per_thd=10000,
                database_size=1024 * 1024, txn_length=64, enable_data_cache=True, pt=1, prof="false", wh=16,
-               full_tpcc="false"):
+               full_tpcc="false", nodes = 1, test_freshness=0):
     global count_job
     count_job = count_job + 1
     jobs[count_job] = {
@@ -50,7 +50,9 @@ def insert_job(alg="OCC", workload="YCSB", thread_num=4, theta=0.6, bkt_fac=1, r
         "PART_CNT"          : pt,
         "PROFILING"         : "false",
         "NUM_WH"            : wh,
-        "FULL_TPCC"         : full_tpcc
+        "FULL_TPCC"         : full_tpcc,
+        "NODE_CNT"          : nodes,
+        "TEST_FRESHNESS"    : test_freshness
 	}
 
 
@@ -109,15 +111,37 @@ def test_run(job, f, test=''):
         process_store = subprocess.Popen("./Store>./store.log", stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                          shell=True)
         time.sleep(7)
-    cmd = "./App %s" % (app_flags)  # + fimeName
-    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-    result = process.communicate()
-    res = result[0].decode("utf-8")
-    print(res)
-    # print("input", res[res[0].find('[summary]'):])
-    f.write(res[res.find('[summary]'):])
-    process.wait()
-    f.flush()
+    if job["NODE_CNT"] == 1:
+        cmd = "./App %s" % (app_flags)  # + fimeName
+        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        result = process.communicate()
+        res = result[0].decode("utf-8")
+        print(res)
+        # print("input", res[res[0].find('[summary]'):])
+        f.write(res[res.find('[summary]'):])
+        process.wait()
+        f.flush()
+    else:
+        cnt = job["NODE_CNT"]
+        cmd = ["./App" for _ in range(cnt)]
+        process = [None for _ in range(cnt)]
+        for i in range(cnt):
+            if i == 0:
+                cmd[i] += " -nid0"
+            else:
+                cmd[i] += " -nid%d -r100 -w0" % i
+            print("running command ", cmd[i])
+            process[i] = subprocess.Popen(cmd[i], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+
+        for i in range(cnt):
+            result = process[i].communicate()
+            res = result[0].decode("utf-8")
+            print(res)
+            # print("input", res[res[0].find('[summary]'):])
+            f.write(res[res.find('[summary]'):])
+            process[i].wait()
+            f.flush()
+
     if job["USE_LOG"] == 1:
         process_store.kill()
 
@@ -343,6 +367,19 @@ def run_profiling():
     #         insert_job(alg, 'TPCC', thread_num=th, use_sgx=False, prof="true", txn_per_thd=1000)
     # run_all_test(jobs, "profiling.log")
 
+def run_full_tpcc_test():
+    global jobs
+    jobs = OrderedDict()
+    insert_job("NO_WAIT", 'TPCC', use_sgx=True, full_tpcc="true", index="IDX_BTREE", thread_num=1, wh=4, txn_per_thd=1000)
+    insert_job("NO_WAIT", 'TPCC', use_sgx=True, full_tpcc="true", index="IDX_BTREE", thread_num=4, wh=4, txn_per_thd=1000)
+    insert_job("NO_WAIT", 'TPCC', use_sgx=True, full_tpcc="true", index="IDX_BTREE", thread_num=8, wh=4, txn_per_thd=1000)
+    run_all_test(jobs, "full_tpcc.csv")
+
+def run_freshness_test():
+    global jobs
+    jobs = OrderedDict()
+    insert_job("NO_WAIT", 'YCSB', use_sgx=False, thread_num=1, theta=99, nodes=2, test_freshness=1)
+    run_all_test(jobs, "freshness.log")
 
 # run_cache_size_impact_for_different_methods_test()
 # run_database_skew_test()
@@ -354,9 +391,11 @@ def run_profiling():
 # run_rw_exp()
 # run_thread_exp()
 # run_tpc_exp()
-run_common_test()
+# run_common_test()
+# run_full_tpcc_test()
 # run_profiling()
 # run_theta_exp()
 # run_read_only()
 # run_bktsiz_exp()
+run_freshness_test()
 # test()

@@ -24,9 +24,9 @@ void* oc_gen_txn(void* h_thd) {
   return m_query;
 }
 
-uint64_t oc_get_current_time() {
-  return get_cur_time_ocall();
-}
+//uint64_t oc_get_current_time() {
+//  return get_cur_time_ocall();
+//}
 
 char* oc_get_bucket_ocall(const char * iname, size_t len, int part_id, int bkt_idx) {
   

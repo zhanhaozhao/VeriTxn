@@ -101,6 +101,7 @@ extern bool g_no_dl_enc;
 extern bool g_ts_batch_alloc_enc;
 extern UInt32 g_ts_batch_num_enc;
 extern uint32_t g_max_log_entry_size_enc;
+ts_t get_enc_time();
 
 // extern map<string, string> g_params;
 

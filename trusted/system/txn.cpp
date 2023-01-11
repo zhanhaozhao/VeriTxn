@@ -102,7 +102,7 @@ void txn_man::cleanup(RC rc) {
 	return;
 #endif
 #if PROFILING
-    uint64_t starttime = get_cur_time_ocall();
+    uint64_t starttime = get_enc_time();
 #endif
     PAGE_ENC ** pages = new PAGE_ENC* [row_cnt];
     for (int i = 0; i < row_cnt; i ++) {
@@ -186,13 +186,6 @@ void txn_man::cleanup(RC rc) {
 		}
 	}
 // batch update hash
-#if INDEX_STRUCT == IDX_HASH
-    for (int i = 0; i < row_cnt; i++) {
-        if (i == 0 || pages[i] != pages[i-1])
-            pages[i]->from->sync_version(pages[i], get_cur_time_ocall()); // propagate the page version.
-    }
-//	delete pages;
-#endif
 	row_cnt = 0;
 	wr_cnt = 0;
 	insert_cnt = 0;
@@ -200,7 +193,7 @@ void txn_man::cleanup(RC rc) {
 	dl_detector.clear_dep(get_txn_id());
 #endif
 #if PROFILING
-	uint64_t timespan = get_cur_time_ocall() - starttime;
+	uint64_t timespan = get_enc_time() - starttime;
     INC_STATS_ENC(get_thd_id(), time_cache,  timespan)
 #endif
 }
@@ -209,7 +202,7 @@ row_t * txn_man::get_row(row_t * row, access_t type) {
 	if (CC_ALG == HSTORE)
 		return row;
 #if PROFILING
-	uint64_t starttime = get_cur_time_ocall();
+	uint64_t starttime = get_enc_time();
 #endif
 	RC rc = RCOK;
 	if (accesses[row_cnt] == NULL) {
@@ -265,7 +258,7 @@ row_t * txn_man::get_row(row_t * row, access_t type) {
 		wr_cnt ++;
 
 #if PROFILING
-	uint64_t timespan = get_cur_time_ocall() - starttime;
+	uint64_t timespan = get_enc_time() - starttime;
 	INC_TMP_STATS_ENC(get_thd_id(), time_man, timespan);
 #endif
 	return accesses[row_cnt - 1]->data;
@@ -323,7 +316,7 @@ txn_man::index_read(std::string iname, idx_key_t key, int part_id) {
 itemid_t *
 txn_man::index_next(std::string iname, itemid_t* last) {
 #if PROFILING
-	uint64_t starttime = get_cur_time_ocall();
+	uint64_t starttime = get_enc_time();
 #endif
 //    assert(false);
     itemid_t * item;
@@ -341,7 +334,7 @@ txn_man::index_next(std::string iname, itemid_t* last) {
     assert(((row_t*)item->location)->get_table());
     // index->index_read(key, item, part_id, get_thd_id());
 #if PROFILING
-	INC_TMP_STATS_ENC(get_thd_id(), time_index, get_cur_time_ocall() - starttime);
+	INC_TMP_STATS_ENC(get_thd_id(), time_index, get_enc_time() - starttime);
 #endif
     return item;
 }
@@ -349,7 +342,7 @@ txn_man::index_next(std::string iname, itemid_t* last) {
 void 
 txn_man::index_read(std::string iname, idx_key_t key, int part_id, itemid_t *& item) {
 #if PROFILING
-	uint64_t starttime = get_cur_time_ocall();
+	uint64_t starttime = get_enc_time();
 #endif
 	INDEX_ENC * index_enc = (INDEX_ENC *) tab_map->_indexes[iname];
     if (index_enc == nullptr) {
@@ -365,13 +358,13 @@ txn_man::index_read(std::string iname, idx_key_t key, int part_id, itemid_t *& i
 #endif
 	// index->index_read(key, item, part_id, get_thd_id());
 #if PROFILING
-	INC_TMP_STATS_ENC(get_thd_id(), time_index, get_cur_time_ocall() - starttime);
+	INC_TMP_STATS_ENC(get_thd_id(), time_index, get_enc_time() - starttime);
 #endif
 }
 
 RC txn_man::finish(RC rc) {
 #if PROFILING
-	uint64_t t1 = get_cur_time_ocall();
+	uint64_t t1 = get_enc_time();
 
 	// for (int i = 0; i < 10; i ++) {
 	// 	// char* buf = (char*)malloc(1000);
@@ -379,8 +372,8 @@ RC txn_man::finish(RC rc) {
 	// 	// free(buf);
 	// 	delete buf;
 	// }
-	 uint64_t t2 = get_cur_time_ocall();
-	uint64_t t3 = get_cur_time_ocall();
+	 uint64_t t2 = get_enc_time();
+	uint64_t t3 = get_enc_time();
 	INC_TMP_STATS_ENC(0, time_index, t2-t1);
 	INC_TMP_STATS_ENC(0, time_man, t3-t2);
 #endif
@@ -388,7 +381,7 @@ RC txn_man::finish(RC rc) {
 	return RCOK;
 #endif
 #if PROFILING
-	uint64_t starttime = get_cur_time_ocall();
+	uint64_t starttime = get_enc_time();
 #endif
 #if CC_ALG == OCC
 	if (rc == RCOK)
@@ -408,11 +401,32 @@ RC txn_man::finish(RC rc) {
 #elif CC_ALG == HEKATON
 	rc = validate_hekaton(rc);
 	cleanup(rc);
-#else 
-	cleanup(rc);
+#else
+	if (rc == RCOK) {
+        PAGE_ENC ** pages = new PAGE_ENC* [row_cnt];
+        for (int i = 0; i < row_cnt; i ++) {
+            Access *access = accesses[i];
+            pages[i] = (PAGE_ENC*) access->orig_row->from_page;
+        }
+        std::sort(pages, pages+row_cnt);    // cache friendly.
+#if INDEX_STRUCT == IDX_HASH
+        commit_t = get_enc_time();
+        bool synced = false;
+        for (int i = 0; i < row_cnt; i++) {
+            if (i == 0 || pages[i] != pages[i-1]) synced = false;
+            if (!synced) {
+                pages[i]->from->sync_version(pages[i], commit_t, begin_t, accesses[i]->type == WR);
+                    // propagate the page version.
+                synced = true;
+            }
+        }
+	}
+//	delete pages;
+#endif
+    cleanup(rc);
 #endif
 #if PROFILING
-	uint64_t timespan = get_cur_time_ocall() - starttime;
+	uint64_t timespan = get_enc_time() - starttime;
 	INC_TMP_STATS_ENC(get_thd_id(), time_man,  timespan);
 	INC_STATS_ENC(get_thd_id(), time_cleanup,  timespan);
 #endif

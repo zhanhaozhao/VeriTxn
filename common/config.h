@@ -4,9 +4,9 @@
 /***********************************************/
 // Simulation + Hardware
 /***********************************************/
-#define NODE_CNT 1
-#define THREAD_CNT 3
-#define PART_CNT 8
+#define NODE_CNT 2
+#define THREAD_CNT 1
+#define PART_CNT 1
 #define INPUT_CNT					1
 #define OUTPUT_CNT					1
 // each transaction only accesses 1 virtual partition. But the lock/ts manager and index are not aware of such partitioning. VIRTUAL_PART_CNT describes the request distribution and is only used to generate queries. For HSTORE, VIRTUAL_PART_CNT should be the same as PART_CNT.
@@ -20,7 +20,7 @@
 // # of transactions to run for warmup
 #define WARMUP						0
 // YCSB or TPCC
-#define WORKLOAD TPCC
+#define WORKLOAD YCSB
 // print the transaction latency distribution
 #define PRT_LAT_DISTR				false
 #define STATS_ENABLE				true
@@ -134,7 +134,7 @@
 // ==== [YCSB] ====
 #define INIT_PARALLELISM 8
 #define SYNTH_TABLE_SIZE 1048576
-#define ZIPF_THETA 0.6
+#define ZIPF_THETA 99
 #define READ_PERC 0.5
 #define WRITE_PERC 0.5
 #define SCAN_PERC 					0
@@ -147,7 +147,7 @@
 // For large warehouse count, the tables do not fit in memory
 // small tpcc schemas shrink the table size.
 #define TPCC_SMALL					false
-#define FULL_TPCC                   false
+#define FULL_TPCC false
 // Some of the transactions read the data but never use them.
 // If TPCC_ACCESS_ALL == fales, then these parts of the transactions
 // are not modeled.
@@ -248,11 +248,12 @@ extern enum TestCases					g_test_case;
 #define TPORT_TYPE tcp
 #define USE_NANOMSG                 1
 #define USE_ASYNC_HASH              1
-#define USE_LOG 1
-#define RPC_SERVER                  "10.10.10.58"
+#define USE_LOG 0
+#define RPC_SERVER                  "127.0.0.1"
 #define LOG_BATCH_SIZE              10
 
 // cache parameters
+//#define VERIFIED_CACHE_SIZ 1073741824
 //#define VERIFIED_CACHE_SIZ 1073741824
 #define VERIFIED_CACHE_SIZ 1073741824
 #define ENABLE_DATA_CACHE true
@@ -272,6 +273,7 @@ extern enum TestCases					g_test_case;
 
 #define PRE_LOAD 1
 #define PROFILING false
+#define TEST_FRESHNESS 1
 
 // Log queue type
 #define LOG_CIRCUL_BUFF 1

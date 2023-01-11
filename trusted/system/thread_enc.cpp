@@ -140,6 +140,7 @@ int run_txn_ecall(void * thd, ts_t txn_ts) {
 	glob_manager_enc->set_thd_txn_id(thd_id);
 
     m_txn->set_ts(txn_ts);  // always needed for VeriTXN.
+    m_txn->begin_t = get_enc_time();
 
 //	if ((CC_ALG == HSTORE && !HSTORE_LOCAL_TS)
 //			|| CC_ALG == MVCC

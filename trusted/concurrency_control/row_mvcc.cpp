@@ -98,14 +98,14 @@ Row_mvcc::double_list(uint32_t list)
 RC Row_mvcc::access(txn_man * txn, TsType type, row_t * row) {
 	RC rc = RCOK;
 	ts_t ts = txn->get_ts();
-uint64_t t1 = get_cur_time_ocall();
+uint64_t t1 = get_enc_time();
 	if (g_central_man_enc)
 		glob_manager_enc->lock_row(_row);
 	else
 		while (!ATOM_CAS(blatch, false, true))
 			PAUSE
 		//pthread_mutex_lock( latch );
-uint64_t t2 = get_cur_time_ocall();
+uint64_t t2 = get_enc_time();
 INC_STATS_ENC(txn->get_thd_id(), debug4, t2 - t1);
 
 #if DEBUG_CC
@@ -186,7 +186,7 @@ INC_STATS_ENC(txn->get_thd_id(), debug4, t2 - t1);
 		update_buffer(txn, XP_REQ);
 	} else 
 		assert(false);
-INC_STATS_ENC(txn->get_thd_id(), debug3, get_cur_time_ocall() - t2);
+INC_STATS_ENC(txn->get_thd_id(), debug3, get_enc_time() - t2);
 	if (g_central_man_enc)
 		glob_manager_enc->release_row(_row);
 	else

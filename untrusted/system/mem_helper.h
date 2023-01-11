@@ -23,6 +23,12 @@
 	if (STATS_ENABLE) \
 		stats._stats[tid]->name += value;
 
+#define UPDATE_TS(tid, value) \
+    stats.begin_ts[tid] = value;
+
+#define MIN_BEGIN_TS() \
+    stats.begin_ts[tid].get_min_begin_ts();
+
 #define INC_TMP_STATS(tid, name, value) \
 	if (STATS_ENABLE) \
 		stats.tmp_stats[tid]->name += value;

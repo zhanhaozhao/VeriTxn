@@ -17,14 +17,14 @@ void generate_txn_ocall(thread_t * h_thd, base_query *& m_query) {
   m_query = (base_query*) ret;
 }
 
-ts_t get_cur_time_ocall() {
-  uint64_t time;
-  sgx_status_t status = oc_get_current_time(&time);
-  if (status != SGX_SUCCESS) {
-    oc_debug_print("get cur time ocall failed\n");
-  }
-  return time;
-}
+//ts_t get_cur_time_ocall() {
+//  uint64_t time;
+//  sgx_status_t status = oc_get_current_time(&time);
+//  if (status != SGX_SUCCESS) {
+//    oc_debug_print("get cur time ocall failed\n");
+//  }
+//  return time;
+//}
 
 // here used strlen. ensure the untrusted side cstring terminate with '\0'
 std::string get_bucket_ocall(std::string iname, int part_id, int bkt_idx) {

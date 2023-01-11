@@ -59,6 +59,8 @@ public:
 	workload * h_wl;
     myrand_enc * mrand;
 	uint64_t abort_cnt;
+	ts_t begin_t;
+	ts_t commit_t;
 
 	virtual RC 		run_txn(base_query * m_query) = 0;
 	uint64_t 		get_thd_id();

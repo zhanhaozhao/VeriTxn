@@ -124,7 +124,9 @@ RC thread_t::run() {
 
 		generate_txn_for_run(this->m_query);
 
-		rc = (RC) run_txn_ecall(this, this->get_next_ts());
+		auto begin_ts = this->get_next_ts();
+        UPDATE_TS(get_thd_id(), begin_ts);
+		rc = (RC) run_txn_ecall(this, begin_ts);
 
 		if (rc == Abort) {
 			uint64_t penalty = 0;

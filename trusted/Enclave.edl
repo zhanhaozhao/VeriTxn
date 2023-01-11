@@ -15,7 +15,7 @@ enclave {
   untrusted {
     // return base query
     void* oc_gen_txn([user_check] void* h_thd);
-    uint64_t oc_get_current_time();
+    // uint64_t oc_get_current_time();
     char* oc_get_bucket_ocall([in, size=len] const char* iname, size_t len, int part_id, int bkt_idx);
     void oc_debug_print([in, string] const char* str);
     void oc_async_hash_value([in, size=len] const char* iname, size_t len, int part_id, uint64_t bkt_idx, uint64_t hash, uint64_t ts);

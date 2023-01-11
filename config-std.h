@@ -43,7 +43,7 @@
 /***********************************************/
 // WAIT_DIE, NO_WAIT, DL_DETECT, TIMESTAMP, MVCC, HEKATON, HSTORE, OCC, VLL, TICTOC, SILO
 // TODO TIMESTAMP does not work at this moment
-#define  CC_ALG NO_WAIT
+#define CC_ALG NO_WAIT
 #define ISOLATION_LEVEL SERIALIZABLE
 
 // all transactions acquire tuples according to the primary key order.
@@ -128,13 +128,13 @@
 // max number of rows touched per transaction
 #define MAX_ROW_PER_TXN				128
 #define QUERY_INTVL 				1UL
-#define MAX_TXN_PER_PART 10000
+#define MAX_TXN_PER_PART 1000
 #define FIRST_PART_LOCAL 			true
 #define MAX_TUPLE_SIZE				1024 // in bytes
 // ==== [YCSB] ====
 #define INIT_PARALLELISM 8
 #define SYNTH_TABLE_SIZE 1048576
-#define ZIPF_THETA 0.6
+#define ZIPF_THETA 99
 #define READ_PERC 0.5
 #define WRITE_PERC 0.5
 #define SCAN_PERC 					0
@@ -248,13 +248,14 @@ extern enum TestCases					g_test_case;
 #define TPORT_TYPE tcp
 #define USE_NANOMSG                 1
 #define USE_ASYNC_HASH              1
-#define USE_LOG 1
+#define USE_LOG 0
 #define RPC_SERVER                  "127.0.0.1"
 #define LOG_BATCH_SIZE              10
 
 // cache parameters
 //#define VERIFIED_CACHE_SIZ      (1  * 1024 * 1024)  // 1MB
-#define VERIFIED_CACHE_SIZ      (1 * 1024  * 1024 * 1024)  // 1GB
+//#define VERIFIED_CACHE_SIZ      (1 * 1024  * 1024 * 1024)  // 1GB
+#define VERIFIED_CACHE_SIZ      (10ULL * 1024  * 1024 * 1024ULL)  // 1GB
 #define ENABLE_DATA_CACHE        true    // 4GB
 #define BASE_LEASE      100
 #define VERI_TYPE     PAGE_VERI
@@ -271,7 +272,8 @@ extern enum TestCases					g_test_case;
 #endif
 
 #define PRE_LOAD 1
-#define PROFILING false
+#define PROFILING true
+#define TEST_FRESHNESS 1
 
 // Log queue type
 #define LOG_CIRCUL_BUFF 1

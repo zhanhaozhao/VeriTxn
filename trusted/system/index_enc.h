@@ -62,6 +62,7 @@ public:
     void insert_item(idx_key_t key, itemid_t * item, int part_id);
     void read_item(idx_key_t key, itemid_t * &item) const;
     uint64_t get_hash() const;
+    ts_t get_ts() const;
     DFlow encode() const;
     void decode(const DFlow & e);
     BucketNode_ENC * 	first_node;
@@ -92,9 +93,10 @@ public:
 //    static DFlow load_disk(int part_id, uint64_t bkt_idx);
 //    static void flush_disk(int part_id, uint64_t bkt_idx, const DFlow & e);
     void release_up_cache(BucketHeader_ENC *c);
-    void sync_version(BucketHeader_ENC *c, uint64_t _ts);
+    void sync_version(BucketHeader_ENC *c, uint64_t commit_t, uint64_t begin_t, bool updated);
 
     lru_cache*           _cache;
+    uint64_t**          _bucket_commit_t;
 private:
     void get_latch(BucketHeader_ENC * bucket);
     void release_latch(BucketHeader_ENC * bucket);
@@ -105,9 +107,15 @@ private:
     uint64_t 			_bucket_cnt_per_part;
     uint64_t 			_default_verify_hash;
     uint64_t**          _verify_hash;
-    uint64_t**          _bucket_commit_ts;  // maximum commit timestamp of transactions involving this block.
+    // maximum commit timestamp of transactions involving this block.
 #ifndef SGX_DISK
     BucketHeader_ENC**      _buckets;
+#endif
+#if TEST_FRESHNESS == 1
+    uint64_t * freshness_begin_ts_queue;    // test the freshness on record 0.
+    // increases with readTS.
+    uint64_t * freshness_read_ts_queue;    // test the freshness on record 0.
+    uint64_t freshness_queue_st, freshness_queue_ed;
 #endif
 
 };

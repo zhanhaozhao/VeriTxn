@@ -129,7 +129,8 @@ uint64_t AsyncHashMessage::get_size() {
     size+=sizeof(char) * INDEX_NAME_LENGTH;
     size+=sizeof(int);
     size+=sizeof(uint64_t);
-    size+=sizeof(uint64_t); 
+    size+=sizeof(uint64_t);
+    size+=sizeof(uint64_t);
     return size;
 }
 
@@ -140,6 +141,7 @@ void AsyncHashMessage::copy_from_buf(char * buf) {
     COPY_VAL(part_id,buf,ptr);
     COPY_VAL(bkt_idx,buf,ptr);
     COPY_VAL(hash,buf,ptr);
+    COPY_VAL(ts,buf,ptr);
     assert(ptr == get_size());
 }
 
@@ -150,6 +152,7 @@ void AsyncHashMessage::copy_to_buf(char * buf) {
     COPY_BUF(buf,part_id,ptr);
     COPY_BUF(buf,bkt_idx,ptr);
     COPY_BUF(buf,hash,ptr);
+    COPY_BUF(buf,ts,ptr);
     assert(ptr == get_size());
 }
 

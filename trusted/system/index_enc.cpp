@@ -17,9 +17,16 @@ void test_encoder(const BucketHeader_ENC* x);
 void test_encoder(const BucketNode_ENC* x);
 
 RC IndexEnc::init(uint64_t bucket_cnt, int part_cnt) {
+#if TEST_FRESHNESS == 1
+    freshness_begin_ts_queue = new uint64_t [MAX_TXN_PER_PART + 10];    // test the freshness on record 0.
+    // increases with readTS.
+    freshness_read_ts_queue = new uint64_t [MAX_TXN_PER_PART + 10];    // test the freshness on record 0.
+    freshness_queue_st = 1;
+    freshness_queue_ed = 0;
+#endif
     _bucket_cnt_per_part = bucket_cnt / part_cnt;
     _verify_hash = new u_int64_t * [part_cnt];
-    _bucket_commit_ts = new uint64_t * [part_cnt];
+    _bucket_commit_t = new uint64_t * [part_cnt];
     _cache = new lru_cache;
 #if WORKLOAD == YCSB
     _cache->init(bucket_cnt, part_cnt, VERIFIED_CACHE_SIZ);
@@ -35,7 +42,7 @@ RC IndexEnc::init(uint64_t bucket_cnt, int part_cnt) {
     for (int i = 0; i < part_cnt; i++) {
         // _verify_hash[i] = (u_int64_t *) aligned_alloc(64, sizeof(u_int64_t) * _bucket_cnt_per_part);
         _verify_hash[i] = (u_int64_t *) malloc(sizeof(u_int64_t) * _bucket_cnt_per_part);
-        _bucket_commit_ts[i] = (u_int64_t *) malloc(sizeof(u_int64_t) * _bucket_cnt_per_part);
+        _bucket_commit_t[i] = (u_int64_t *) malloc(sizeof(u_int64_t) * _bucket_cnt_per_part);
 #ifndef SGX_DISK
         // _buckets[i] = (BucketHeader_ENC *) aligned_alloc(64, sizeof(BucketHeader_ENC) * _bucket_cnt_per_part);
         _buckets[i] = (BucketHeader_ENC *) malloc(sizeof(BucketHeader_ENC) * _bucket_cnt_per_part);
@@ -45,7 +52,7 @@ RC IndexEnc::init(uint64_t bucket_cnt, int part_cnt) {
             _buckets[i][n].init();
 #endif
             _verify_hash[i][n] = _default_verify_hash;
-            _bucket_commit_ts[i][n] = 0;
+            _bucket_commit_t[i][n] = 0;
         }
     }
     return RCOK;
@@ -113,7 +120,26 @@ RC IndexEnc::index_read(std::string iname, idx_key_t key, itemid_t * &item, int 
 // TODO: 1. MVCC here: if one hash is used by some txn, do not recycle it. (see _cache)
 void IndexEnc::update_verify_hash(int part_id, uint64_t bkt_idx, uint64_t hash, uint64_t ts) {
     _verify_hash[part_id][bkt_idx] = hash;
-    _bucket_commit_ts[part_id][bkt_idx] = ts;
+    _bucket_commit_t[part_id][bkt_idx] = ts;
+//    printf("update verify hash %lu:%lu\n", bkt_idx, ts);
+#if TEST_FRESHNESS == 1
+    if (part_id == 0 && bkt_idx == 1) {
+        // calculate the freshness of data record (0,0)
+//        printf("calculating freshness %lu-%lu\n", freshness_queue_st, freshness_queue_ed);
+        while (freshness_queue_st <= freshness_queue_ed) {
+            assert(freshness_read_ts_queue[freshness_queue_st] <=
+                freshness_begin_ts_queue[freshness_queue_st]);
+//            printf("calculating freshness %lu - %lu - %lu\n", freshness_read_ts_queue[freshness_queue_st], ts, freshness_begin_ts_queue[freshness_queue_st]);
+            if (ts > freshness_begin_ts_queue[freshness_queue_st])
+                stats_enc->freshness_cnt ++;
+            else if (ts > freshness_read_ts_queue[freshness_queue_st]) {
+                stats_enc->freshness_cnt ++;
+                stats_enc->freshness_sum += freshness_begin_ts_queue[freshness_queue_st] - ts;
+            }
+            freshness_queue_st ++;
+        }
+    }
+#endif
 }
 
 //#define DECOUPLE
@@ -418,6 +444,10 @@ void BucketHeader_ENC::decode(const DFlow & e) {
     }
 }
 
+ts_t BucketHeader_ENC::get_ts() const {
+    return from->_bucket_commit_t[part][bkt];
+}
+
 void test_encoder(const BucketHeader_ENC* x) {
 #ifdef TEST_C
     auto tmp = new BucketHeader_ENC();
@@ -503,8 +533,18 @@ void test_encoder(const BucketNode_ENC* x) {
 }
 
 // batch here.
-void IndexEnc::sync_version(BucketHeader_ENC* c, uint64_t _ts) {
-//    printf("synchronizing \n");
-    async_hash_value(index_name, c->part, c->bkt, c->get_hash(), _ts);
-    // due to delayed update, c->get_hash could be different with _verified_hash.
+void IndexEnc::sync_version(BucketHeader_ENC* c, uint64_t commit_t, uint64_t begin_t, bool updated) {
+    if (updated) {
+//        printf("synchronizing %lu:(%lu-%lu)\n", c->bkt, begin_t, commit_t);
+        async_hash_value(index_name, c->part, c->bkt, c->get_hash(), commit_t);
+    } else {
+//        printf("freshness pushing %lu:(%lu-%lu)\n", c->bkt, begin_t, commit_t);
+#if TEST_FRESHNESS == 1
+        if (c->part == 0 && c->bkt == 1) {
+            freshness_queue_ed++;
+            freshness_begin_ts_queue[freshness_queue_ed] = begin_t;
+            freshness_read_ts_queue[freshness_queue_ed] = c->get_ts();
+        }
+#endif
+    }
 }

@@ -58,6 +58,11 @@ public:
 	// stats are first written to tmp_stats, if the txn successfully commits, 
 	// copy the values in tmp_stats to _stats
 	Stats_tmp ** tmp_stats;
+	uint64_t * begin_ts;
+#if TEST_FRESHNESS == 1
+	uint64_t freshness_sum;
+	uint64_t freshness_cnt;
+#endif
 	
 	// GLOBAL statistics
 	double dl_detect_time;
@@ -70,6 +75,16 @@ public:
 	void clear(uint64_t tid);
 	void add_debug(uint64_t thd_id, uint64_t value, uint32_t select);
 	void commit(uint64_t thd_id);
+	uint64_t get_min_begin_ts() {
+	    uint64_t res = 0;
+	    for (int i=0;i<THREAD_CNT;i++) {
+	        auto tmp = begin_ts[i];
+	        if (tmp != 0 && tmp > res) {
+	            res = tmp;
+	        }
+	    }
+        return res;
+	}
 	inline void abort(uint64_t thd_id) {
 		if (STATS_ENABLE) 
 			tmp_stats[thd_id]->init();

@@ -61,6 +61,10 @@ bool g_wh_update_enc = WH_UPDATE;
 uint32_t g_max_log_entry_size_enc = MAX_LOG_ENTRY_SIZE;
 // char * output_file = NULL;
 
+ts_t get_enc_time() {
+    return get_sys_clock();
+}
+
 // map<string, string> g_params;
 
 // #if TPCC_SMALL
