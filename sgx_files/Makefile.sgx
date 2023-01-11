@@ -59,4 +59,3 @@ sgx-debug:
 	cp ./sgx_files/debug/sgx_u.mk ./sgx_u.mk
 	cp ./sgx_files/debug/Enclave.config.xml ./trusted/Enclave.config.xml
 	cp ./sgx_files/Makefile.sgx Makefile
-

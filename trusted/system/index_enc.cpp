@@ -19,6 +19,7 @@ void test_encoder(const BucketNode_ENC* x);
 RC IndexEnc::init(uint64_t bucket_cnt, int part_cnt) {
     _bucket_cnt_per_part = bucket_cnt / part_cnt;
     _verify_hash = new u_int64_t * [part_cnt];
+    _bucket_commit_ts = new uint64_t * [part_cnt];
     _cache = new lru_cache;
 #if WORKLOAD == YCSB
     _cache->init(bucket_cnt, part_cnt, VERIFIED_CACHE_SIZ);
@@ -34,6 +35,7 @@ RC IndexEnc::init(uint64_t bucket_cnt, int part_cnt) {
     for (int i = 0; i < part_cnt; i++) {
         // _verify_hash[i] = (u_int64_t *) aligned_alloc(64, sizeof(u_int64_t) * _bucket_cnt_per_part);
         _verify_hash[i] = (u_int64_t *) malloc(sizeof(u_int64_t) * _bucket_cnt_per_part);
+        _bucket_commit_ts[i] = (u_int64_t *) malloc(sizeof(u_int64_t) * _bucket_cnt_per_part);
 #ifndef SGX_DISK
         // _buckets[i] = (BucketHeader_ENC *) aligned_alloc(64, sizeof(BucketHeader_ENC) * _bucket_cnt_per_part);
         _buckets[i] = (BucketHeader_ENC *) malloc(sizeof(BucketHeader_ENC) * _bucket_cnt_per_part);
@@ -43,6 +45,7 @@ RC IndexEnc::init(uint64_t bucket_cnt, int part_cnt) {
             _buckets[i][n].init();
 #endif
             _verify_hash[i][n] = _default_verify_hash;
+            _bucket_commit_ts[i][n] = 0;
         }
     }
     return RCOK;
@@ -71,6 +74,7 @@ IndexEnc::release_latch(BucketHeader_ENC * bucket) {
 
 
 RC IndexEnc::index_insert(idx_key_t key, itemid_t * item, int part_id) {
+    assert(false);  // TODO: currently no insert support to the verifiable hash index.
     RC rc = RCOK;
     uint64_t bkt_idx = hash(key);
     assert(bkt_idx < _bucket_cnt_per_part);
@@ -106,8 +110,10 @@ RC IndexEnc::index_read(std::string iname, idx_key_t key, itemid_t * &item, int 
     return rc;
 }
 
-void IndexEnc::update_verify_hash(int part_id, uint64_t bkt_idx, uint64_t hash) {
+// TODO: 1. MVCC here: if one hash is used by some txn, do not recycle it. (see _cache)
+void IndexEnc::update_verify_hash(int part_id, uint64_t bkt_idx, uint64_t hash, uint64_t ts) {
     _verify_hash[part_id][bkt_idx] = hash;
+    _bucket_commit_ts[part_id][bkt_idx] = ts;
 }
 
 //#define DECOUPLE
@@ -362,10 +368,10 @@ void BucketHeader_ENC::read_item(idx_key_t key, itemid_t * &item) const {
             break;
         cur_node = cur_node->next;
     }
-//    if (cur_node == nullptr) {
-//        item = nullptr;
-//        return;
-//    }
+    if (cur_node == nullptr) {
+        item = nullptr;
+        return;
+    }
     // , "Key does not exist!"
     assert(cur_node->key == key);
     
@@ -494,4 +500,11 @@ void test_encoder(const BucketNode_ENC* x) {
 //    cout << e << "  and " << tmp->encode() << endl;
     assert(e == tmp->encode());
 #endif
+}
+
+// batch here.
+void IndexEnc::sync_version(BucketHeader_ENC* c, uint64_t _ts) {
+//    printf("synchronizing \n");
+    async_hash_value(index_name, c->part, c->bkt, c->get_hash(), _ts);
+    // due to delayed update, c->get_hash could be different with _verified_hash.
 }

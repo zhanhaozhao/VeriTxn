@@ -36,8 +36,8 @@ std::string get_bucket_ocall(std::string iname, int part_id, int bkt_idx) {
   return std::string{ptr, strlen(ptr)};
 }
 
-void async_hash_value(std::string index_name, int part_id, uint64_t bkt_idx, uint64_t hash) {
-  oc_async_hash_value(index_name.c_str(), index_name.size(), part_id, bkt_idx, hash);
+void async_hash_value(std::string index_name, int part_id, uint64_t bkt_idx, uint64_t hash, uint64_t ts) {
+  oc_async_hash_value(index_name.c_str(), index_name.size(), part_id, bkt_idx, hash, ts);
 }
 
 void send_logs(std::string logs, int size, uint64_t thd_id) {

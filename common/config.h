@@ -5,22 +5,22 @@
 // Simulation + Hardware
 /***********************************************/
 #define NODE_CNT 1
-#define THREAD_CNT 4
-#define PART_CNT 1
+#define THREAD_CNT 3
+#define PART_CNT 8
 #define INPUT_CNT					1
 #define OUTPUT_CNT					1
 // each transaction only accesses 1 virtual partition. But the lock/ts manager and index are not aware of such partitioning. VIRTUAL_PART_CNT describes the request distribution and is only used to generate queries. For HSTORE, VIRTUAL_PART_CNT should be the same as PART_CNT.
 #define VIRTUAL_PART_CNT			1
 #define PAGE_SIZE					4096
 #define CL_SIZE						64
-// CPU_FREQ is used to get accurate timing info 
+// CPU_FREQ is used to get accurate timing info
 #define CPU_FREQ 					2 	// in GHz/s
 
 
 // # of transactions to run for warmup
 #define WARMUP						0
 // YCSB or TPCC
-#define WORKLOAD YCSB
+#define WORKLOAD TPCC
 // print the transaction latency distribution
 #define PRT_LAT_DISTR				false
 #define STATS_ENABLE				true
@@ -43,7 +43,7 @@
 /***********************************************/
 // WAIT_DIE, NO_WAIT, DL_DETECT, TIMESTAMP, MVCC, HEKATON, HSTORE, OCC, VLL, TICTOC, SILO
 // TODO TIMESTAMP does not work at this moment
-#define  CC_ALG NO_WAIT
+#define CC_ALG NO_WAIT
 #define ISOLATION_LEVEL SERIALIZABLE
 
 // all transactions acquire tuples according to the primary key order.
@@ -60,7 +60,7 @@
 #define ENABLE_LATCH				true
 #define CENTRAL_INDEX				false
 #define CENTRAL_MANAGER 			false
-#define INDEX_STRUCT				IDX_HASH
+#define INDEX_STRUCT IDX_HASH
 #define BTREE_ORDER 				16
 #define INDEX_NAME_LENGTH       	16
 #define INDEX_NAME_LENGTH       	16
@@ -126,7 +126,7 @@
 // Benchmark
 /***********************************************/
 // max number of rows touched per transaction
-#define MAX_ROW_PER_TXN				64
+#define MAX_ROW_PER_TXN				128
 #define QUERY_INTVL 				1UL
 #define MAX_TXN_PER_PART 10000
 #define FIRST_PART_LOCAL 			true
@@ -153,7 +153,7 @@
 // are not modeled.
 #define TPCC_ACCESS_ALL 			false
 #define WH_UPDATE					true
-#define NUM_WH PART_CNT
+#define NUM_WH 16
 //
 enum TPCCTxnType {TPCC_ALL,
     TPCC_PAYMENT,
@@ -253,11 +253,11 @@ extern enum TestCases					g_test_case;
 #define LOG_BATCH_SIZE              10
 
 // cache parameters
-//#define VERIFIED_CACHE_SIZ      (1  * 1024 * 1024)  // 1MB
-#define VERIFIED_CACHE_SIZ      (1 * 1024  * 1024 * 1024)  // 1GB
-#define ENABLE_DATA_CACHE        true    // 4GB
+//#define VERIFIED_CACHE_SIZ 1073741824
+#define VERIFIED_CACHE_SIZ 1073741824
+#define ENABLE_DATA_CACHE true
 #define BASE_LEASE      100
-#define VERI_TYPE     PAGE_VERI
+#define VERI_TYPE PAGE_VERI
 #if VERI_TYPE == MERKLE_TREE
 #define BATCH_MERKLE 1 // calculate the merkle hash in batch to avoid too costly init.
 // #define SEPARATE_MERKLE // calculate the merkle hash online.
@@ -271,6 +271,7 @@ extern enum TestCases					g_test_case;
 #endif
 
 #define PRE_LOAD 1
+#define PROFILING false
 
 // Log queue type
 #define LOG_CIRCUL_BUFF 1

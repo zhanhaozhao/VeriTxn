@@ -59,13 +59,14 @@ public:
   void copy_to_buf(char * buf);
   uint64_t get_size();
   void init(){}
-  void init(std::string name, int pid, uint64_t bid, uint64_t h);
+  void init(std::string name, int pid, uint64_t bid, uint64_t h, uint64_t _ts);
   void release() {}
 
   char index_name[INDEX_NAME_LENGTH];
   int part_id;
   uint64_t bkt_idx;
   uint64_t hash;
+  uint64_t ts;
 };
 
 class InitDoneMessage : public Message {

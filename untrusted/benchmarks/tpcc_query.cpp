@@ -126,6 +126,7 @@ void tpcc_query::gen_new_order(uint64_t thd_id) {
 				break;
 		if (j == part_num) // not found! add to it.
 		part_to_access[part_num ++] = wh_to_part( items[i].ol_supply_w_id );
+		assert(part_num <= g_part_cnt);
 	}
 }
 

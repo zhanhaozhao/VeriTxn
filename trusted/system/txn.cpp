@@ -185,6 +185,14 @@ void txn_man::cleanup(RC rc) {
 			free(row);
 		}
 	}
+// batch update hash
+#if INDEX_STRUCT == IDX_HASH
+    for (int i = 0; i < row_cnt; i++) {
+        if (i == 0 || pages[i] != pages[i-1])
+            pages[i]->from->sync_version(pages[i], get_cur_time_ocall()); // propagate the page version.
+    }
+//	delete pages;
+#endif
 	row_cnt = 0;
 	wr_cnt = 0;
 	insert_cnt = 0;
@@ -282,8 +290,8 @@ RC txn_man::insert_row(row_t * row, std::string iname) {
     index_enc->index_insert(row->get_primary_key(), item, row->get_part_id());
 //    auto new_row = (row_t*)item->location;
 //    index_enc->release_up_cache((PAGE_ENC*)new_row->from_page);
-	assert(insert_cnt < MAX_ROW_PER_TXN);
-	insert_rows[insert_cnt ++] = row;
+//	assert(insert_cnt < MAX_ROW_PER_TXN);
+//	insert_rows[insert_cnt ++] = row;
     return Abort;
 }
 
@@ -461,7 +469,7 @@ void txn_man::create_log_entry() {
         PACK(_log_entry, part_id, offset);        // part.
         PACK(_log_entry, ((PAGE_ENC*)access->orig_row->from_page)->bkt, offset);        // page id.
         PACK(_log_entry, access->orig_row->offset, offset); // invalid data.
-        assert(part_id == 0 && access->orig_row->offset == 0);
+        assert(access->orig_row->offset == 0);
 #else
         PACK(_log_entry, part_id, offset);        // part.
         PACK(_log_entry, ((PAGE_ENC*)access->orig_row->from_page)->node_id, offset);        // page id.

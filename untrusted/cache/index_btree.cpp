@@ -262,7 +262,7 @@ RC index_btree::make_node(uint64_t part_id, bt_node *& node) {
 	assert (new_node != NULL);
 	new_node->pointers = NULL;
 	new_node->from = this;
-	new_node->node_id = new_node->node_id = ATOM_ADD_FETCH(btree_node_id, 1);
+	new_node->node_id = ATOM_ADD_FETCH(btree_node_id, 1);
     new_node->keys = (idx_key_t *) mem_allocator.alloc((order - 1) * sizeof(idx_key_t), part_id);
 	new_node->pointers = (void **) mem_allocator.alloc(order * sizeof(void *), part_id);
 	new_node->share_cnt = 0;

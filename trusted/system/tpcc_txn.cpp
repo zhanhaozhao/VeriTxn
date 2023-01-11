@@ -186,17 +186,17 @@ RC tpcc_txn_man::run_payment(tpcc_query * query) {
         assert(item != nullptr);
         while (item != nullptr) {
             r_cust = (row_t*) item -> location;
-            r_cust->get_value(C_FIRST);
+//            r_cust->get_value(C_FIRST);
             r_cust->get_value(C_MIDDLE);
             r_cust->get_value(C_LAST);
-            r_cust->get_value(C_STREET_1);
-            r_cust->get_value(C_STREET_2);
-            r_cust->get_value(C_CITY);
+//            r_cust->get_value(C_STREET_1);
+//            r_cust->get_value(C_STREET_2);
+//            r_cust->get_value(C_CITY);
             r_cust->get_value(C_CREDIT);
-            r_cust->get_value(C_CREDIT_LIM);
+//            r_cust->get_value(C_CREDIT_LIM);
             r_cust->get_value(C_DISCOUNT);
             r_cust->get_value(C_BALANCE);
-            r_cust->get_value(C_SINCE);
+//            r_cust->get_value(C_SINCE);
             item = item->next;
         }
 	}
@@ -319,7 +319,7 @@ RC tpcc_txn_man::run_new_order(tpcc_query * query) {
 
 
 	double w_tax;
-	r_wh_local->get_value(W_TAX, w_tax); 
+	r_wh_local->get_value(W_TAX, w_tax);
 	key = custKey(c_id, d_id, w_id);
 	item = index_read("CUSTOMER_ID_IDX", key, wh_to_part(w_id));
     if (item == nullptr) {
@@ -448,7 +448,7 @@ RC tpcc_txn_man::run_new_order(tpcc_query * query) {
 		if (r_stock_local == NULL) {
 			return finish(Abort);
 		}
-		
+
 		// XXX s_dist_xx are not retrieved.
 		UInt64 s_quantity;
 		int64_t s_remote_cnt;
@@ -498,7 +498,7 @@ RC tpcc_txn_man::run_new_order(tpcc_query * query) {
 		r_ol->set_primary_key(orderlineKey(w_id, d_id, o_id));
 #if !TPCC_SMALL
 		int w_tax=1, d_tax=1;
-		int64_t ol_amount = ol_quantity * i_price * (1 + w_tax + d_tax) * (1 - query->c_discount);
+		int64_t ol_amount = ol_quantity * i_price * (1 + w_tax + d_tax) * (1 - c_discount);
 		r_ol->set_value(OL_SUPPLY_W_ID, &ol_supply_w_id);
 		r_ol->set_value(OL_QUANTITY, &ol_quantity);
 		r_ol->set_value(OL_AMOUNT, &ol_amount);
@@ -514,7 +514,7 @@ RC
 tpcc_txn_man::run_order_status(tpcc_query * query) {
 	row_t * r_cust;
 	RC rc = RCOK;
-	if (query->by_last_name) {
+    if (query->by_last_name) {
 		// EXEC SQL SELECT count(c_id) INTO :namecnt FROM customer
 		// WHERE c_last=:c_last AND c_d_id=:d_id AND c_w_id=:w_id;
 		// EXEC SQL DECLARE c_name CURSOR FOR SELECT c_balance, c_first, c_middle, c_id
@@ -531,9 +531,9 @@ tpcc_txn_man::run_order_status(tpcc_query * query) {
 		uint64_t key = custNPKey(query->c_last, query->c_d_id, query->c_w_id);
 		// XXX: the list is not sorted. But let's assume it's sorted...
 		// The performance won't be much different.
-		INDEX * index = _wl->i_customer_last;
+//		INDEX * index = _wl->i_customer_last;
 		uint64_t thd_id = get_thd_id();
-		itemid_t * item = index_read(index, key, wh_to_part(query->c_w_id));
+		itemid_t * item = index_read("CUSTOMER_LAST_IDX", key, wh_to_part(query->c_w_id));
 		if (item == nullptr) {
             return Abort;
 		}
@@ -554,8 +554,8 @@ tpcc_txn_man::run_order_status(tpcc_query * query) {
 		// FROM customer
 		// WHERE c_id=:c_id AND c_d_id=:d_id AND c_w_id=:w_id;
 		uint64_t key = custKey(query->c_id, query->c_d_id, query->c_w_id);
-		INDEX * index = _wl->i_customer_id;
-		itemid_t * item = index_read(index, key, wh_to_part(query->c_w_id));
+//		INDEX * index = _wl->i_customer_id;
+		itemid_t * item = index_read("CUSTOMER_ID_IDX", key, wh_to_part(query->c_w_id));
 		r_cust = (row_t *) item->location;
 	}
 #if TPCC_ACCESS_ALL
@@ -565,8 +565,8 @@ tpcc_txn_man::run_order_status(tpcc_query * query) {
 	// INTO :o_id, :o_carrier_id, :entdate FROM orders
 	// ORDER BY o_id DESC;
 	uint64_t key = custKey(query->c_id, query->c_d_id, query->c_w_id);
-	INDEX * index = _wl->i_order;
-	itemid_t * item = index_read(index, key, wh_to_part(query->c_w_id));
+//	INDEX * index = _wl->i_order;
+	itemid_t * item = index_read("ORDER_IDX", key, wh_to_part(query->c_w_id));
 	row_t * r_order = (row_t *) item->location;
 	row_t * r_order_local = get_row(r_order, RD);
 	if (r_order_local == NULL) {
@@ -589,8 +589,8 @@ tpcc_txn_man::run_order_status(tpcc_query * query) {
 	//		INTO :ol_i_id[i], :ol_supply_w_id[i], :ol_quantity[i], :ol_amount[i], :ol_delivery_d[i];
 	// }
 	key = orderlineKey(query->w_id, query->d_id, o_id);
-	index = _wl->i_orderline;
-	item = index_read(index, key, wh_to_part(query->w_id));
+//	index = _wl->i_orderline;
+	item = index_read("ORDER-LINE_IDX", key, wh_to_part(query->w_id));
 //	assert(item != NULL);
 
 final:
@@ -610,8 +610,8 @@ tpcc_txn_man::run_delivery(tpcc_query * query) {
 
 	for (int d_id = 1; d_id <= DIST_PER_WARE; d_id++) {
 		uint64_t key = distKey(d_id, query->w_id);
-		INDEX * index = _wl->i_orderline;
-		itemid_t * item = index_read(index, key, wh_to_part(query->w_id));
+//		INDEX * index = _wl->i_orderline;
+		itemid_t * item = index_read("ORDER-LINE_IDX", key, wh_to_part(query->w_id));
 		assert(item != NULL);
 		while (item->next != NULL) {
 			item = item->next;
@@ -621,9 +621,9 @@ tpcc_txn_man::run_delivery(tpcc_query * query) {
         r_orderline->get_value(OL_O_ID, no_o_id);
 		// TODO the orderline row should be removed from the table and indexes.
 
-		index = _wl->i_order;
+//		index = _wl->i_order;
 		key = orderPrimaryKey(query->w_id, d_id, no_o_id);
-		item = index_read(index, key, wh_to_part(query->w_id));
+		item = index_read("ORDER_IDX", key, wh_to_part(query->w_id));
 		row_t * r_order = (row_t *)item->location;
 		row_t * r_order_local = get_row(r_order, WR);
 
@@ -631,19 +631,19 @@ tpcc_txn_man::run_delivery(tpcc_query * query) {
 		r_order_local->get_value(O_C_ID, o_c_id);
 		r_order_local->set_value(O_CARRIER_ID, query->o_carrier_id);
 
-		item = index_read(_wl->i_orderline, orderlineKey(query->w_id, d_id, no_o_id), wh_to_part(query->w_id));
+		item = index_read("ORDER-LINE_IDX", orderlineKey(query->w_id, d_id, no_o_id), wh_to_part(query->w_id));
 		double sum_ol_amount;
 		double ol_amount;
 		while (item != NULL) {
 			// TODO the row is not locked
 			row_t * r_orderline = (row_t *)item->location;
-			r_orderline->set_value(OL_DELIVERY_D, query->ol_delivery_d);
-			r_orderline->get_value(OL_AMOUNT, ol_amount);
+//			r_orderline->set_value(OL_DELIVERY_D, query->ol_delivery_d);
+//			r_orderline->get_value(OL_AMOUNT, ol_amount);
 			sum_ol_amount += ol_amount;
 		}
 
 		key = custKey(o_c_id, d_id, query->w_id);
-		item = index_read(_wl->i_customer_id, key, wh_to_part(query->w_id));
+		item = index_read("CUSTOMER_ID_IDX", key, wh_to_part(query->w_id));
 		row_t * r_cust = (row_t *)item->location;
 		double c_balance;
 		uint64_t c_delivery_cnt;
@@ -656,7 +656,7 @@ tpcc_txn_man::run_stock_level(tpcc_query * query) {
 #if FULL_TPCC
     auto district = stock_level_getOId(query->w_id, query->d_id);
 	if (district == NULL) {
-		return finish(Abort);
+        return RCOK;
 	}
 	int64_t o_id;
 	district->get_value(D_NEXT_O_ID, o_id);
@@ -664,7 +664,7 @@ tpcc_txn_man::run_stock_level(tpcc_query * query) {
 	uint64_t distinct_count;
 	if (!stock_level_getStockCount(query->w_id, query->d_id, o_id, query->w_id,
 									query->threshold, &distinct_count)) {
-		return finish(Abort);
+		return finish(RCOK);
 	}
 	(void)distinct_count;
 	assert(wr_cnt ==0); // read-only
@@ -683,7 +683,7 @@ row_t* tpcc_txn_man::stock_level_getOId(uint64_t d_w_id, uint64_t d_id) {
     auto index = _wl->i_district;
     auto key = distKey(d_id, d_w_id);
     auto part_id = wh_to_part(d_w_id);
-    auto item = index_read(index, key, part_id);
+    auto item = index_read("DISTRICT_IDX", key, part_id);
     assert(item);
     return (row_t*)item->location;
 }
@@ -705,12 +705,12 @@ bool tpcc_txn_man::stock_level_getStockCount(uint64_t ol_w_id, uint64_t ol_d_id,
     uint64_t ol_i_id_list[301];
     size_t list_size = 0;
 
-    auto index = _wl->i_orderline;
+//    auto index = _wl->i_orderline;
     auto key = orderlineKey(ol_o_id - 1, ol_d_id, ol_w_id);
     auto part_id = wh_to_part(ol_w_id);
     uint64_t count = 301;
 
-    auto cur = index_read(index, key, part_id);
+    auto cur = index_read("ORDER-LINE_IDX", key, part_id);
     if (cur == nullptr) return false;
 
     for (uint64_t i = 0; i < count && cur != nullptr; i++) {
@@ -721,7 +721,7 @@ bool tpcc_txn_man::stock_level_getStockCount(uint64_t ol_w_id, uint64_t ol_d_id,
         if (row == nullptr) return false;
 
         uint64_t ol_i_id, ol_supply_w_id;
-        orderline_shared->get_value(OL_SUPPLY_W_ID, ol_supply_w_id);
+//        orderline_shared->get_value(OL_SUPPLY_W_ID, ol_supply_w_id);
         if (ol_supply_w_id != s_w_id) continue;
 
         orderline_shared->get_value(OL_I_ID, ol_i_id);
@@ -729,7 +729,7 @@ bool tpcc_txn_man::stock_level_getStockCount(uint64_t ol_w_id, uint64_t ol_d_id,
         assert(list_size < sizeof(ol_i_id_list) / sizeof(ol_i_id_list[0]));
         ol_i_id_list[list_size] = ol_i_id;
         list_size++;
-        cur = index_next(index->index_name, cur);
+        cur = index_next("ORDER-LINE_IDX", cur);
     }
     assert(list_size <= 300);
 
@@ -760,10 +760,10 @@ bool tpcc_txn_man::stock_level_getStockCount(uint64_t ol_w_id, uint64_t ol_d_id,
         // ol_i_id_set.emplace_hint(it, ol_i_id);
 
         auto key = stockKey(ol_i_id, s_w_id);
-        auto index = _wl->i_stock;
+//        auto index = _wl->i_stock;
         auto part_id = wh_to_part(s_w_id);
 
-        auto item  = index_read(index, key, part_id);
+        auto item  = index_read("STOCK_IDX", key, part_id);
         if (item == NULL) return false;
         auto row = (row_t*) item->location;
 

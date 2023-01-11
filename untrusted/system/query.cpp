@@ -24,7 +24,7 @@ Query_queue::init(workload * h_wl) {
 #if WORKLOAD == YCSB	
 	ycsb_query::calculateDenom();
 #elif WORKLOAD == TPCC
-	// assert(tpcc_buffer != NULL);
+	assert(tpcc_buffer != NULL);
 #endif
 //	int64_t begin = get_server_clock();
 	pthread_t p_thds[g_thread_cnt - 1];

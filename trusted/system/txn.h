@@ -77,7 +77,7 @@ public:
 	#if WORKLOAD == YCSB
 	LogRecord		log_buf[MAX_ROW_PER_TXN+2];
 	#else
-	LogRecord		log_buf[20];
+	LogRecord		log_buf[MAX_ROW_PER_TXN+2];
 	#endif
 	char *			_log_entry;
 	uint32_t 		_log_entry_size;
