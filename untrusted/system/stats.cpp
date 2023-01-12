@@ -53,8 +53,7 @@ void Stats::init() {
 			_mm_malloc(sizeof(Stats_tmp*) * g_thread_cnt, 64);
     begin_ts = (uint64_t*)
             _mm_malloc(sizeof(uint64_t) * g_thread_cnt, 64);
-    freshness_sum = 0;
-    freshness_cnt = 0;
+    freshness = 0;
     for(int i = 0;i < g_thread_cnt;i ++) {
         begin_ts[i] = 0;
     }
@@ -131,10 +130,6 @@ void Stats::print() {
 	double total_latency = 0;
 	double total_time_query = 0;
 	double total_time_cache = 0;
-	double freshness = 0;
-#if TEST_FRESHNESS == 1
-	freshness = freshness_sum / (double (freshness_cnt)) / BILLION;
-#endif
 	for (uint64_t tid = 0; tid < g_thread_cnt; tid ++) {
 		total_txn_cnt += _stats[tid]->txn_cnt;
 		total_abort_cnt += _stats[tid]->abort_cnt;
@@ -201,7 +196,7 @@ void Stats::print() {
 		total_debug3, // / BILLION,
 		total_debug4, // / BILLION,
 		total_debug5,  // / BILLION
-		freshness
+		(double(freshness)) / BILLION
 	);
 	if (g_prt_lat_distr)
 		print_lat_distr();

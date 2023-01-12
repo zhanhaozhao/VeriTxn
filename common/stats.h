@@ -59,11 +59,8 @@ public:
 	// copy the values in tmp_stats to _stats
 	Stats_tmp ** tmp_stats;
 	uint64_t * begin_ts;
-#if TEST_FRESHNESS == 1
-	uint64_t freshness_sum;
-	uint64_t freshness_cnt;
-#endif
-	
+	uint64_t freshness;
+
 	// GLOBAL statistics
 	double dl_detect_time;
 	double dl_wait_time;

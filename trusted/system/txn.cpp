@@ -290,7 +290,7 @@ RC txn_man::insert_row(row_t * row, std::string iname) {
 
 itemid_t *
 txn_man::index_read(std::string iname, idx_key_t key, int part_id) {
-//	uint64_t starttime = get_cur_time_ocall();
+	uint64_t starttime = get_enc_time();
 	itemid_t * item = nullptr;
 	// index --> en_index;
     INDEX_ENC * index_enc = (INDEX_ENC *) tab_map->_indexes[iname];
@@ -305,6 +305,7 @@ txn_man::index_read(std::string iname, idx_key_t key, int part_id) {
 #else
     RC rc = index_enc->index_read(key, item, part_id, get_thd_id());
 #endif
+    INC_TMP_STATS_ENC(get_thd_id(), time_index, get_enc_time() - starttime);
     if (rc != RCOK) {
         return nullptr;
     }

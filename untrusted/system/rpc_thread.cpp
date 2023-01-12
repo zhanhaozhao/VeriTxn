@@ -45,7 +45,8 @@ RC RPCThread::run() {
     servaddr.sin_port = htons(PORT);
 
     if(bind(listenfd, (struct sockaddr*)&servaddr, sizeof(servaddr)) < 0) {
-      perror("bind error");
+        printf("bind port %d:%d error\n", servaddr.sin_port, PORT);
+        perror("bind port error");
       exit(1);
     }
 
@@ -147,7 +148,9 @@ RC RPCThread::run() {
           }
 
         }
-        exit(0);
+          printf("exit 0 ay rpc_thread.cpp");
+          assert(false);
+        exit(0);    // why exit 0 ???
       }
       close(connfd);
     }

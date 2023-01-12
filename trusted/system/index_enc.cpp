@@ -16,6 +16,52 @@
 void test_encoder(const BucketHeader_ENC* x);
 void test_encoder(const BucketNode_ENC* x);
 
+bool 		latch_node(BucketHeader_ENC * node, latch_t latch_type) {
+    if (!ENABLE_LATCH)
+        return true;
+    bool success = false;
+    while ( !ATOM_CAS(node->latch, false, true) ) {}
+
+    latch_t node_latch = node->latch_type;
+    if (node_latch == LATCH_NONE ||
+        (node_latch == LATCH_SH && latch_type == LATCH_SH)) {
+        node->latch_type = latch_type;
+        if (node_latch == LATCH_NONE)
+            assert(node->share_cnt == 0);
+        if (node->latch_type == LATCH_SH)
+            node->share_cnt ++;
+        success = true;
+    }
+    else // latch_type incompatible
+        success = false;
+    bool ok = ATOM_CAS(node->latch, true, false);
+    assert(ok);
+    return success;
+}
+latch_t		release_latch(BucketHeader_ENC * node) {
+    if (!ENABLE_LATCH)
+        return LATCH_SH;
+    latch_t type = node->latch_type;
+//	if ( g_cc_alg != HSTORE )
+    while ( !ATOM_CAS(node->latch, false, true) ) {}
+//		pthread_mutex_lock(&node->locked);
+//		while (!ATOM_CAS(node->locked, false, true)) {}
+    assert(node->latch_type != LATCH_NONE);
+    if (node->latch_type == LATCH_EX)
+        node->latch_type = LATCH_NONE;
+    else if (node->latch_type == LATCH_SH) {
+        node->share_cnt --;
+        if (node->share_cnt == 0)
+            node->latch_type = LATCH_NONE;
+    }
+//	if ( g_cc_alg != HSTORE )
+    bool ok = ATOM_CAS(node->latch, true, false);
+    assert(ok);
+//		pthread_mutex_unlock(&node->locked);
+//		assert(ATOM_CAS(node->locked, true, false));
+    return type;
+}
+
 RC IndexEnc::init(uint64_t bucket_cnt, int part_cnt) {
 #if TEST_FRESHNESS == 1
     freshness_begin_ts_queue = new uint64_t [MAX_TXN_PER_PART + 10];    // test the freshness on record 0.
@@ -68,16 +114,16 @@ bool IndexEnc::index_exist(idx_key_t key) {
     assert(false);
 }
 
-void
-IndexEnc::get_latch(BucketHeader_ENC * bucket) {
-    while (!ATOM_CAS(bucket->locked, false, true)) {}
-}
+//void
+//IndexEnc::get_latch(BucketHeader_ENC * bucket) {
+//    while (!ATOM_CAS(bucket->locked, false, true)) {}
+//}
 
-void
-IndexEnc::release_latch(BucketHeader_ENC * bucket) {
-    bool ok = ATOM_CAS(bucket->locked, true, false);
-    assert(ok);
-}
+//void
+//IndexEnc::release_latch(BucketHeader_ENC * bucket) {
+//    bool ok = ATOM_CAS(bucket->locked, true, false);
+//    assert(ok);
+//}
 
 
 RC IndexEnc::index_insert(idx_key_t key, itemid_t * item, int part_id) {
@@ -88,7 +134,7 @@ RC IndexEnc::index_insert(idx_key_t key, itemid_t * item, int part_id) {
 //    assert(false);
     BucketHeader_ENC * cur_bkt = load_bucket(index_name, part_id, bkt_idx);
     // 1. get the ex latch
-    get_latch(cur_bkt);
+    while (!latch_node(cur_bkt, LATCH_EX));
 
     // 2. update the latch list
     cur_bkt->insert_item(key, item, part_id);
@@ -97,7 +143,7 @@ RC IndexEnc::index_insert(idx_key_t key, itemid_t * item, int part_id) {
     flush_bucket(part_id, bkt_idx, cur_bkt, true);
 
     // 4. release the latch
-    release_latch(cur_bkt);
+    assert(release_latch(cur_bkt) == LATCH_EX);
 
 //    // 5. release the cache flag.
 //    _cache->release(part_id, bkt_idx);
@@ -111,35 +157,45 @@ RC IndexEnc::index_read(std::string iname, idx_key_t key, itemid_t * &item, int 
     assert(iname == index_name);
     BucketHeader_ENC * cur_bkt = load_bucket(index_name, part_id, bkt_idx);
     RC rc = RCOK;
+    while (!latch_node(cur_bkt, LATCH_SH));
     cur_bkt->read_item(key, item);
     flush_bucket(part_id, bkt_idx, cur_bkt, false);
 //    _cache->release(part_id, bkt_idx);
+    assert(release_latch(cur_bkt) == LATCH_SH);
     return rc;
 }
 
 // TODO: 1. MVCC here: if one hash is used by some txn, do not recycle it. (see _cache)
 void IndexEnc::update_verify_hash(int part_id, uint64_t bkt_idx, uint64_t hash, uint64_t ts) {
+    auto bkt = load_bucket(index_name, part_id, bkt_idx);
+    while(!latch_node(bkt, LATCH_EX));
     _verify_hash[part_id][bkt_idx] = hash;
     _bucket_commit_t[part_id][bkt_idx] = ts;
+#if USE_LOG == 1
+    sync_bucket_from_disk(index_name, index_name.size(), part_id, bkt_idx);
+#endif
 //    printf("update verify hash %lu:%lu\n", bkt_idx, ts);
 #if TEST_FRESHNESS == 1
     if (part_id == 0 && bkt_idx == 1) {
         // calculate the freshness of data record (0,0)
 //        printf("calculating freshness %lu-%lu\n", freshness_queue_st, freshness_queue_ed);
-        while (freshness_queue_st <= freshness_queue_ed) {
+        while (freshness_queue_st <= freshness_queue_ed &&
+               freshness_read_ts_queue[freshness_queue_st] < ts) {
             assert(freshness_read_ts_queue[freshness_queue_st] <=
                 freshness_begin_ts_queue[freshness_queue_st]);
 //            printf("calculating freshness %lu - %lu - %lu\n", freshness_read_ts_queue[freshness_queue_st], ts, freshness_begin_ts_queue[freshness_queue_st]);
-            if (ts > freshness_begin_ts_queue[freshness_queue_st])
-                stats_enc->freshness_cnt ++;
-            else if (ts > freshness_read_ts_queue[freshness_queue_st]) {
-                stats_enc->freshness_cnt ++;
-                stats_enc->freshness_sum += freshness_begin_ts_queue[freshness_queue_st] - ts;
+            if (ts <= freshness_begin_ts_queue[freshness_queue_st] &&
+                     ts > freshness_read_ts_queue[freshness_queue_st]) {
+                auto dis = freshness_begin_ts_queue[freshness_queue_st] - ts;
+//                printf("updating freshness: %lu\n", dis);
+                if (dis > stats_enc->freshness)
+                    stats_enc->freshness = dis;
             }
             freshness_queue_st ++;
         }
     }
 #endif
+    assert(release_latch(bkt) == LATCH_EX);
 }
 
 //#define DECOUPLE
@@ -286,7 +342,7 @@ BucketHeader_ENC* IndexEnc::load_bucket(std::string iname, int part_id, uint64_t
 #endif
 //            assert(false);
 // lazy update of verify hash.
-            get_latch(flushed_bkt); // TODO: cannot load this bucket when flushing out.
+            while (!latch_node(flushed_bkt, LATCH_EX)); // TODO: cannot load this bucket when flushing out.
 //            _verify_hash[sw_pt][sw_bk] = flushed_bkt->get_hash();
             _verify_hash[sw_pt][sw_bk] = _default_verify_hash;
 #if ENABLE_DATA_CACHE
@@ -339,6 +395,7 @@ RC IndexEnc::index_read(std::string iname, idx_key_t key, itemid_t * &item,
     RC rc = RCOK;
     // 1. get the sh latch
 //	get_latch(cur_bkt);
+    while (!latch_node(cur_bkt, LATCH_SH));
     if (cur_bkt == nullptr) {   // no bucket loaded.
         assert(false);
         return Abort;
@@ -346,6 +403,7 @@ RC IndexEnc::index_read(std::string iname, idx_key_t key, itemid_t * &item,
     cur_bkt->read_item(key, item);
 
     flush_bucket(part_id, bkt_idx, cur_bkt, false);
+    assert(release_latch(cur_bkt) == LATCH_SH);
 //    _cache->release(part_id, bkt_idx);
     return rc;
 }
@@ -534,17 +592,19 @@ void test_encoder(const BucketNode_ENC* x) {
 
 // batch here.
 void IndexEnc::sync_version(BucketHeader_ENC* c, uint64_t commit_t, uint64_t begin_t, bool updated) {
+    while (!latch_node(c, LATCH_SH));
     if (updated) {
 //        printf("synchronizing %lu:(%lu-%lu)\n", c->bkt, begin_t, commit_t);
         async_hash_value(index_name, c->part, c->bkt, c->get_hash(), commit_t);
     } else {
 //        printf("freshness pushing %lu:(%lu-%lu)\n", c->bkt, begin_t, commit_t);
 #if TEST_FRESHNESS == 1
-        if (c->part == 0 && c->bkt == 1) {
+        if (c->part == 0 && c->bkt == 1 && freshness_queue_ed) {
             freshness_queue_ed++;
             freshness_begin_ts_queue[freshness_queue_ed] = begin_t;
             freshness_read_ts_queue[freshness_queue_ed] = c->get_ts();
         }
 #endif
     }
+    assert(release_latch(c) == LATCH_SH);
 }

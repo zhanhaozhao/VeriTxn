@@ -50,6 +50,9 @@ public:
         part = 0;
         bkt = 0;
         from = nullptr;
+        latch_type = LATCH_NONE;
+        share_cnt = 0;
+        latch = false;
     }
     ~BucketHeader_ENC(){
         BucketNode_ENC* next_node = first_node;
@@ -71,6 +74,9 @@ public:
     int             part;
     uint64_t        bkt{};
     IndexEnc        *from;
+    latch_t latch_type;
+    UInt32 share_cnt;
+    bool latch;
 };
 
 class IndexEnc  {
@@ -98,9 +104,9 @@ public:
     lru_cache*           _cache;
     uint64_t**          _bucket_commit_t;
 private:
-    void get_latch(BucketHeader_ENC * bucket);
-    void release_latch(BucketHeader_ENC * bucket);
-
+//    void get_latch(BucketHeader_ENC * bucket);
+//    void release_latch(BucketHeader_ENC * bucket);
+//
     // TODO implement more complex hash function
     uint64_t hash(idx_key_t key) {	return key % _bucket_cnt_per_part; }
 

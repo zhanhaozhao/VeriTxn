@@ -58,9 +58,10 @@ void MessageThread::send_batch(uint64_t dest_node_id) {
 }
 
 static uint64_t mget_size() {
-  uint64_t size = 0;
-  size += sizeof(RemReqType);
-  size += sizeof(uint64_t);
+    uint64_t size = 0;
+    size += sizeof(RemReqType);
+    size += sizeof(uint64_t);
+    assert(false);
 }
 
 void MessageThread::run() {

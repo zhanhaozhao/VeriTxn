@@ -25,7 +25,7 @@ count_job = 0
 def insert_job(alg="OCC", workload="YCSB", thread_num=4, theta=0.6, bkt_fac=1, read_perc=0.5, use_sgx=True,
                cs=1024 * 1024 * 1024, veri="PAGE_VERI", index="IDX_HASH", pre_load=1, use_log=0, txn_per_thd=10000,
                database_size=1024 * 1024, txn_length=64, enable_data_cache=True, pt=1, prof="false", wh=16,
-               full_tpcc="false", nodes = 1, test_freshness=0):
+               full_tpcc="false", nodes = 1, test_freshness=0, veri_hash_buf_siz = 4 * 1024):
     global count_job
     count_job = count_job + 1
     jobs[count_job] = {
@@ -48,11 +48,12 @@ def insert_job(alg="OCC", workload="YCSB", thread_num=4, theta=0.6, bkt_fac=1, r
 		"SYNTH_TABLE_SIZE"	: database_size,
 		"REQ_PER_QUERY"		: txn_length,
         "PART_CNT"          : pt,
-        "PROFILING"         : "false",
+        "PROFILING"         : prof,
         "NUM_WH"            : wh,
         "FULL_TPCC"         : full_tpcc,
         "NODE_CNT"          : nodes,
-        "TEST_FRESHNESS"    : test_freshness
+        "TEST_FRESHNESS"    : test_freshness,
+        "MSG_SIZE_MAX"      : veri_hash_buf_siz
 	}
 
 
@@ -252,8 +253,9 @@ def run_rw_exp():
 def run_common_test():
     global jobs
     jobs = OrderedDict()
-    insert_job("NO_WAIT", 'TPCC', use_sgx=True, full_tpcc="true")
-    run_all_test(jobs, "comparison.csv")
+    insert_job("NO_WAIT", 'YCSB', use_sgx=False, theta=99, thread_num=1, nodes=1,
+               test_freshness=1, txn_length=1, use_log=1)
+    run_all_test(jobs, "tmp.csv")
 
 
 def run_cache_size_impact_for_different_methods_test():
@@ -355,9 +357,13 @@ def run_single_layer_cache_exp():
 def run_profiling():
     global jobs
     jobs = OrderedDict()
-    for th in [1]:
+    x_con = [1, 2, 3, 4, 5, 6, 7, 8]
+    for th in x_con:
         for alg in ["NO_WAIT"]:
-            insert_job(alg, 'TPCC', thread_num=th, use_sgx=False, prof="true", txn_per_thd=1000)
+            insert_job(alg, 'YCSB', thread_num=th, use_sgx=False, prof="true")
+    for th in x_con:
+        for alg in ["NO_WAIT"]:
+            insert_job(alg, 'YCSB', thread_num=th, use_sgx=True, prof="true")
     run_all_test(jobs, "profiling.log")
     # for th in [1, 2, 3, 4, 5, 6, 7, 8]:
     #     for alg in ["NO_WAIT"]:
@@ -378,7 +384,10 @@ def run_full_tpcc_test():
 def run_freshness_test():
     global jobs
     jobs = OrderedDict()
-    insert_job("NO_WAIT", 'YCSB', use_sgx=False, thread_num=1, theta=99, nodes=2, test_freshness=1)
+    x_con = [4 * 1024]
+    for siz in x_con:
+        insert_job("NO_WAIT", 'YCSB', use_sgx=False, theta=0.9, thread_num=1, nodes=2,
+                   test_freshness=1, veri_hash_buf_siz=siz, txn_length=1, use_log=1)
     run_all_test(jobs, "freshness.log")
 
 # run_cache_size_impact_for_different_methods_test()
