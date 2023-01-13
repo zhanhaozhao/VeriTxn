@@ -54,6 +54,8 @@ void Stats::init() {
     begin_ts = (uint64_t*)
             _mm_malloc(sizeof(uint64_t) * g_thread_cnt, 64);
     freshness = 0;
+    version_chain_length = 0;
+    access_chain_cnt = 0;
     for(int i = 0;i < g_thread_cnt;i ++) {
         begin_ts[i] = 0;
     }
@@ -170,11 +172,14 @@ void Stats::print() {
         );
 		fclose(outf);
 	}
+    uint64_t _freshness = freshness;
+    uint64_t access_cnt = access_chain_cnt;
+    uint64_t access_length = version_chain_length;
 	printf("[summary] total_txn_cnt=%ld, total_abort_cnt=%ld"
 		", run_time=%f, time_wait=%f, time_ts_alloc=%f"
 		", time_man=%f, time_index=%f, time_abort=%f, time_cleanup=%f, time_cache=%f, latency=%f"
 		", deadlock_cnt=%ld, cycle_detect=%ld, dl_detect_time=%f, dl_wait_time=%f"
-		", time_query=%f, debug1=%f, debug2=%f, debug3=%f, debug4=%f, debug5=%f, freshness=%f\n",
+		", time_query=%f, debug1=%f, debug2=%f, debug3=%f, debug4=%f, debug5=%f, freshness=%f, avg_ver=%f\n",
 		total_txn_cnt, 
 		total_abort_cnt,
 		total_run_time / BILLION,
@@ -196,7 +201,8 @@ void Stats::print() {
 		total_debug3, // / BILLION,
 		total_debug4, // / BILLION,
 		total_debug5,  // / BILLION
-		(double(freshness)) / BILLION
+		(double(_freshness)) / BILLION,
+        (double(access_length)) / access_cnt
 	);
 	if (g_prt_lat_distr)
 		print_lat_distr();

@@ -94,7 +94,8 @@ public:
     return DBGet(key, &pin_val);
   }
 
-  void DBFullScan(
+    inline void DBDeletePrefix(const rocksdb::Slice &start_key, const rocksdb::Slice &end_key) const;
+    void DBFullScan(
     const std::function<void(const rocksdb::Iterator*)>& f_proc_entry) const;
 
   void DBPrefixScan(

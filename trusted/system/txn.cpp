@@ -479,10 +479,13 @@ void txn_man::create_log_entry() {
 		//assert(tuple_size!=0);
 
 		uint64_t part_id = (uint64_t) (((PAGE_ENC*)access->orig_row->from_page)->part);
+		uint64_t bkt_id = ((PAGE_ENC*)access->orig_row->from_page)->bkt;
+		uint64_t commit_ts = ((PAGE_ENC*)access->orig_row->from_page)->from->_verify_hash[part_id][bkt_id]->get_max_ts();
 
 #if INDEX_STRUCT == IDX_HASH
         PACK(_log_entry, part_id, offset);        // part.
-        PACK(_log_entry, ((PAGE_ENC*)access->orig_row->from_page)->bkt, offset);        // page id.
+        PACK(_log_entry, bkt_id, offset);        // page id.
+        PACK(_log_entry, commit_ts, offset);
         PACK(_log_entry, access->orig_row->offset, offset); // invalid data.
         assert(access->orig_row->offset == 0);
 #else

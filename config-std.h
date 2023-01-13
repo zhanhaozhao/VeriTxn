@@ -60,7 +60,7 @@
 #define ENABLE_LATCH				true
 #define CENTRAL_INDEX				false
 #define CENTRAL_MANAGER 			false
-#define INDEX_STRUCT				IDX_HASH
+#define INDEX_STRUCT IDX_HASH
 #define BTREE_ORDER 				16
 #define INDEX_NAME_LENGTH       	16
 #define INDEX_NAME_LENGTH       	16
@@ -128,13 +128,13 @@
 // max number of rows touched per transaction
 #define MAX_ROW_PER_TXN				128
 #define QUERY_INTVL 				1UL
-#define MAX_TXN_PER_PART 1000
+#define MAX_TXN_PER_PART 10000
 #define FIRST_PART_LOCAL 			true
 #define MAX_TUPLE_SIZE				1024 // in bytes
 // ==== [YCSB] ====
 #define INIT_PARALLELISM 8
 #define SYNTH_TABLE_SIZE 1048576
-#define ZIPF_THETA 99
+#define ZIPF_THETA 0.6
 #define READ_PERC 0.5
 #define WRITE_PERC 0.5
 #define SCAN_PERC 					0
@@ -147,13 +147,13 @@
 // For large warehouse count, the tables do not fit in memory
 // small tpcc schemas shrink the table size.
 #define TPCC_SMALL					false
-#define FULL_TPCC                   false
+#define FULL_TPCC false
 // Some of the transactions read the data but never use them.
 // If TPCC_ACCESS_ALL == fales, then these parts of the transactions
 // are not modeled.
 #define TPCC_ACCESS_ALL 			false
 #define WH_UPDATE					true
-#define NUM_WH PART_CNT
+#define NUM_WH 16
 //
 enum TPCCTxnType {TPCC_ALL,
     TPCC_PAYMENT,
@@ -248,17 +248,15 @@ extern enum TestCases					g_test_case;
 #define TPORT_TYPE tcp
 #define USE_NANOMSG                 1
 #define USE_ASYNC_HASH              1
-#define USE_LOG 0
+#define USE_LOG 1
 #define RPC_SERVER                  "127.0.0.1"
 #define LOG_BATCH_SIZE              10
 
 // cache parameters
-//#define VERIFIED_CACHE_SIZ      (1  * 1024 * 1024)  // 1MB
-//#define VERIFIED_CACHE_SIZ      (1 * 1024  * 1024 * 1024)  // 1GB
-#define VERIFIED_CACHE_SIZ      (10ULL * 1024  * 1024 * 1024ULL)  // 1GB
-#define ENABLE_DATA_CACHE        true    // 4GB
+#define VERIFIED_CACHE_SIZ 1073741824
+#define ENABLE_DATA_CACHE true
 #define BASE_LEASE      100
-#define VERI_TYPE     PAGE_VERI
+#define VERI_TYPE PAGE_VERI
 #if VERI_TYPE == MERKLE_TREE
 #define BATCH_MERKLE 1 // calculate the merkle hash in batch to avoid too costly init.
 // #define SEPARATE_MERKLE // calculate the merkle hash online.
@@ -272,8 +270,11 @@ extern enum TestCases					g_test_case;
 #endif
 
 #define PRE_LOAD 1
-#define PROFILING true
-#define TEST_FRESHNESS 1
+#define PROFILING false
+#define TEST_FRESHNESS 0
+#define REAL_TIME 0
+#define FAST_VERI_CHAIN_ACCESS 1
+#define FRESHNESS_STATS_CNT 20000
 
 // Log queue type
 #define LOG_CIRCUL_BUFF 1

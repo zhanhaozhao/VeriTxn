@@ -198,6 +198,12 @@ void kvengine::DBPrefixScan(
   delete it;
 }
 
+//void kvengine::DBDeletePrefix(
+//        const rocksdb::Slice& start_key,
+//        const rocksdb::Slice& end_key) const {
+//    db_->DeleteRange(WriteOptions(), 0, start_key, end_key);
+//}
+
 bool kvengine::BackupDB() {
 //   if (backup_engine_ == nullptr) {
 //     LOG(ERROR) << "Backup engine does not exist";

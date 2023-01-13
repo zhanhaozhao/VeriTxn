@@ -32,6 +32,7 @@ extern sgx_enclave_id_t enclave_id;
 
 // #include "untrusted/system/kvengine.h"
 #include "untrusted/system/rpc_thread.h"
+#include "untrusted/system/stats_thread.h"
 
 void * f(void *);
 void * run_thread(void * id);
@@ -155,7 +156,11 @@ int main(int argc, char* argv[])
     }
 
     uint64_t log_cnt = 1;
+#if REAL_TIME == 1
+    uint64_t all_thd_cnt = thd_cnt + rthd_cnt + sthd_cnt + log_cnt + 1;
+#else
     uint64_t all_thd_cnt = thd_cnt + rthd_cnt + sthd_cnt + log_cnt;
+#endif
     input_thds = new InputThread[rthd_cnt];
     output_thds = new OutputThread[sthd_cnt];
     log_thds = new LogThread[1];
@@ -163,6 +168,9 @@ int main(int argc, char* argv[])
 
 	pthread_t p_thds[all_thd_cnt];
 	m_thds = new thread_t[thd_cnt];
+#if REAL_TIME == 1
+	auto stats_thd = new StatsThread;
+#endif
 	if (g_log_recover)
 	{
 #if USE_SGX != 1		
@@ -208,6 +216,10 @@ int main(int argc, char* argv[])
 	if (!g_log_recover) {
 		log_thds[0].init(id,g_node_id,m_wl);
 		pthread_create(&p_thds[id++], NULL, run_thread, (void *)&log_thds[0]);
+#if REAL_TIME == 1
+		stats_thd->init(id,g_node_id,m_wl);
+        pthread_create(&p_thds[id++], NULL, run_thread, (void *)stats_thd);
+#endif
 	}
     
     pthread_t rpc_thd;

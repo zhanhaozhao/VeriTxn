@@ -6,6 +6,7 @@
 #include "lru_cache.h"
 #include <atomic>
 #include <index_hash.h>
+#include "hash_chain.h"
 // #include "mem_helper_enc.h"
 // #include "common/helper.h"
 
@@ -102,7 +103,7 @@ public:
     void sync_version(BucketHeader_ENC *c, uint64_t commit_t, uint64_t begin_t, bool updated);
 
     lru_cache*           _cache;
-    uint64_t**          _bucket_commit_t;
+    hash_chain***          _verify_hash;   // make it a chain.
 private:
 //    void get_latch(BucketHeader_ENC * bucket);
 //    void release_latch(BucketHeader_ENC * bucket);
@@ -111,8 +112,7 @@ private:
     uint64_t hash(idx_key_t key) {	return key % _bucket_cnt_per_part; }
 
     uint64_t 			_bucket_cnt_per_part;
-    uint64_t 			_default_verify_hash;
-    uint64_t**          _verify_hash;
+//    hash_chain***          _verify_hash;   // make it a chain.
     // maximum commit timestamp of transactions involving this block.
 #ifndef SGX_DISK
     BucketHeader_ENC**      _buckets;

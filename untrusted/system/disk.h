@@ -120,6 +120,7 @@ public:
 
     void load_page_disk(std::string iname, int part_id, uint64_t pg_id);
     void send_log(char * log_entry, uint32_t size);
+    void vaccum(uint64_t recover_ts);
 
     // void shutdown_server() {
     //   pageloader->ShutdownServer();

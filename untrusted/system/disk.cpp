@@ -151,3 +151,20 @@ void RemoteStorage::send_log(char * log_entry, uint32_t size){
 
 }
 
+void RemoteStorage::vaccum(uint64_t recover_ts){
+
+    // Format for a log message
+    // | VACU | recover_ts:4
+
+    pthread_mutex_lock(&mtx);
+
+    char *msg = new char [100];
+    memset(msg, 0, 100);
+    uint64_t offset = 0;
+
+    char * prefix = "VACU";
+    PACK_SIZE(msg, prefix, strlen(prefix), offset);
+    PACK(msg, recover_ts, offset);
+    write(sockfd, msg, offset);
+    pthread_mutex_unlock(&mtx);
+}

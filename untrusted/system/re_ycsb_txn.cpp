@@ -132,20 +132,23 @@ re_ycsb_txn_man::recover_txn(char * log_entry, uint64_t tid)
 #endif
 
 	for (uint32_t i = 0; i < num_keys; i ++) {
-		uint64_t part_id, node_id, page_offset;
+		uint64_t part_id, node_id, page_offset, ts;
 		uint64_t key;
 		uint32_t data_length;
 		char * rockskey;
 		char * data;
 
 		UNPACK(log_entry, part_id, offset);
-		UNPACK(log_entry, node_id, offset);
+        UNPACK(log_entry, node_id, offset);
+        UNPACK(log_entry, ts, offset);
 		UNPACK(log_entry, page_offset, offset);
 #if INDEX_STRUCT == IDX_HASH and WORKLOAD == YCSB
         assert(part_id == 0 && page_offset == 0);
 #endif
 
         rockskey = new char [50];
+        // multiple version.
+//        sprintf(rockskey, "%lu_%lu_%lu_%lu", part_id, node_id, page_offset, ts);
         sprintf(rockskey, "%lu_%lu_%lu", part_id, node_id, page_offset);
 		UNPACK(log_entry, key, offset);
 		

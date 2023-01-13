@@ -64,15 +64,14 @@ latch_t		release_latch(BucketHeader_ENC * node) {
 
 RC IndexEnc::init(uint64_t bucket_cnt, int part_cnt) {
 #if TEST_FRESHNESS == 1
-    freshness_begin_ts_queue = new uint64_t [MAX_TXN_PER_PART + 10];    // test the freshness on record 0.
+    freshness_begin_ts_queue = new uint64_t [FRESHNESS_STATS_CNT];    // test the freshness on record 0.
     // increases with readTS.
-    freshness_read_ts_queue = new uint64_t [MAX_TXN_PER_PART + 10];    // test the freshness on record 0.
+    freshness_read_ts_queue = new uint64_t [FRESHNESS_STATS_CNT];    // test the freshness on record 0.
     freshness_queue_st = 1;
     freshness_queue_ed = 0;
 #endif
     _bucket_cnt_per_part = bucket_cnt / part_cnt;
-    _verify_hash = new u_int64_t * [part_cnt];
-    _bucket_commit_t = new uint64_t * [part_cnt];
+    _verify_hash = new hash_chain ** [part_cnt];
     _cache = new lru_cache;
 #if WORKLOAD == YCSB
     _cache->init(bucket_cnt, part_cnt, VERIFIED_CACHE_SIZ);
@@ -84,11 +83,9 @@ RC IndexEnc::init(uint64_t bucket_cnt, int part_cnt) {
     assert(false);
     _buckets = new BucketHeader_ENC * [part_cnt];
 #endif
-    _default_verify_hash = 0;
     for (int i = 0; i < part_cnt; i++) {
         // _verify_hash[i] = (u_int64_t *) aligned_alloc(64, sizeof(u_int64_t) * _bucket_cnt_per_part);
-        _verify_hash[i] = (u_int64_t *) malloc(sizeof(u_int64_t) * _bucket_cnt_per_part);
-        _bucket_commit_t[i] = (u_int64_t *) malloc(sizeof(u_int64_t) * _bucket_cnt_per_part);
+        _verify_hash[i] = (hash_chain **) malloc(sizeof(hash_item*) * _bucket_cnt_per_part);
 #ifndef SGX_DISK
         // _buckets[i] = (BucketHeader_ENC *) aligned_alloc(64, sizeof(BucketHeader_ENC) * _bucket_cnt_per_part);
         _buckets[i] = (BucketHeader_ENC *) malloc(sizeof(BucketHeader_ENC) * _bucket_cnt_per_part);
@@ -97,8 +94,7 @@ RC IndexEnc::init(uint64_t bucket_cnt, int part_cnt) {
 #ifndef SGX_DISK
             _buckets[i][n].init();
 #endif
-            _verify_hash[i][n] = _default_verify_hash;
-            _bucket_commit_t[i][n] = 0;
+            _verify_hash[i][n] = new hash_chain;
         }
     }
     return RCOK;
@@ -169,9 +165,9 @@ RC IndexEnc::index_read(std::string iname, idx_key_t key, itemid_t * &item, int 
 void IndexEnc::update_verify_hash(int part_id, uint64_t bkt_idx, uint64_t hash, uint64_t ts) {
     auto bkt = load_bucket(index_name, part_id, bkt_idx);
     while(!latch_node(bkt, LATCH_EX));
-    _verify_hash[part_id][bkt_idx] = hash;
-    _bucket_commit_t[part_id][bkt_idx] = ts;
-#if USE_LOG == 1
+    _verify_hash[part_id][bkt_idx]->insert(ts, hash);
+#if USE_LOG == 1 and !LOG_RECOVER
+    assert(!index_name.empty());
     sync_bucket_from_disk(index_name, index_name.size(), part_id, bkt_idx);
 #endif
 //    printf("update verify hash %lu:%lu\n", bkt_idx, ts);
@@ -181,12 +177,12 @@ void IndexEnc::update_verify_hash(int part_id, uint64_t bkt_idx, uint64_t hash, 
 //        printf("calculating freshness %lu-%lu\n", freshness_queue_st, freshness_queue_ed);
         while (freshness_queue_st <= freshness_queue_ed &&
                freshness_read_ts_queue[freshness_queue_st] < ts) {
-            assert(freshness_read_ts_queue[freshness_queue_st] <=
-                freshness_begin_ts_queue[freshness_queue_st]);
+            auto read_t = freshness_read_ts_queue[freshness_queue_st];
+            auto begin_t = freshness_begin_ts_queue[freshness_queue_st];
+            assert(read_t <= begin_t);
 //            printf("calculating freshness %lu - %lu - %lu\n", freshness_read_ts_queue[freshness_queue_st], ts, freshness_begin_ts_queue[freshness_queue_st]);
-            if (ts <= freshness_begin_ts_queue[freshness_queue_st] &&
-                     ts > freshness_read_ts_queue[freshness_queue_st]) {
-                auto dis = freshness_begin_ts_queue[freshness_queue_st] - ts;
+            if (ts <= begin_t) {
+                auto dis = begin_t - ts;
 //                printf("updating freshness: %lu\n", dis);
                 if (dis > stats_enc->freshness)
                     stats_enc->freshness = dis;
@@ -196,6 +192,7 @@ void IndexEnc::update_verify_hash(int part_id, uint64_t bkt_idx, uint64_t hash, 
     }
 #endif
     assert(release_latch(bkt) == LATCH_EX);
+    release_up_cache(bkt);
 }
 
 //#define DECOUPLE
@@ -344,7 +341,7 @@ BucketHeader_ENC* IndexEnc::load_bucket(std::string iname, int part_id, uint64_t
 // lazy update of verify hash.
             while (!latch_node(flushed_bkt, LATCH_EX)); // TODO: cannot load this bucket when flushing out.
 //            _verify_hash[sw_pt][sw_bk] = flushed_bkt->get_hash();
-            _verify_hash[sw_pt][sw_bk] = _default_verify_hash;
+            _verify_hash[sw_pt][sw_bk]->insert(get_enc_time(), flushed_bkt->get_hash());
 #if ENABLE_DATA_CACHE
             flush_out(iname, sw_pt, sw_bk, flushed_bkt);
 #endif
@@ -353,13 +350,20 @@ BucketHeader_ENC* IndexEnc::load_bucket(std::string iname, int part_id, uint64_t
         if (cur != res_bucket) {    // concurrent index access has loaded the bucket.
             delete res_bucket;
         } else {
-            if (_verify_hash[part_id][bkt_idx] == _default_verify_hash) {
-                _verify_hash[part_id][bkt_idx] = cur->get_hash();
+            uint64_t len = 0;
+            if (_verify_hash[part_id][bkt_idx]->empty()) {
+                _verify_hash[part_id][bkt_idx]->insert(get_enc_time(), cur->get_hash());
             } else {
-                assert(_verify_hash[part_id][bkt_idx] == cur->get_hash());
+                assert(_verify_hash[part_id][bkt_idx]->get(get_enc_time(), len) == cur->get_hash());
+                INC_GLOB_STATS_ENC(access_chain_cnt, 1);
+                INC_GLOB_STATS_ENC(version_chain_length, len);
             }
         }
     }
+    uint64_t len = 0;
+    _verify_hash[part_id][bkt_idx]->get(get_enc_time(), len);
+    INC_GLOB_STATS_ENC(access_chain_cnt, 1);
+    INC_GLOB_STATS_ENC(version_chain_length, len);
     return cur;
 }
 
@@ -503,7 +507,7 @@ void BucketHeader_ENC::decode(const DFlow & e) {
 }
 
 ts_t BucketHeader_ENC::get_ts() const {
-    return from->_bucket_commit_t[part][bkt];
+    return from->_verify_hash[part][bkt]->get_max_ts();
 }
 
 void test_encoder(const BucketHeader_ENC* x) {

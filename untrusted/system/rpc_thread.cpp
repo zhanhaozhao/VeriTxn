@@ -13,6 +13,9 @@
 #include <arpa/inet.h>
 
 #include "rocksdb/db.h"
+#include "rocksdb/convenience.h"
+#include "atomic"
+#include "kvengine.h"
 
 void RPCThread::setup() {}
 
@@ -69,26 +72,37 @@ RC RPCThread::run() {
         ssize_t n;
         char buff[MAX_LINE];
 
-        while((n = read(connfd, buff, MAX_LINE)) > 0) {
+        while((n = read(connfd, buff, MAX_LINE-1)) > 0) {
           // std::cout<< "received from client:" << buff << std::endl;
+          buff[n] = '\0';
           char * prefix = (char *) malloc(4);
           uint32_t offset = 0;
           UNPACK_SIZE(buff, prefix, 4, offset);
-          if (strcmp(prefix, "LOGS")) {
+          if (strcmp(prefix, "VACU")) {
+              std::string page_id(buff);
+              UNPACK_SIZE(buff, prefix, 4, offset);
+//              eng->DBDeletePrefix(page_id, page_id);
+          }
+          else if (strcmp(prefix, "LOGS")) {
             // read page
             std::string page_id(buff);
 //            printf("scanning prefix %s\n", page_id.c_str());
             // read from rocksdb
             // std::map<std::string> items;
             std::vector<std::string> reply;
-            auto f_proc_entry = [this, &reply](const rocksdb::Iterator * it) {
-              // Item* item = reply->add_dataitem();
-              // item->set_key(it->key().data());
-              // item->set_value(it->value().data());
-              // items.emplace_back(it->value().data());
+            std::atomic<uint64_t> record_cnt;
+            record_cnt = 0;
+            auto f_proc_entry = [this, &reply, &record_cnt](const rocksdb::Iterator * it) {
+//              Item* item = reply->add_dataitem();
+//              item->set_key(it->key().data());
+//              item->set_value(it->value().data());
+//              items.emplace_back(it->value().data());
+                reply.emplace_back(it->value().data());
+                record_cnt.fetch_add(1);
               // TODO: encode keys into a page
             };
-  //        eng->DBPrefixScan(page_id, f_proc_entry);
+            eng->DBPrefixScan(page_id, f_proc_entry);
+            printf("scan op = %lu\n", record_cnt.load());
 
             char * response = (char *) malloc(sizeof(long));
             sprintf(response, "%d", n);
@@ -148,9 +162,9 @@ RC RPCThread::run() {
           }
 
         }
-          printf("exit 0 ay rpc_thread.cpp");
-          assert(false);
-        exit(0);    // why exit 0 ???
+          printf("thread connection closed");
+//          assert(false);
+//        exit(0);    // why exit 0 ???
       }
       close(connfd);
     }

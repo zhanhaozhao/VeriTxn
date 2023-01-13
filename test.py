@@ -25,7 +25,7 @@ count_job = 0
 def insert_job(alg="OCC", workload="YCSB", thread_num=4, theta=0.6, bkt_fac=1, read_perc=0.5, use_sgx=True,
                cs=1024 * 1024 * 1024, veri="PAGE_VERI", index="IDX_HASH", pre_load=1, use_log=0, txn_per_thd=10000,
                database_size=1024 * 1024, txn_length=64, enable_data_cache=True, pt=1, prof="false", wh=16,
-               full_tpcc="false", nodes = 1, test_freshness=0, veri_hash_buf_siz = 4 * 1024):
+               full_tpcc="false", nodes = 1, test_freshness=0, veri_hash_buf_siz = 4 * 1024, real_time=0):
     global count_job
     count_job = count_job + 1
     jobs[count_job] = {
@@ -53,7 +53,8 @@ def insert_job(alg="OCC", workload="YCSB", thread_num=4, theta=0.6, bkt_fac=1, r
         "FULL_TPCC"         : full_tpcc,
         "NODE_CNT"          : nodes,
         "TEST_FRESHNESS"    : test_freshness,
-        "MSG_SIZE_MAX"      : veri_hash_buf_siz
+        "MSG_SIZE_MAX"      : veri_hash_buf_siz,
+        "REAL_TIME"         : real_time
 	}
 
 
@@ -253,8 +254,7 @@ def run_rw_exp():
 def run_common_test():
     global jobs
     jobs = OrderedDict()
-    insert_job("NO_WAIT", 'YCSB', use_sgx=False, theta=99, thread_num=1, nodes=1,
-               test_freshness=1, txn_length=1, use_log=1)
+    insert_job("NO_WAIT", 'YCSB', use_sgx=False, use_log=1)
     run_all_test(jobs, "tmp.csv")
 
 
@@ -384,11 +384,36 @@ def run_full_tpcc_test():
 def run_freshness_test():
     global jobs
     jobs = OrderedDict()
-    x_con = [4 * 1024]
-    for siz in x_con:
-        insert_job("NO_WAIT", 'YCSB', use_sgx=False, theta=0.9, thread_num=1, nodes=2,
-                   test_freshness=1, veri_hash_buf_siz=siz, txn_length=1, use_log=1)
+    insert_job("NO_WAIT", 'YCSB', use_sgx=False, use_log=1, enable_data_cache="false", pre_load=0)
+    # x_con = [4 * 1024]
+    # for siz in x_con:
+    #     insert_job("NO_WAIT", 'YCSB', use_sgx=False, thread_num=1, nodes=2,
+    #                test_freshness=1, veri_hash_buf_siz=siz, txn_length=1, use_log=1)
     run_all_test(jobs, "freshness.log")
+
+def run_restart_wo():
+    global jobs
+    jobs = OrderedDict()
+    insert_job("OCC", 'YCSB', use_sgx=False, real_time=1, read_perc=1, pre_load=0, database_size=1024*10)
+    run_all_test(jobs, "restart.log")
+
+def run_rw():
+    global jobs
+    jobs = OrderedDict()
+    insert_job("OCC", 'YCSB', use_sgx=False, real_time=1, database_size=1024*10)
+    run_all_test(jobs, "rw.log")
+
+def run_wo():
+    global jobs
+    jobs = OrderedDict()
+    insert_job("OCC", 'YCSB', use_sgx=False, real_time=1, read_perc=1, database_size=1024*10)
+    run_all_test(jobs, "wo.log")
+
+def run_test_vaccum():
+    global jobs
+    jobs = OrderedDict()
+    insert_job("NO_WAIT", 'YCSB', use_sgx=False, nodes=2)
+    run_all_test(jobs, "vaccum.log")
 
 # run_cache_size_impact_for_different_methods_test()
 # run_database_skew_test()
@@ -406,5 +431,9 @@ def run_freshness_test():
 # run_theta_exp()
 # run_read_only()
 # run_bktsiz_exp()
-run_freshness_test()
+# run_freshness_test()
+# run_restart_wo()
+# run_wo()
+# run_rw()
 # test()
+run_test_vaccum()
