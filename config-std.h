@@ -4,7 +4,7 @@
 /***********************************************/
 // Simulation + Hardware
 /***********************************************/
-#define NODE_CNT 1
+#define NODE_CNT 2
 #define THREAD_CNT 4
 #define PART_CNT 1
 #define INPUT_CNT					1
@@ -248,7 +248,7 @@ extern enum TestCases					g_test_case;
 #define TPORT_TYPE tcp
 #define USE_NANOMSG                 1
 #define USE_ASYNC_HASH              1
-#define USE_LOG 1
+#define USE_LOG 0
 #define RPC_SERVER                  "127.0.0.1"
 #define LOG_BATCH_SIZE              10
 
@@ -275,6 +275,8 @@ extern enum TestCases					g_test_case;
 #define REAL_TIME 0
 #define FAST_VERI_CHAIN_ACCESS 1
 #define FRESHNESS_STATS_CNT 20000
+#define SYNC_VERSION_BATCH 1
+#define VACCUM_TRIGGER 10
 
 // Log queue type
 #define LOG_CIRCUL_BUFF 1

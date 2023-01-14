@@ -117,12 +117,12 @@ private:
 #ifndef SGX_DISK
     BucketHeader_ENC**      _buckets;
 #endif
-#if TEST_FRESHNESS == 1
-    uint64_t * freshness_begin_ts_queue;    // test the freshness on record 0.
-    // increases with readTS.
-    uint64_t * freshness_read_ts_queue;    // test the freshness on record 0.
-    uint64_t freshness_queue_st, freshness_queue_ed;
-#endif
+//#if TEST_FRESHNESS == 1
+//    uint64_t * freshness_begin_ts_queue;    // test the freshness on record 0.
+//    // increases with readTS.
+//    uint64_t * freshness_read_ts_queue;    // test the freshness on record 0.
+//    uint64_t freshness_queue_st, freshness_queue_ed;
+//#endif
 
 };
 

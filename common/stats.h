@@ -60,8 +60,9 @@ public:
 	Stats_tmp ** tmp_stats;
 	uint64_t * begin_ts;
     uint64_t freshness;
+    uint64_t freshness_cnt;
     uint64_t version_chain_length;
-    uint64_t access_chain_cnt;
+    uint64_t access_cnt;
 
 	// GLOBAL statistics
 	double dl_detect_time;

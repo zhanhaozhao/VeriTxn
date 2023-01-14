@@ -10,8 +10,8 @@
 #include "mem_helper_enc.h"
 #include "row_enc.h"
 #include "coder.h"
-#include "api.h"
 #include "lru_cache.h"
+#include "api.h"
 
 void test_encoder(const BucketHeader_ENC* x);
 void test_encoder(const BucketNode_ENC* x);
@@ -63,13 +63,13 @@ latch_t		release_latch(BucketHeader_ENC * node) {
 }
 
 RC IndexEnc::init(uint64_t bucket_cnt, int part_cnt) {
-#if TEST_FRESHNESS == 1
-    freshness_begin_ts_queue = new uint64_t [FRESHNESS_STATS_CNT];    // test the freshness on record 0.
-    // increases with readTS.
-    freshness_read_ts_queue = new uint64_t [FRESHNESS_STATS_CNT];    // test the freshness on record 0.
-    freshness_queue_st = 1;
-    freshness_queue_ed = 0;
-#endif
+//#if TEST_FRESHNESS == 1
+//    freshness_begin_ts_queue = new uint64_t [FRESHNESS_STATS_CNT];    // test the freshness on record 0.
+//    // increases with readTS.
+//    freshness_read_ts_queue = new uint64_t [FRESHNESS_STATS_CNT];    // test the freshness on record 0.
+//    freshness_queue_st = 1;
+//    freshness_queue_ed = 0;
+//#endif
     _bucket_cnt_per_part = bucket_cnt / part_cnt;
     _verify_hash = new hash_chain ** [part_cnt];
     _cache = new lru_cache;
@@ -161,40 +161,6 @@ RC IndexEnc::index_read(std::string iname, idx_key_t key, itemid_t * &item, int 
     return rc;
 }
 
-// TODO: 1. MVCC here: if one hash is used by some txn, do not recycle it. (see _cache)
-void IndexEnc::update_verify_hash(int part_id, uint64_t bkt_idx, uint64_t hash, uint64_t ts) {
-    auto bkt = load_bucket(index_name, part_id, bkt_idx);
-    while(!latch_node(bkt, LATCH_EX));
-    _verify_hash[part_id][bkt_idx]->insert(ts, hash);
-#if USE_LOG == 1 and !LOG_RECOVER
-    assert(!index_name.empty());
-    sync_bucket_from_disk(index_name, index_name.size(), part_id, bkt_idx);
-#endif
-//    printf("update verify hash %lu:%lu\n", bkt_idx, ts);
-#if TEST_FRESHNESS == 1
-    if (part_id == 0 && bkt_idx == 1) {
-        // calculate the freshness of data record (0,0)
-//        printf("calculating freshness %lu-%lu\n", freshness_queue_st, freshness_queue_ed);
-        while (freshness_queue_st <= freshness_queue_ed &&
-               freshness_read_ts_queue[freshness_queue_st] < ts) {
-            auto read_t = freshness_read_ts_queue[freshness_queue_st];
-            auto begin_t = freshness_begin_ts_queue[freshness_queue_st];
-            assert(read_t <= begin_t);
-//            printf("calculating freshness %lu - %lu - %lu\n", freshness_read_ts_queue[freshness_queue_st], ts, freshness_begin_ts_queue[freshness_queue_st]);
-            if (ts <= begin_t) {
-                auto dis = begin_t - ts;
-//                printf("updating freshness: %lu\n", dis);
-                if (dis > stats_enc->freshness)
-                    stats_enc->freshness = dis;
-            }
-            freshness_queue_st ++;
-        }
-    }
-#endif
-    assert(release_latch(bkt) == LATCH_EX);
-    release_up_cache(bkt);
-}
-
 //#define DECOUPLE
 
 #ifndef DECOUPLE
@@ -254,6 +220,12 @@ void flush_out(std::string iname, int part_id, uint64_t bkt_idx, BucketHeader_EN
 
 BucketHeader_ENC* IndexEnc::load_bucket(std::string iname, int part_id, uint64_t bkt_idx) {
     auto cur = (BucketHeader_ENC*) _cache->try_load(part_id, bkt_idx);
+    if (cur != nullptr) {
+        uint64_t len = 0, cur_ts = get_enc_time(), rts = 0;
+        _verify_hash[part_id][bkt_idx]->get(cur_ts, len, rts);
+        INC_GLOB_STATS_ENC(access_cnt, 1);
+        INC_GLOB_STATS_ENC(version_chain_length, len);
+    }
     if (cur == nullptr) {
         auto res_bucket = new BucketHeader_ENC;
         uint total_size = 0;
@@ -350,20 +322,19 @@ BucketHeader_ENC* IndexEnc::load_bucket(std::string iname, int part_id, uint64_t
         if (cur != res_bucket) {    // concurrent index access has loaded the bucket.
             delete res_bucket;
         } else {
-            uint64_t len = 0;
+            uint64_t len = 0, cur_ts = get_enc_time(), rts = 0;
             if (_verify_hash[part_id][bkt_idx]->empty()) {
                 _verify_hash[part_id][bkt_idx]->insert(get_enc_time(), cur->get_hash());
             } else {
-                assert(_verify_hash[part_id][bkt_idx]->get(get_enc_time(), len) == cur->get_hash());
-                INC_GLOB_STATS_ENC(access_chain_cnt, 1);
+                assert(_verify_hash[part_id][bkt_idx]->get(get_enc_time(), len, rts) == cur->get_hash());
+#if PRE_LOAD != 1
+                INC_GLOB_STATS_ENC(access_cnt, 1);
                 INC_GLOB_STATS_ENC(version_chain_length, len);
+//                INC_GLOB_STATS_ENC(freshness, cur_ts - rts);
+#endif
             }
         }
     }
-    uint64_t len = 0;
-    _verify_hash[part_id][bkt_idx]->get(get_enc_time(), len);
-    INC_GLOB_STATS_ENC(access_chain_cnt, 1);
-    INC_GLOB_STATS_ENC(version_chain_length, len);
     return cur;
 }
 
@@ -596,19 +567,71 @@ void test_encoder(const BucketNode_ENC* x) {
 
 // batch here.
 void IndexEnc::sync_version(BucketHeader_ENC* c, uint64_t commit_t, uint64_t begin_t, bool updated) {
-    while (!latch_node(c, LATCH_SH));
     if (updated) {
 //        printf("synchronizing %lu:(%lu-%lu)\n", c->bkt, begin_t, commit_t);
+        _verify_hash[c->part][c->bkt]->tail->commit_ts = commit_t;  // delayed timestamp update;
+        uint64_t cur_cnt = ATOM_ADD_FETCH(_verify_hash[c->part][c->bkt]->batch_cnt, 1);
+        if (cur_cnt != SYNC_VERSION_BATCH) return;
+//        while (!latch_node(c, LATCH_SH));
         async_hash_value(index_name, c->part, c->bkt, c->get_hash(), commit_t);
+        _verify_hash[c->part][c->bkt]->batch_cnt = 0;
+//        assert(release_latch(c) == LATCH_SH);
     } else {
+        INC_GLOB_STATS_ENC(freshness, begin_t - c->get_ts());
+        INC_GLOB_STATS_ENC(freshness_cnt, 1);
 //        printf("freshness pushing %lu:(%lu-%lu)\n", c->bkt, begin_t, commit_t);
-#if TEST_FRESHNESS == 1
-        if (c->part == 0 && c->bkt == 1 && freshness_queue_ed) {
-            freshness_queue_ed++;
-            freshness_begin_ts_queue[freshness_queue_ed] = begin_t;
-            freshness_read_ts_queue[freshness_queue_ed] = c->get_ts();
-        }
-#endif
+//#if TEST_FRESHNESS == 1
+//        if (c->part == 0 && c->bkt == 1 && freshness_queue_ed+1 < FRESHNESS_STATS_CNT) {
+//            freshness_queue_ed++;
+//            freshness_begin_ts_queue[freshness_queue_ed] = begin_t;
+//            freshness_read_ts_queue[freshness_queue_ed] = c->get_ts();
+//        }
+//#endif
     }
-    assert(release_latch(c) == LATCH_SH);
+}
+
+uint64_t tot_update_veri = 0;
+
+// version chain can increase with flush out and update verify hash on RO node,
+// currently, we only consider to vaccum for the second one.
+void IndexEnc::update_verify_hash(int part_id, uint64_t bkt_idx, uint64_t hash, uint64_t ts) {
+//    printf("update verify hash of %lu:%lu, %lu\n", bkt_idx, ts, ATOM_ADD_FETCH(tot_update_veri, 1));
+    auto bkt = load_bucket(index_name, part_id, bkt_idx);
+    while(!latch_node(bkt, LATCH_EX));
+//    printf("get latch succeed");
+    _verify_hash[part_id][bkt_idx]->insert(ts, hash);
+    if ( _verify_hash[part_id][bkt_idx]->size > VACCUM_TRIGGER) {
+        uint64_t begin_ts = MIN_BEGIN_TS();
+//        printf("%lu - %lu\n",
+//               begin_ts, _verify_hash[part_id][bkt_idx]->head->commit_ts);
+        _verify_hash[part_id][bkt_idx]->vaccum(begin_ts);
+    }
+#if USE_LOG == 1 and !LOG_RECOVER
+    // TODO: lazy sync from disk to reduce redundant computation.
+    assert(!index_name.empty());
+    sync_bucket_from_disk(index_name, index_name.size(), part_id, bkt_idx);
+#endif
+//#if TEST_FRESHNESS == 1
+//    if (part_id == 0 && bkt_idx == 1) {
+//        // calculate the freshness of data record (0,0)
+////        printf("calculating freshness %lu-%lu\n", freshness_queue_st, freshness_queue_ed);
+//        while (freshness_queue_st <= freshness_queue_ed &&
+//               freshness_read_ts_queue[freshness_queue_st] < ts) {
+//            auto read_t = freshness_read_ts_queue[freshness_queue_st];
+//            auto begin_t = freshness_begin_ts_queue[freshness_queue_st];
+//            assert(read_t <= begin_t);
+////            printf("calculating freshness %lu - %lu - %lu\n", freshness_read_ts_queue[freshness_queue_st], ts, freshness_begin_ts_queue[freshness_queue_st]);
+//            if (ts <= begin_t) {
+//                INC_GLOB_STATS_ENC(freshness, begin_t - ts);
+//                INC_GLOB_STATS_ENC(freshness_cnt, 1);
+//            } else {
+//                INC_GLOB_STATS_ENC(freshness_cnt, 1);
+//            }
+//            freshness_queue_st ++;
+//        }
+//    }
+//#endif
+    assert(release_latch(bkt) == LATCH_EX);
+    release_up_cache(bkt);
+//    printf("update finish");
 }

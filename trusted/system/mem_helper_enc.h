@@ -15,6 +15,9 @@
 	if (STATS_ENABLE) \
 		stats_enc->tmp_stats[tid]->name += value;
 
+#define MIN_BEGIN_TS() \
+    stats_enc->get_min_begin_ts()
+
 #define INC_GLOB_STATS_ENC(name, value) \
 	if (STATS_ENABLE) \
 		stats_enc->name += value;

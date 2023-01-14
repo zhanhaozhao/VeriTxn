@@ -25,7 +25,8 @@ count_job = 0
 def insert_job(alg="OCC", workload="YCSB", thread_num=4, theta=0.6, bkt_fac=1, read_perc=0.5, use_sgx=True,
                cs=1024 * 1024 * 1024, veri="PAGE_VERI", index="IDX_HASH", pre_load=1, use_log=0, txn_per_thd=10000,
                database_size=1024 * 1024, txn_length=64, enable_data_cache=True, pt=1, prof="false", wh=16,
-               full_tpcc="false", nodes = 1, test_freshness=0, veri_hash_buf_siz = 4 * 1024, real_time=0):
+               full_tpcc="false", nodes = 1, test_freshness=0, veri_hash_buf_siz = 1024 * 4, real_time=0, sync_batch=0,
+               vaccum=20):
     global count_job
     count_job = count_job + 1
     jobs[count_job] = {
@@ -54,7 +55,10 @@ def insert_job(alg="OCC", workload="YCSB", thread_num=4, theta=0.6, bkt_fac=1, r
         "NODE_CNT"          : nodes,
         "TEST_FRESHNESS"    : test_freshness,
         "MSG_SIZE_MAX"      : veri_hash_buf_siz,
-        "REAL_TIME"         : real_time
+        "REAL_TIME"         : real_time,
+        "MSG_TIME_LIMIT"     : 0,
+        "SYNC_VERSION_BATCH"   :sync_batch,
+        "VACCUM_TRIGGER"        : vaccum
 	}
 
 
@@ -127,13 +131,15 @@ def test_run(job, f, test=''):
         cnt = job["NODE_CNT"]
         cmd = ["./App" for _ in range(cnt)]
         process = [None for _ in range(cnt)]
-        for i in range(cnt):
-            if i == 0:
-                cmd[i] += " -nid0"
-            else:
-                cmd[i] += " -nid%d -r100 -w0" % i
+        for i in range(1, cnt):
+            cmd[i] += " -nid%d -r100 -w0" % i
             print("running command ", cmd[i])
             process[i] = subprocess.Popen(cmd[i], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        time.sleep(1)   # wo node must begin before rw.
+        cmd[0] += " -nid0"
+        print("running command ", cmd[0])
+        process[0] = subprocess.Popen(cmd[0], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+
 
         for i in range(cnt):
             result = process[i].communicate()
@@ -205,7 +211,7 @@ def run_theta_exp():
     #         insert_job(alg, 'YCSB', theta=th, use_sgx=False)
     for th in [0.0, 0.3, 0.5, 0.6, 0.8, 0.9]:
         for alg in algs:
-            insert_job(alg, 'YCSB', theta=th, use_sgx=True)
+            insert_job(alg, 'YCSB', theta=th, use_sgx=False)
     run_all_test(jobs, "theta_ycsb.csv")
 
 #
@@ -384,11 +390,10 @@ def run_full_tpcc_test():
 def run_freshness_test():
     global jobs
     jobs = OrderedDict()
-    insert_job("NO_WAIT", 'YCSB', use_sgx=False, use_log=1, enable_data_cache="false", pre_load=0)
-    # x_con = [4 * 1024]
-    # for siz in x_con:
-    #     insert_job("NO_WAIT", 'YCSB', use_sgx=False, thread_num=1, nodes=2,
-    #                test_freshness=1, veri_hash_buf_siz=siz, txn_length=1, use_log=1)
+    x_con = [1, 2, 4, 8, 16]
+    for x in x_con:
+        insert_job("NO_WAIT", 'YCSB', use_sgx=True, nodes=2, thread_num=1,
+                   txn_length=1, theta=99, test_freshness=1, sync_batch=x)
     run_all_test(jobs, "freshness.log")
 
 def run_restart_wo():
@@ -412,7 +417,10 @@ def run_wo():
 def run_test_vaccum():
     global jobs
     jobs = OrderedDict()
-    insert_job("NO_WAIT", 'YCSB', use_sgx=False, nodes=2)
+    x_con = [0, 10, 100, 1000]
+    for x in x_con:
+        insert_job("NO_WAIT", 'YCSB', use_sgx=True, theta=0.9, nodes=2, sync_batch=1, vaccum=x)
+        # insert_job("NO_WAIT", 'YCSB', use_sgx=True, theta=0.99, nodes=2, sync_batch=1, vaccum=x)
     run_all_test(jobs, "vaccum.log")
 
 # run_cache_size_impact_for_different_methods_test()

@@ -131,6 +131,7 @@ RC OutputThread::run() {
    		    return FINISH;
    		}
 	}
+    printf("Closing OutputThread %ld\n",_thd_id);
 	//extra_wait_time should be as small as possible
 	// printf("FINISH %ld:%ld, extra wait time: %lu(ns)\n",_node_id,_thd_id,extra_wait_time);
 	fflush(stdout);

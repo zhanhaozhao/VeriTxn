@@ -275,6 +275,8 @@ extern enum TestCases					g_test_case;
 #define REAL_TIME 0
 #define FAST_VERI_CHAIN_ACCESS 1
 #define FRESHNESS_STATS_CNT 20000
+#define SYNC_VERSION_BATCH 1
+#define VACCUM_TRIGGER 100
 
 // Log queue type
 #define LOG_CIRCUL_BUFF 1

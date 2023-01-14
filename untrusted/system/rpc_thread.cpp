@@ -101,8 +101,8 @@ RC RPCThread::run() {
                 record_cnt.fetch_add(1);
               // TODO: encode keys into a page
             };
-            eng->DBPrefixScan(page_id, f_proc_entry);
-            printf("scan op = %lu\n", record_cnt.load());
+//            eng->DBPrefixScan(page_id, f_proc_entry);
+//            printf("scan op = %lu\n", record_cnt.load());
 
             char * response = (char *) malloc(sizeof(long));
             sprintf(response, "%d", n);

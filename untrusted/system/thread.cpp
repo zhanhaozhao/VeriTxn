@@ -125,7 +125,7 @@ RC thread_t::run() {
 		generate_txn_for_run(this->m_query);
 
 		auto begin_ts = this->get_next_ts();
-        UPDATE_TS(get_thd_id(), begin_ts);
+        UPDATE_TS(get_thd_id(), get_sys_clock());
 		rc = (RC) run_txn_ecall(this, begin_ts);
 
 		if (rc == Abort) {
