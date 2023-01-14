@@ -72,6 +72,7 @@ public:
 
     RC index_insert(idx_key_t key, itemid_t *item, int part_id);
 
+    uint64_t    **_verify_hash;
 private:
     // index structures may have part_cnt = 1 or PART_CNT.
     uint64_t part_cnt;
@@ -82,7 +83,6 @@ private:
     UInt32	 	order; // # of keys in a node(for both leaf and non-leaf)
     BTNode** 	roots; // each partition has a different root
 #if VERI_TYPE == PAGE_VERI
-    uint64_t    **_verify_hash;
 #endif
     BTNode *   find_root(uint64_t part_id);
 

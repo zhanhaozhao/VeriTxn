@@ -421,9 +421,9 @@ RC txn_man::finish(RC rc) {
                 synced = true;
             }
         }
-	}
 //	delete pages;
 #endif
+    }
     cleanup(rc);
 #endif
 #if PROFILING
@@ -479,8 +479,12 @@ void txn_man::create_log_entry() {
 		//assert(tuple_size!=0);
 
 		uint64_t part_id = (uint64_t) (((PAGE_ENC*)access->orig_row->from_page)->part);
-		uint64_t bkt_id = ((PAGE_ENC*)access->orig_row->from_page)->bkt;
+#if INDEX_STRUCT == IDX_BTREE
+        uint64_t bkt_id = ((PAGE_ENC*)access->orig_row->from_page)->node_id;
+#else
+        uint64_t bkt_id = ((PAGE_ENC*)access->orig_row->from_page)->bkt;
 		uint64_t commit_ts = ((PAGE_ENC*)access->orig_row->from_page)->from->_verify_hash[part_id][bkt_id]->get_max_ts();
+#endif
 
 #if INDEX_STRUCT == IDX_HASH
         PACK(_log_entry, part_id, offset);        // part.

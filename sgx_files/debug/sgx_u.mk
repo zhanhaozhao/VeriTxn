@@ -74,7 +74,7 @@ else
 endif
 
 App_C_Cpp_Flags := $(Common_C_Cpp_Flags) $(SGX_RA_TLS_Extra_Flags) -Iuntrusted -I$(SGX_SDK)/include -I$(PROJECT_ROOT_DIR) 
-App_C_Cpp_Flags += -I$(PROJECT_ROOT_DIR)/common -I$(PROJECT_ROOT_DIR)/untrusted -I$(PROJECT_ROOT_DIR)/untrusted/benchmark -I$(PROJECT_ROOT_DIR)/untrusted/cache -Iuntrusted/system
+App_C_Cpp_Flags += -I$(PROJECT_ROOT_DIR)/common -I$(PROJECT_ROOT_DIR)/untrusted -I$(PROJECT_ROOT_DIR)/untrusted/benchmarks -I$(PROJECT_ROOT_DIR)/untrusted/cache -Iuntrusted/system
 ### Project Settings ###
 
 ### Linking setting ###

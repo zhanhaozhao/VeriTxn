@@ -66,7 +66,7 @@ def test_compile(job):
     os.system("make clean> temp.out 2>&1")
     os.system("cp "+ dbms_cfg[0] +' ' + dbms_cfg[1])
     if job["USE_SGX"] == 1:
-        if job["WORKLOAD"] == "TPCC":   # TODO: sgx pre release has bug.
+        if job["FULL_TPCC"] == "true":   # TODO: sgx pre release has bug.
             os.system("make sgx-debug 2>&1")
         else:
             os.system("make sgx-release 2>&1")
@@ -197,10 +197,16 @@ def run_tpc_exp():
     # for th in [1, 2, 3, 4, 5, 6, 7, 8]:
     #     for alg in algs:
     #         insert_job(alg, 'TPCC', thread_num=th, use_sgx=False, pt=1)
-    for th in [1, 2, 3, 4, 5, 6, 7, 8]:
+    # for th in [1, 2, 3, 4, 5, 6, 7, 8]:
+    #     for alg in algs:
+    #         insert_job(alg, 'TPCC', thread_num=th, use_sgx=True, pt=1, wh=16)
+    for th in [1]:
         for alg in algs:
-            insert_job(alg, 'TPCC', thread_num=th, use_sgx=True, pt=1)
-    run_all_test(jobs, "thread_tpc.log")
+            insert_job(alg, 'TPCC', thread_num=th, use_sgx=False, pt=1, wh=4)
+    # for th in [1, 2, 3, 4, 5, 6, 7, 8]:
+    #     for alg in algs:
+    #         insert_job(alg, 'TPCC', thread_num=th, use_sgx=True, pt=1, wh=4)
+    run_all_test(jobs, "tpcc_wh.log")
 
 
 def run_theta_exp():
@@ -260,7 +266,8 @@ def run_rw_exp():
 def run_common_test():
     global jobs
     jobs = OrderedDict()
-    insert_job("NO_WAIT", 'YCSB', use_sgx=False, use_log=1)
+    #full_tpcc='true',
+    insert_job("NO_WAIT", 'YCSB', use_sgx=True, use_log=1)
     run_all_test(jobs, "tmp.csv")
 
 
@@ -383,8 +390,11 @@ def run_full_tpcc_test():
     global jobs
     jobs = OrderedDict()
     insert_job("NO_WAIT", 'TPCC', use_sgx=True, full_tpcc="true", index="IDX_BTREE", thread_num=1, wh=4, txn_per_thd=1000)
-    insert_job("NO_WAIT", 'TPCC', use_sgx=True, full_tpcc="true", index="IDX_BTREE", thread_num=4, wh=4, txn_per_thd=1000)
-    insert_job("NO_WAIT", 'TPCC', use_sgx=True, full_tpcc="true", index="IDX_BTREE", thread_num=8, wh=4, txn_per_thd=1000)
+    # insert_job("NO_WAIT", 'TPCC', use_sgx=True, full_tpcc="true", index="IDX_BTREE", thread_num=4, wh=4, txn_per_thd=1000)
+    # insert_job("NO_WAIT", 'TPCC', use_sgx=True, full_tpcc="true", index="IDX_BTREE", thread_num=8, wh=4, txn_per_thd=1000)
+    # insert_job("NO_WAIT", 'TPCC', use_sgx=True, full_tpcc="true", index="IDX_BTREE", thread_num=1, wh=16, txn_per_thd=1000)
+    # insert_job("NO_WAIT", 'TPCC', use_sgx=True, full_tpcc="true", index="IDX_BTREE", thread_num=4, wh=16, txn_per_thd=1000)
+    # insert_job("NO_WAIT", 'TPCC', use_sgx=True, full_tpcc="true", index="IDX_BTREE", thread_num=8, wh=16, txn_per_thd=1000)
     run_all_test(jobs, "full_tpcc.csv")
 
 def run_freshness_test():
@@ -417,7 +427,11 @@ def run_wo():
 def run_test_vaccum():
     global jobs
     jobs = OrderedDict()
-    x_con = [0, 10, 100, 1000]
+    x_con = [1, 4, 16, 64, 256]
+    for x in x_con:
+        insert_job("NO_WAIT", 'YCSB', use_sgx=True, theta=0.9, nodes=2, sync_batch=1, vaccum=x)
+    for x in x_con:
+        insert_job("NO_WAIT", 'YCSB', use_sgx=True, theta=0.9, nodes=2, sync_batch=1, vaccum=x)
     for x in x_con:
         insert_job("NO_WAIT", 'YCSB', use_sgx=True, theta=0.9, nodes=2, sync_batch=1, vaccum=x)
         # insert_job("NO_WAIT", 'YCSB', use_sgx=True, theta=0.99, nodes=2, sync_batch=1, vaccum=x)
@@ -432,7 +446,7 @@ def run_test_vaccum():
 # run_database_skew_test()
 # run_rw_exp()
 # run_thread_exp()
-# run_tpc_exp()
+run_tpc_exp()
 # run_common_test()
 # run_full_tpcc_test()
 # run_profiling()
@@ -444,4 +458,4 @@ def run_test_vaccum():
 # run_wo()
 # run_rw()
 # test()
-run_test_vaccum()
+# run_test_vaccum()
