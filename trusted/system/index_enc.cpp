@@ -567,6 +567,11 @@ void test_encoder(const BucketNode_ENC* x) {
 // batch here.
 void IndexEnc::sync_version(BucketHeader_ENC* c, uint64_t commit_t, uint64_t begin_t, bool updated) {
     if (updated) {
+#if !LAZY_OFFLOADING
+        while (!latch_node(c, LATCH_EX));
+        flush_out(c->from->index_name, c->part, c->bkt, c);
+        assert(release_latch(c) == LATCH_EX);
+#endif
 //        printf("synchronizing %lu:(%lu-%lu)\n", c->bkt, begin_t, commit_t);
         _verify_hash[c->part][c->bkt]->tail->commit_ts = commit_t;  // delayed timestamp update;
         uint64_t cur_cnt = ATOM_ADD_FETCH(_verify_hash[c->part][c->bkt]->batch_cnt, 1);

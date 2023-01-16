@@ -4,8 +4,8 @@
 /***********************************************/
 // Simulation + Hardware
 /***********************************************/
-#define NODE_CNT 2
-#define THREAD_CNT 4
+#define NODE_CNT 1
+#define THREAD_CNT 8
 #define PART_CNT 1
 #define INPUT_CNT					1
 #define OUTPUT_CNT					1
@@ -20,7 +20,7 @@
 // # of transactions to run for warmup
 #define WARMUP						0
 // YCSB or TPCC
-#define WORKLOAD YCSB
+#define WORKLOAD TPCC
 // print the transaction latency distribution
 #define PRT_LAT_DISTR				false
 #define STATS_ENABLE				true
@@ -153,7 +153,7 @@
 // are not modeled.
 #define TPCC_ACCESS_ALL 			false
 #define WH_UPDATE					true
-#define NUM_WH 16
+#define NUM_WH 4
 //
 enum TPCCTxnType {TPCC_ALL,
     TPCC_PAYMENT,
@@ -244,7 +244,7 @@ extern enum TestCases					g_test_case;
 #define TPORT_PORT 6000
 #define MAX_TPORT_NAME				128
 // turn on SGX
-#define USE_SGX 1
+#define USE_SGX 0
 #define TPORT_TYPE tcp
 #define USE_NANOMSG                 1
 #define USE_ASYNC_HASH              1
@@ -255,6 +255,7 @@ extern enum TestCases					g_test_case;
 // cache parameters
 #define VERIFIED_CACHE_SIZ 1073741824
 #define ENABLE_DATA_CACHE true
+#define LAZY_OFFLOADING true
 #define BASE_LEASE      100
 #define VERI_TYPE PAGE_VERI
 #if VERI_TYPE == MERKLE_TREE
@@ -275,8 +276,8 @@ extern enum TestCases					g_test_case;
 #define REAL_TIME 0
 #define FAST_VERI_CHAIN_ACCESS 1
 #define FRESHNESS_STATS_CNT 20000
-#define SYNC_VERSION_BATCH 1
-#define VACCUM_TRIGGER 100
+#define SYNC_VERSION_BATCH 0
+#define VACCUM_TRIGGER 20
 
 // Log queue type
 #define LOG_CIRCUL_BUFF 1

@@ -5,7 +5,7 @@
 // Simulation + Hardware
 /***********************************************/
 #define NODE_CNT 1
-#define THREAD_CNT 8
+#define THREAD_CNT 4
 #define PART_CNT 1
 #define INPUT_CNT					1
 #define OUTPUT_CNT					1
@@ -20,7 +20,7 @@
 // # of transactions to run for warmup
 #define WARMUP						0
 // YCSB or TPCC
-#define WORKLOAD TPCC
+#define WORKLOAD YCSB
 // print the transaction latency distribution
 #define PRT_LAT_DISTR				false
 #define STATS_ENABLE				true
@@ -128,13 +128,13 @@
 // max number of rows touched per transaction
 #define MAX_ROW_PER_TXN				128
 #define QUERY_INTVL 				1UL
-#define MAX_TXN_PER_PART 10000
+#define MAX_TXN_PER_PART 1000
 #define FIRST_PART_LOCAL 			true
 #define MAX_TUPLE_SIZE				1024 // in bytes
 // ==== [YCSB] ====
 #define INIT_PARALLELISM 8
-#define SYNTH_TABLE_SIZE 1048576
-#define ZIPF_THETA 0.6
+#define SYNTH_TABLE_SIZE 4096
+#define ZIPF_THETA 0.9
 #define READ_PERC 0.5
 #define WRITE_PERC 0.5
 #define SCAN_PERC 					0
@@ -153,7 +153,7 @@
 // are not modeled.
 #define TPCC_ACCESS_ALL 			false
 #define WH_UPDATE					true
-#define NUM_WH 4
+#define NUM_WH 16
 //
 enum TPCCTxnType {TPCC_ALL,
     TPCC_PAYMENT,
@@ -248,13 +248,14 @@ extern enum TestCases					g_test_case;
 #define TPORT_TYPE tcp
 #define USE_NANOMSG                 1
 #define USE_ASYNC_HASH              1
-#define USE_LOG 0
+#define USE_LOG 1
 #define RPC_SERVER                  "127.0.0.1"
 #define LOG_BATCH_SIZE              10
 
 // cache parameters
-#define VERIFIED_CACHE_SIZ 1073741824
-#define ENABLE_DATA_CACHE true
+#define VERIFIED_CACHE_SIZ 17179869184
+#define ENABLE_DATA_CACHE false
+#define LAZY_OFFLOADING true
 #define BASE_LEASE      100
 #define VERI_TYPE PAGE_VERI
 #if VERI_TYPE == MERKLE_TREE

@@ -123,7 +123,11 @@ public:
         }
 #endif
         auto last = head;
-        assert(ts >= head->commit_ts);
+        if (ts < head->commit_ts) { // not loaded yet.
+            unlock();
+            return -1;
+        }
+//        assert(ts >= head->commit_ts);
         for (auto i = head; i; i=i->next) {
             if (ts < i->commit_ts) {
                 rts = last->commit_ts;
