@@ -570,6 +570,9 @@ void IndexEnc::sync_version(BucketHeader_ENC* c, uint64_t commit_t, uint64_t beg
 #if !LAZY_OFFLOADING
         while (!latch_node(c, LATCH_EX));
         flush_out(c->from->index_name, c->part, c->bkt, c);
+#if !ENABLE_DATA_CACHE
+//        sync_bucket_from_disk(c->from->index_name, c->from->index_name.size(), c->part, c->bkt);
+#endif
         assert(release_latch(c) == LATCH_EX);
 #endif
 //        printf("synchronizing %lu:(%lu-%lu)\n", c->bkt, begin_t, commit_t);

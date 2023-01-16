@@ -99,7 +99,7 @@ RC RPCThread::run() {
 //              item->set_value(it->value().data());
 //              items.emplace_back(it->value().data());
 //                reply.emplace_back(it->value().data());
-//                record_cnt.fetch_add(1);
+                record_cnt.fetch_add(1);
               // TODO: encode keys into a page
             };
 //            eng->DBPrefixScan(page_id, f_proc_entry);
