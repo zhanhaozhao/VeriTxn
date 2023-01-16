@@ -5,7 +5,7 @@ import subprocess, datetime, time, signal
 
 from collections import defaultdict, OrderedDict
 
-BigTest = False
+BigTest = True
 KB = 1024
 MB = 1024 * KB
 GB = 1024 * MB
@@ -75,6 +75,15 @@ def test_compile(job):
             os.system("make sgx-debug 2>&1")
         else:
             os.system("make sgx-release 2>&1")
+        pattern = r"<HeapMaxSize>.*</HeapMaxSize>"
+        siz = (hex(min(job["VERIFIED_CACHE_SIZ"]*2, job["SYNTH_TABLE_SIZE"]*2*KB) * 4))
+        print(siz)
+        replacement = "<HeapMaxSize>"+ siz + "</HeapMaxSize>"
+        replace("trusted/Enclave.config.xml", pattern, replacement)
+        pattern = r"<HeapInitSize>.*</HeapInitSize>"
+        replacement = "<HeapInitSize>"+ siz + "</HeapInitSize>"
+        replace("trusted/Enclave.config.xml", pattern, replacement)
+        os.system("cat trusted/Enclave.config.xml")
     else:
         os.system("make no-sgx 2>&1")
 
@@ -297,13 +306,12 @@ def run_database_skew_test():
                        txn_per_thd=1000)
     run_all_test(jobs, "ycsb.cache.skew.result")
 
-
 # Large memory, single node.
 def run_database_size_test():
     global jobs
     jobs = OrderedDict()
     if BigTest:
-        x_con = [1 * GB, 8 * GB, 32 * GB, 48 * GB, 64 * GB, 100 * GB]
+        x_con = [128*MB, 1 * GB, 8 * GB, 32 * GB, 48 * GB] #, 64 * GB, 100 * GB
         for cs in x_con:
             insert_job('NO_WAIT', 'YCSB', use_sgx=True, database_size=cs, txn_per_thd=1000)
         for cs in x_con:
@@ -322,7 +330,7 @@ def run_database_size_test():
         # for cs in x_con:
         #     insert_job('NO_WAIT', 'YCSB', use_sgx=False, database_size=cs, txn_per_thd=1000)
         for cs in x_con:
-            insert_job('NO_WAIT', 'YCSB', use_sgx=False, index="IDX_BTREE", database_size=cs, pre_load=0, txn_per_thd=1000)
+            insert_job('NO_WAIT', 'YCSB', use_sgx=True, index="IDX_BTREE", database_size=cs, pre_load=0, txn_per_thd=1000)
         # for cs in x_con:
         #     insert_job('NO_WAIT', 'YCSB', use_sgx=False, index="IDX_BTREE", veri="MERKLE_TREE", database_size=cs, pre_load=0,
         #                txn_per_thd=1000)
@@ -479,7 +487,7 @@ def run_test_vacuum():
 
 # single node, large mem
 run_database_size_test()
-run_cache_size_impact_for_different_methods_test()
+# run_cache_size_impact_for_different_methods_test()
 # run_database_skew_test()
 # run_database_varying_txn_length()
 

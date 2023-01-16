@@ -4,7 +4,7 @@
 /***********************************************/
 // Simulation + Hardware
 /***********************************************/
-#define NODE_CNT 2
+#define NODE_CNT 1
 #define THREAD_CNT 4
 #define PART_CNT 1
 #define INPUT_CNT					1
@@ -63,12 +63,13 @@
 #define INDEX_STRUCT IDX_HASH
 #define BTREE_ORDER 				16
 #define INDEX_NAME_LENGTH       	16
-#define INDEX_NAME_LENGTH       	16
-#if WORKLOAD == TPCC
-#define BTREE_NODE_NUM              2000000
-#else
+
+#if WORKLOAD == YCSB
 #define BTREE_NODE_NUM              (SYNTH_TABLE_SIZE  + SYNTH_TABLE_SIZE/(BTREE_ORDER-1)+10)
+#else
+#define BTREE_NODE_NUM              2000000
 #endif
+
 // [DL_DETECT]
 #define DL_LOOP_DETECT				1000 	// 100 us
 #define DL_LOOP_TRIAL				100	// 1 us
@@ -136,7 +137,7 @@
 #define MAX_TUPLE_SIZE				1024 // in bytes
 // ==== [YCSB] ====
 #define INIT_PARALLELISM 8
-#define SYNTH_TABLE_SIZE 1048576
+#define SYNTH_TABLE_SIZE 65536
 #define ZIPF_THETA 0.6
 #define READ_PERC 0.5
 #define WRITE_PERC 0.5
@@ -247,7 +248,7 @@ extern enum TestCases					g_test_case;
 #define TPORT_PORT 6000
 #define MAX_TPORT_NAME				128
 // turn on SGX
-#define USE_SGX 0
+#define USE_SGX 1
 #define TPORT_TYPE tcp
 #define USE_NANOMSG                 1
 #define USE_ASYNC_HASH              1
@@ -256,7 +257,7 @@ extern enum TestCases					g_test_case;
 #define LOG_BATCH_SIZE              10
 
 // cache parameters
-#define VERIFIED_CACHE_SIZ 536870912
+#define VERIFIED_CACHE_SIZ 17179869184
 #define ENABLE_DATA_CACHE true
 #define LAZY_OFFLOADING true
 #define BASE_LEASE      100
@@ -275,11 +276,11 @@ extern enum TestCases					g_test_case;
 
 #define PRE_LOAD 1
 #define PROFILING false
-#define TEST_FRESHNESS 1
+#define TEST_FRESHNESS 0
 #define REAL_TIME 0
 #define FAST_VERI_CHAIN_ACCESS 1
 #define FRESHNESS_STATS_CNT 20000
-#define SYNC_VERSION_BATCH 1024
+#define SYNC_VERSION_BATCH 0
 #define VACCUM_TRIGGER 20
 
 // Log queue type
