@@ -312,7 +312,8 @@ BucketHeader_ENC* IndexEnc::load_bucket(std::string iname, int part_id, uint64_t
 //            assert(false);
 // lazy update of verify hash.
             while (!latch_node(flushed_bkt, LATCH_EX)); // TODO: cannot load this bucket when flushing out.
-//            _verify_hash[sw_pt][sw_bk] = flushed_bkt->get_hash();
+            _verify_hash[sw_pt][sw_bk]->tail->value = flushed_bkt->get_hash();
+            _verify_hash[sw_pt][sw_bk]->tail->commit_ts = get_enc_time();
 #if ENABLE_DATA_CACHE
             flush_out(iname, sw_pt, sw_bk, flushed_bkt);
 #endif
@@ -325,6 +326,7 @@ BucketHeader_ENC* IndexEnc::load_bucket(std::string iname, int part_id, uint64_t
             if (_verify_hash[part_id][bkt_idx]->empty()) {
                 _verify_hash[part_id][bkt_idx]->insert(get_enc_time(), cur->get_hash());
             } else {
+                auto hash = cur->get_hash();
                 assert(_verify_hash[part_id][bkt_idx]->get(get_enc_time(), len, rts) == cur->get_hash());
 #if PRE_LOAD != 1
                 INC_GLOB_STATS_ENC(access_cnt, 1);

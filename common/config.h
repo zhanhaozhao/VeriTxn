@@ -64,8 +64,11 @@
 #define BTREE_ORDER 				16
 #define INDEX_NAME_LENGTH       	16
 #define INDEX_NAME_LENGTH       	16
+#if WORKLOAD == TPCC
 #define BTREE_NODE_NUM              2000000
-
+#else
+#define BTREE_NODE_NUM              (SYNTH_TABLE_SIZE  + SYNTH_TABLE_SIZE/(BTREE_ORDER-1)+10)
+#endif
 // [DL_DETECT]
 #define DL_LOOP_DETECT				1000 	// 100 us
 #define DL_LOOP_TRIAL				100	// 1 us

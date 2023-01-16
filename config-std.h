@@ -4,8 +4,8 @@
 /***********************************************/
 // Simulation + Hardware
 /***********************************************/
-#define NODE_CNT 1
-#define THREAD_CNT 8
+#define NODE_CNT 2
+#define THREAD_CNT 4
 #define PART_CNT 1
 #define INPUT_CNT					1
 #define OUTPUT_CNT					1
@@ -20,7 +20,7 @@
 // # of transactions to run for warmup
 #define WARMUP						0
 // YCSB or TPCC
-#define WORKLOAD TPCC
+#define WORKLOAD YCSB
 // print the transaction latency distribution
 #define PRT_LAT_DISTR				false
 #define STATS_ENABLE				true
@@ -63,8 +63,12 @@
 #define INDEX_STRUCT IDX_HASH
 #define BTREE_ORDER 				16
 #define INDEX_NAME_LENGTH       	16
-#define INDEX_NAME_LENGTH       	16
+
+#if WORKLOAD == YCSB
+#define BTREE_NODE_NUM              (SYNTH_TABLE_SIZE  + SYNTH_TABLE_SIZE/(BTREE_ORDER-1)+10)
+#else
 #define BTREE_NODE_NUM              2000000
+#endif
 
 // [DL_DETECT]
 #define DL_LOOP_DETECT				1000 	// 100 us
@@ -128,7 +132,7 @@
 // max number of rows touched per transaction
 #define MAX_ROW_PER_TXN				128
 #define QUERY_INTVL 				1UL
-#define MAX_TXN_PER_PART 10000
+#define MAX_TXN_PER_PART 1000
 #define FIRST_PART_LOCAL 			true
 #define MAX_TUPLE_SIZE				1024 // in bytes
 // ==== [YCSB] ====
@@ -153,7 +157,7 @@
 // are not modeled.
 #define TPCC_ACCESS_ALL 			false
 #define WH_UPDATE					true
-#define NUM_WH 4
+#define NUM_WH 16
 //
 enum TPCCTxnType {TPCC_ALL,
     TPCC_PAYMENT,
@@ -253,7 +257,7 @@ extern enum TestCases					g_test_case;
 #define LOG_BATCH_SIZE              10
 
 // cache parameters
-#define VERIFIED_CACHE_SIZ 1073741824
+#define VERIFIED_CACHE_SIZ 536870912
 #define ENABLE_DATA_CACHE true
 #define LAZY_OFFLOADING true
 #define BASE_LEASE      100
@@ -272,11 +276,11 @@ extern enum TestCases					g_test_case;
 
 #define PRE_LOAD 1
 #define PROFILING false
-#define TEST_FRESHNESS 0
+#define TEST_FRESHNESS 1
 #define REAL_TIME 0
 #define FAST_VERI_CHAIN_ACCESS 1
 #define FRESHNESS_STATS_CNT 20000
-#define SYNC_VERSION_BATCH 0
+#define SYNC_VERSION_BATCH 1024
 #define VACCUM_TRIGGER 20
 
 // Log queue type
