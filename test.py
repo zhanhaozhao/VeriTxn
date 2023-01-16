@@ -262,7 +262,7 @@ def run_cache_size_impact_for_different_methods_test():
             insert_job('NO_WAIT', 'YCSB', use_sgx=True, index="IDX_BTREE", veri="MERKLE_TREE", cs=cs, pre_load=0,
                        txn_per_thd=1000)
     else:
-        x_con = [1 * GB, 32 * GB]
+        x_con = [128 * MB, 32 * GB]
         for cs in x_con:
             insert_job('NO_WAIT', 'YCSB', use_sgx=False, cs=cs)
         for cs in x_con:
@@ -319,8 +319,8 @@ def run_database_size_test():
         #                txn_per_thd=1000)
     else:
         x_con = [64 * GB] #, 64 * GB
-        # for cs in x_con:
-        #     insert_job('NO_WAIT', 'YCSB', use_sgx=False, database_size=cs, txn_per_thd=1000)
+        for cs in x_con:
+            insert_job('NO_WAIT', 'YCSB', use_sgx=False, database_size=cs, txn_per_thd=1000)
         for cs in x_con:
             insert_job('NO_WAIT', 'YCSB', use_sgx=False, index="IDX_BTREE", database_size=cs, pre_load=0, txn_per_thd=1000)
         for cs in x_con:
