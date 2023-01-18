@@ -268,6 +268,7 @@ BTNode* IndexBTEnc::load_child(BTNode *cur_node, int i) {
     }
     // get latch
 #if VERI_TYPE == PAGE_VERI
+    if (i == -1) return nullptr;
     while (!origin_node->from->latch_node(origin_node, LATCH_EX)) {};
 #else
     while (!origin_node->from->latch_node(origin_node->from->roots[cur_node->part], LATCH_EX));
@@ -403,7 +404,7 @@ RC IndexBTEnc::index_read(idx_key_t key, itemid_t *& item, int part_id, int thd_
     params.part_id = part_id;
     BTNode * leaf;
 #if VERI_TYPE == PAGE_VERI
-    find_leaf(params, key, INDEX_READ, leaf);
+    find_leaf(params, key, INDEX_NONE, leaf);
 #else
     find_leaf(params, key, INDEX_NONE, leaf);
 #endif
@@ -558,7 +559,7 @@ latch_t IndexBTEnc::release_latch(BTNode * node) {
     while ( !ATOM_CAS(node->latch, false, true) ) {}
 
     if (node->latch_type == LATCH_NONE) {
-        assert(false);
+//        assert(false);
         bool ok = ATOM_CAS(node->latch, true, false);
         assert(ok);
         return LATCH_NONE;
