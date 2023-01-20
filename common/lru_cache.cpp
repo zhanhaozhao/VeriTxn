@@ -26,20 +26,29 @@ RC lru_cache::init(uint64_t bucket_cnt, int part_cnt, uint64_t siz) {
     return RCOK;
 }
 
-void lru_cache::release(int part_id, uint64_t bkt_idx) {
+void* lru_cache::release(int part_id, uint64_t bkt_idx) {
     get_latch();
     if (_cache[part_id][bkt_idx] == nullptr) {
         // the data is already released.
         release_latch();
-        return;
+        return nullptr;
     }
     _cache[part_id][bkt_idx]->_read_cnt  = std::max(_cache[part_id][bkt_idx]->_read_cnt-1, uint64_t(0));
     assert(_cache[part_id][bkt_idx]->_read_cnt >= 0);
     if (_cache[part_id][bkt_idx]->_read_cnt == 0) {
+#if LAZY_OFFLOADING == 1
         free_pool.push(cache_visit{ bkt: bkt_idx, part: part_id,
                                     ts: _cache[part_id][bkt_idx]->_ts, _size:_cache[part_id][bkt_idx]->_size});
+#else
+        auto res = _cache[part_id][bkt_idx]->_value;
+        delete _cache[part_id][bkt_idx];
+        _cache[part_id][bkt_idx] = nullptr;
+        release_latch();
+        return res;
+#endif
     }
     release_latch();
+    return nullptr;
 }
 
 void *lru_cache::try_load(uint part_id, uint64_t bkt_idx) {
@@ -55,6 +64,7 @@ void *lru_cache::try_load(uint part_id, uint64_t bkt_idx) {
     return res;
 }
 
+#if LAZY_OFFLOADING == 1
 RC lru_cache::cache_free(int &part, uint64_t & bkt, void * &swapped) {
 //#ifdef PRE_LOAD
 //    assert(false);
@@ -79,6 +89,7 @@ RC lru_cache::cache_free(int &part, uint64_t & bkt, void * &swapped) {
     }
     return Abort;
 }
+#endif
 
 void lru_cache::reset_lease(int part_id, uint64_t bkt_idx) {
     if (!enable_lease) {
@@ -117,6 +128,7 @@ RC lru_cache::load_and_swap(int part_id, uint64_t bkt_idx, uint bytes_size,  voi
     } else {
         res = inserted;
         if (_cached_bytes + bytes_size > _limit) {
+#if LAZY_OFFLOADING
             auto rc = cache_free(swapped_part, swapped_idx, swapped);
             if (rc == Abort) {
                 release_latch();
@@ -125,6 +137,10 @@ RC lru_cache::load_and_swap(int part_id, uint64_t bkt_idx, uint bytes_size,  voi
             if (swapped != nullptr) {
                 _cache[part_id][bkt_idx] = new cache_node(++_timestamp, inserted, bytes_size);
             }
+#else
+            release_latch();
+            return Abort;
+#endif
         } else {
             _cached_bytes += bytes_size;
             _cache[part_id][bkt_idx] = new cache_node(++_timestamp, inserted, bytes_size);

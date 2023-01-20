@@ -14,7 +14,7 @@ RC StatsThread::run() {
     printf("Running stats thread\n");
     uint64_t point_cnt = 0;
     for (;!_wl->sim_done;) {
-        usleep(1000 * 100);
+        usleep(1000 * 10);
         if (STATS_ENABLE) {
             stats.print();
             for (int i=0;i<THREAD_CNT;i++)

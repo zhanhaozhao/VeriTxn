@@ -21,7 +21,7 @@ class lru_cache {
 public:
     RC 	init(uint64_t bucket_cnt, int part_cnt, uint64_t siz);
     void *try_load(uint part_id, uint64_t bkt_idx);
-    void release(int part_id, uint64_t bkt_idx);
+    void * release(int part_id, uint64_t bkt_idx);
     bool can_force_load() const; // if half of the place is occupied, then stop force loading.
     void inc_lease(int part_id, uint64_t bkt_idx);
     void reset_lease(int part_id, uint64_t bkt_idx);
@@ -35,7 +35,10 @@ private:
     uint64_t** _lease;
     int n;
     uint64_t m;
+#if LAZY_OFFLOADING == 1
     std::queue<cache_visit> free_pool;
+    RC cache_free(int &part, uint64_t &bkt, void * &swapped);
+#endif
     uint64_t _cached_bytes{};
     uint64_t _timestamp{};
     uint64_t _limit{};
@@ -46,8 +49,6 @@ private:
         bool ok = ATOM_CAS(this->locked, true, false);
         assert(ok);
     };
-
-    RC cache_free(int &part, uint64_t &bkt, void * &swapped);
 
 };
 

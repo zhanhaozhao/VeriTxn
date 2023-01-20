@@ -340,7 +340,12 @@ BucketHeader_ENC* IndexEnc::load_bucket(std::string iname, int part_id, uint64_t
 }
 
 void IndexEnc::release_up_cache(BucketHeader_ENC* c) {
-    _cache->release(c->part, c->bkt);
+    auto res = _cache->release(c->part, c->bkt);
+#if LAZY_OFFLOADING == 1
+    assert(res == nullptr);
+#else
+    if (res != nullptr) delete (BucketHeader_ENC*)res;
+#endif
 }
 
 void IndexEnc::flush_bucket(int part_id, uint64_t bkt_idx, BucketHeader_ENC* cur, bool modified) {
@@ -573,7 +578,7 @@ void IndexEnc::sync_version(BucketHeader_ENC* c, uint64_t commit_t, uint64_t beg
         while (!latch_node(c, LATCH_EX));
         flush_out(c->from->index_name, c->part, c->bkt, c);
 #if !ENABLE_DATA_CACHE
-//        sync_bucket_from_disk(c->from->index_name, c->from->index_name.size(), c->part, c->bkt);
+        assert(false);  // there is no meaning for single layer cache to offload data.
 #endif
         assert(release_latch(c) == LATCH_EX);
 #endif

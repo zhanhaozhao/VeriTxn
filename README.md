@@ -31,11 +31,33 @@ Configurations can be changed in the config.h file. Please refer to README for t
     WORKLOAD          : Supported workloads include YCSB and TPCC
     MAX_TXN_PER_PART  : Number of transactions to run per thread per partition
     USE_SGX           : Enable verification or not
+    VERIFIED_CACHE_SIZ: Size of verified cache
+    ENABLE_DATA_CACHE : Enable data cache or not
+    VERI_TYPE         : Verification method (MERKLE_TREE or PAGE_VERI)
+    INDEX_STRUCT      : Index structure
+    PRE_LOAD          : Enable preload into verified cache or not
+    PROFILING         : Enable profiling or not
+    REAL_TIME         : Enable real time stats or not
 
 ### Build
 
+#### Build without SGX
+
 To build the database
 
+    make no-sgx
+    make clean && make -j
+
+#### Build with SGX
+
+To build the database using SGX (debug mode)
+
+    make sgx-debug
+    make clean && make -j
+
+To build the database using SGX (prerelease mode)
+
+    make sgx-release
     make clean && make -j
 
 

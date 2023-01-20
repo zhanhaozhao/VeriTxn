@@ -6,8 +6,8 @@ cd ../untrusted/system/
 
 cd ../../common/
 pwd
-sed -i '119c #define LOG_RECOVER                 true' config.h
-sed -i '247c #define USE_SGX 0' config.h
+sed -i '123c #define LOG_RECOVER                 true' config.h
+sed -i '251c #define USE_SGX 0' config.h
 
 cd ../
 pwd
@@ -18,5 +18,5 @@ make clean && make -j10
 make no-sgx
 cd common/
 pwd
-sed -i '119c #define LOG_RECOVER                 false' config.h
-sed -i '247c #define USE_SGX 0' config.h
+sed -i '123c #define LOG_RECOVER                 false' config.h
+sed -i '251c #define USE_SGX 0' config.h
