@@ -27,10 +27,10 @@ count_job = 0
 
 
 def insert_job(alg="OCC", workload="YCSB", thread_num=4, theta=0.5, bkt_fac=1, read_perc=0.5, use_sgx=True,
-               cs= GB * 32, veri="PAGE_VERI", index="IDX_HASH", pre_load=1, use_log=0, txn_per_thd=10000,
-               database_size= GB * 100, txn_length=64, enable_data_cache=True, pt=1, prof="false", wh=16,
-               full_tpcc="false", nodes = 1, test_freshness=0, veri_hash_buf_siz = KB * 4, real_time=0, sync_batch=4,
-               vaccum=16, lazy_offloading = "true", fast_chain=1):
+               cs=GB * 32, veri="PAGE_VERI", index="IDX_HASH", pre_load=1, use_log=0, txn_per_thd=10000,
+               database_size=GB * 100, txn_length=64, enable_data_cache=True, pt=1, prof="false", wh=16,
+               full_tpcc="false", nodes=1, test_freshness=0, veri_hash_buf_siz=KB * 4, real_time=0, sync_batch=4,
+               vaccum=16, lazy_offloading=1, fast_chain=1, small_cs=False):
     global count_job
     count_job = count_job + 1
     jobs[count_job] = {
@@ -64,7 +64,8 @@ def insert_job(alg="OCC", workload="YCSB", thread_num=4, theta=0.5, bkt_fac=1, r
         "SYNC_VERSION_BATCH"   :sync_batch,
         "VACCUM_TRIGGER"        : vaccum,
         "LAZY_OFFLOADING"       : lazy_offloading,
-        "FAST_VERI_CHAIN_ACCESS" : fast_chain
+        "FAST_VERI_CHAIN_ACCESS" : fast_chain,
+        "SMALL_CACHE_SIZE"      : small_cs
     }
 
 
@@ -77,7 +78,11 @@ def test_compile(job):
         else:
             os.system("make sgx-release 2>&1")
         pattern = r"<HeapMaxSize>.*</HeapMaxSize>"
-        siz = (hex(max(min(job["VERIFIED_CACHE_SIZ"]*2, job["SYNTH_TABLE_SIZE"]*2*KB) * 4, 256*MB*4)))
+        tp = max(min(job["VERIFIED_CACHE_SIZ"]*2, job["VERIFIED_CACHE_SIZ"] *2*KB) * 4, 256* MB*4)
+        if job["SMALL_CACHE_SIZE"]:
+            siz = hex(min(tp, 16* GB))
+        else:
+            siz = hex(tp)
         print(siz)
         replacement = "<HeapMaxSize>"+ siz + "</HeapMaxSize>"
         replace("trusted/Enclave.config.xml", pattern, replacement)
@@ -250,8 +255,10 @@ def run_rw_exp():
 def run_common_test():
     global jobs
     jobs = OrderedDict()
-    #full_tpcc='true',
-    insert_job("NO_WAIT", 'YCSB', use_sgx=False, database_size=MB, prof="true", use_log=1)
+    # insert_job("NO_WAIT", 'YCSB', use_sgx=False, database_size = 16*GB,
+    #            small_cs=True, lazy_offloading=0, cs=128 * MB, txn_per_thd=1000) # No offloading
+    insert_job("NO_WAIT", 'YCSB', use_sgx=False, database_size = 16*GB,
+               small_cs=True, cs=128 * MB, txn_per_thd=1000) # No offloading
     run_all_test(jobs, "tmp.csv")
 
 
@@ -417,23 +424,33 @@ def run_test_vacuum():
         insert_job("NO_WAIT", 'YCSB', use_sgx=True, theta=0.8, nodes=2, sync_batch=1, vaccum=x, fast_chain=0)
     run_all_test(jobs, "vaccum.log")
 
+def run_lazy_offloading():
+    global jobs
+    jobs = OrderedDict()
+    x_con = [1 * GB, 8* GB, 16 * GB, 32 * GB, 64 * GB]
+    for siz in x_con:
+        insert_job("NO_WAIT", 'YCSB', use_sgx=True, database_size = siz,small_cs=True, txn_per_thd=1000)
+        insert_job("NO_WAIT", 'YCSB', use_sgx=True, cs=100*GB, database_size = siz, small_cs=True, txn_per_thd=1000) # No offloading
+    run_all_test(jobs, "ycsb.cache.lazy.offloading")
+
 
 # single node, small mem
-run_thread_exp()
-run_tpc_exp()
-run_theta_exp()
+# run_thread_exp()
+# run_tpc_exp()
+# run_theta_exp()
 # run_rw_exp()
-run_profiling()
+# run_profiling()
 # run_common_test()
-run_single_layer_cache_exp()
-run_full_tpcc_test()
+# run_single_layer_cache_exp()
+# run_full_tpcc_test()
 
 # single node, large mem
-run_database_size_test()
-run_cache_size_impact_for_different_methods_test()
-run_database_skew_test()
-run_database_varying_txn_length()
+# run_database_size_test()
+# run_cache_size_impact_for_different_methods_test()
+# run_database_skew_test()
+# run_database_varying_txn_length()
 
 # two nodes
-run_freshness_test()
-run_test_vacuum()
+# run_freshness_test()
+# run_test_vacuum()
+run_lazy_offloading()

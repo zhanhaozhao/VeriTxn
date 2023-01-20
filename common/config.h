@@ -4,8 +4,8 @@
 /***********************************************/
 // Simulation + Hardware
 /***********************************************/
-#define NODE_CNT 1
-#define THREAD_CNT 4
+#define NODE_CNT 2
+#define THREAD_CNT 1
 #define PART_CNT 1
 #define INPUT_CNT					1
 #define OUTPUT_CNT					1
@@ -132,20 +132,20 @@
 // max number of rows touched per transaction
 #define MAX_ROW_PER_TXN				128
 #define QUERY_INTVL 				1UL
-#define MAX_TXN_PER_PART 1000
+#define MAX_TXN_PER_PART 10000
 #define FIRST_PART_LOCAL 			true
 #define MAX_TUPLE_SIZE				1024 // in bytes
 // ==== [YCSB] ====
 #define INIT_PARALLELISM 8
-#define SYNTH_TABLE_SIZE 65536
-#define ZIPF_THETA 0.6
+#define SYNTH_TABLE_SIZE 8388608
+#define ZIPF_THETA 0.5
 #define READ_PERC 0.5
 #define WRITE_PERC 0.5
 #define SCAN_PERC 					0
 #define SCAN_LEN					20
 #define PART_PER_TXN 2
 #define PERC_MULTI_PART				1
-#define REQ_PER_QUERY 64
+#define REQ_PER_QUERY 1
 #define FIELD_PER_TUPLE				10
 // ==== [TPCC] ====
 // For large warehouse count, the tables do not fit in memory
@@ -248,7 +248,7 @@ extern enum TestCases					g_test_case;
 #define TPORT_PORT 6000
 #define MAX_TPORT_NAME				128
 // turn on SGX
-#define USE_SGX 1
+#define USE_SGX 0
 #define TPORT_TYPE tcp
 #define USE_NANOMSG                 1
 #define USE_ASYNC_HASH              1
@@ -257,9 +257,9 @@ extern enum TestCases					g_test_case;
 #define LOG_BATCH_SIZE              10
 
 // cache parameters
-#define VERIFIED_CACHE_SIZ 17179869184
+#define VERIFIED_CACHE_SIZ 536870912
 #define ENABLE_DATA_CACHE true
-#define LAZY_OFFLOADING true
+#define LAZY_OFFLOADING 1
 #define BASE_LEASE      100
 #define VERI_TYPE PAGE_VERI
 #if VERI_TYPE == MERKLE_TREE
@@ -276,11 +276,11 @@ extern enum TestCases					g_test_case;
 
 #define PRE_LOAD 1
 #define PROFILING false
-#define TEST_FRESHNESS 0
+#define TEST_FRESHNESS 1
 #define REAL_TIME 0
 #define FAST_VERI_CHAIN_ACCESS 1
 #define FRESHNESS_STATS_CNT 20000
-#define SYNC_VERSION_BATCH 0
+#define SYNC_VERSION_BATCH 32
 #define VACCUM_TRIGGER 20
 
 // Log queue type

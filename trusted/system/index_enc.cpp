@@ -344,7 +344,15 @@ void IndexEnc::release_up_cache(BucketHeader_ENC* c) {
 #if LAZY_OFFLOADING == 1
     assert(res == nullptr);
 #else
-    if (res != nullptr) delete (BucketHeader_ENC*)res;
+    if (res != nullptr) {
+        auto sw = (BucketHeader_ENC*) res;
+        while (!latch_node(sw, LATCH_EX));
+        // TODO: cannot load this bucket when flushing out.
+        _verify_hash[sw->part][sw->bkt]->tail->value = sw->get_hash();
+        _verify_hash[sw->part][sw->bkt]->tail->commit_ts = get_enc_time();
+        flush_out(index_name, sw->part, sw->bkt, sw);
+        delete sw;
+    }
 #endif
 }
 
@@ -574,14 +582,14 @@ void test_encoder(const BucketNode_ENC* x) {
 // batch here.
 void IndexEnc::sync_version(BucketHeader_ENC* c, uint64_t commit_t, uint64_t begin_t, bool updated) {
     if (updated) {
-#if !LAZY_OFFLOADING
-        while (!latch_node(c, LATCH_EX));
-        flush_out(c->from->index_name, c->part, c->bkt, c);
-#if !ENABLE_DATA_CACHE
-        assert(false);  // there is no meaning for single layer cache to offload data.
-#endif
-        assert(release_latch(c) == LATCH_EX);
-#endif
+//#if !LAZY_OFFLOADING
+//        while (!latch_node(c, LATCH_EX));
+//        flush_out(c->from->index_name, c->part, c->bkt, c);
+//#if !ENABLE_DATA_CACHE
+//        assert(false);  // there is no meaning for single layer cache to offload data.
+//#endif
+//        assert(release_latch(c) == LATCH_EX);
+//#endif
 //        printf("synchronizing %lu:(%lu-%lu)\n", c->bkt, begin_t, commit_t);
         _verify_hash[c->part][c->bkt]->tail->commit_ts = commit_t;  // delayed timestamp update;
         uint64_t cur_cnt = ATOM_ADD_FETCH(_verify_hash[c->part][c->bkt]->batch_cnt, 1);
