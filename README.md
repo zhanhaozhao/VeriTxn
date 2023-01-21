@@ -71,6 +71,9 @@ VeriTxn can be run in manual with
 
 To run the experiments
 
+    # test as single node
+    python test.py
+
     # test as a pure cloud-native database without SGX
     python run_experiments.py -e -r -ns -c vcloud <test_case_name>
     
