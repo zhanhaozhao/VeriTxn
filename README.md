@@ -11,7 +11,7 @@ The following paper describes DBx1000:
 Dependencies
 ----------------------
 
-- Sever equipped with Intel SGX
+- Server equipped with Intel SGX
 - Intel SGX SDK
 
 
@@ -70,6 +70,15 @@ VeriTxn can be run in manual with
     ./App 
 
 To run the experiments
+
+    cd scripts
+
+    # edit the file "run_config.py" to setup the vcloud cluster for experiments, required changes:
+    username: ssh username
+    port: ssh port
+    identity: public key for ssh auth
+    vcloud_uname: source code folder path
+    vcloud_machines: ips of nodes in the cluster. One line corresponds to one node.
 
     # test as single node
     python test.py
