@@ -58,9 +58,9 @@ public:
     //
     void            update_hash(BTNode* c);
     bool            latch;
-    int             root_owner_thread;    // merkle tree contend on the root hash and thus no concurrency.
-    RC   get_root_latch(int thread_id);
-    void release_root_latch(int thread_id);
+//    int             root_owner_thread;    // merkle tree contend on the root hash and thus no concurrency.
+//    RC   get_root_latch(int thread_id);
+//    void release_root_latch(int thread_id);
     RC merkle_update(BTNode *c);
     void up_to_root(BTNode *c);
 #endif

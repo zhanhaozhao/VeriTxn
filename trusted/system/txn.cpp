@@ -118,9 +118,9 @@ void txn_man::cleanup(RC rc) {
             pages[i]->from->merkle_update(pages[i]);
         pages[i]->from->release_up_cache(pages[i]);
     }
-    for (int i = 0; i < row_cnt; i ++) {
-        pages[i]->from->release_root_latch(get_thd_id());
-    }
+//    for (int i = 0; i < row_cnt; i ++) {
+//        pages[i]->from->release_root_latch(get_thd_id());
+//    }
 #else
     for (int i = 0; i < row_cnt; i++) {
 //        if (i == 0 || pages[i] != pages[i-1])
@@ -205,6 +205,7 @@ row_t * txn_man::get_row(row_t * row, access_t type) {
 	uint64_t starttime = get_enc_time();
 #endif
 	RC rc = RCOK;
+    assert(accesses[row_cnt] == NULL || accesses[row_cnt]->orig_data != NULL);
 	if (accesses[row_cnt] == NULL) {
 		// Access * access = (Access *) aligned_alloc(64, sizeof(Access));
 		Access * access = (Access *) malloc(sizeof(Access));
@@ -243,6 +244,7 @@ row_t * txn_man::get_row(row_t * row, access_t type) {
 
 #if ROLL_BACK && (CC_ALG == DL_DETECT || CC_ALG == NO_WAIT || CC_ALG == WAIT_DIE)
 	if (type == WR) {
+        // No orig_data here??? why?
 		accesses[row_cnt]->orig_data->table = row->get_table();
 		accesses[row_cnt]->orig_data->copy(row);
 	}

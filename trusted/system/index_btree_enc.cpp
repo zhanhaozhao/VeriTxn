@@ -23,7 +23,7 @@ RC IndexBTEnc::init(uint64_t part_cnt) {
         }
     }
 #else
-    root_owner_thread = -1;
+//    root_owner_thread = -1;
 #endif
     return RCOK;
 }
@@ -393,10 +393,10 @@ RC IndexBTEnc::index_read(idx_key_t key, itemid_t *& item, int part_id, int thd_
 {
     RC rc = Abort;
 #if VERI_TYPE == MERKLE_TREE
-    rc = get_root_latch(thd_id);
-    if (rc != RCOK) {
-        return rc;
-    }
+//    rc = get_root_latch(thd_id);
+//    if (rc != RCOK) {
+//        return rc;
+//    }
 #endif
 
     glob_param params;
@@ -752,24 +752,23 @@ void IndexBTEnc::up_to_root(BTNode* c) {
     }
 }
 
-RC IndexBTEnc::get_root_latch(int thread_id) {
-    while (!ATOM_CAS(latch, false, true));
-    if (root_owner_thread == thread_id || root_owner_thread == -1) {
-        root_owner_thread = thread_id;
-        assert(ATOM_CAS(latch, true, false));
-        return RCOK;
-    }
-    assert(ATOM_CAS(latch, true, false));
-    return Abort;
-}
+//RC IndexBTEnc::get_root_latch(int thread_id) {
+//    while (!ATOM_CAS(latch, false, true));
+//    if (root_owner_thread == thread_id || root_owner_thread == -1) {
+//        root_owner_thread = thread_id;
+//        assert(ATOM_CAS(latch, true, false));
+//        return RCOK;
+//    }
+//    assert(ATOM_CAS(latch, true, false));
+//    return Abort;
+//}
 
-void IndexBTEnc::release_root_latch(int thread_id) {
-    while (!ATOM_CAS(latch, false, true));
-    // could release for multiple times.
-//    assert (root_owner_thread == thread_id || root_owner_thread == -1);
-    root_owner_thread = -1;
-    assert(ATOM_CAS(latch, true, false));
-}
+//void IndexBTEnc::release_root_latch(int thread_id) {
+//    while (!ATOM_CAS(latch, false, true));
+//    // could release for multiple times.
+//    root_owner_thread = -1;
+//    assert(ATOM_CAS(latch, true, false));
+//}
 #endif
 
 #ifdef FULL_TPCC
