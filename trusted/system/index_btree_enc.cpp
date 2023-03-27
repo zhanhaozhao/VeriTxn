@@ -2,8 +2,8 @@
 #include "mem_helper_enc.h"
 #include "row_enc.h"
 #include "atomic"
-#include "common/index_btree.h"
-#include "common/base_row.h"
+#include "../../common/index_btree.h"
+#include "../../common/base_row.h"
 
 RC IndexBTEnc::init(uint64_t part_cnt) {
     this->part_cnt = part_cnt;
@@ -22,8 +22,11 @@ RC IndexBTEnc::init(uint64_t part_cnt) {
             _verify_hash[i][j] = _default_bt_veri_hash;
         }
     }
-#else
-//    root_owner_thread = -1;
+#elif VERI_TYPE == DEFERRED_MEMORY
+    verifier = (memory_verifier **)(malloc(sizeof (memory_verifier *) * part_cnt));
+    for (uint64_t i=0;i<part_cnt;i++) {
+        verifier[i] = new memory_verifier;
+    }
 #endif
     return RCOK;
 }
@@ -50,6 +53,20 @@ uint64_t BTNode::hash() const {
     return res;
 }
 #elif VERI_TYPE == PAGE_VERI
+uint64_t BTNode::get_hash() {
+    uint64_t res = 0ULL;
+    for (UInt32 i=0;i<num_keys;i++) {
+        res ^= keys[i];
+    }
+    if (is_leaf) {
+        for (UInt32 i=0;i<num_keys;i++) {
+            auto tmp = (row_t*)(((itemid_t*) data[i])->location);
+            res ^= tmp->hash();
+        }
+    }
+    return num_keys;
+}
+#elif VERI_TYPE == DEFERRED_MEMORY
 uint64_t BTNode::get_hash() {
     uint64_t res = 0ULL;
     for (UInt32 i=0;i<num_keys;i++) {
@@ -91,13 +108,13 @@ void IndexBTEnc::flush_out(BTNode *c) {
     assert(c->is_leaf); // only need to keep leaf data on time, since no parent hash is maintained.
     _verify_hash[c->part][c->node_id] = c->get_hash();
     while (!c->origin->from->latch_node(c->origin, LATCH_EX));
+#elif VERI_TYPE == DEFERRED_MEMORY
+    // avoid concurrent load in and flush out.
+    while (!c->origin->from->latch_node(c->origin, LATCH_EX));
 #endif
     c->origin->num_keys = c->num_keys;
     c->origin->is_leaf = c->is_leaf;
     memcpy(c->origin->keys, c->keys, order * sizeof(idx_key_t));
-//    c->origin->latch = false;
-//    c->origin->latch_type = LATCH_NONE;
-//    c->origin->share_cnt = 0;
     auto ln = c->num_keys;
     if (!c->is_leaf) {
         ln++;
@@ -132,8 +149,10 @@ void IndexBTEnc::flush_out(BTNode *c) {
         } else {
 #if VERI_TYPE == PAGE_VERI
             assert(false);  // non-leaf nodes should not be flushed out in VeriTXN.
-#else
+#elif VERI_TYPE == MERKLE_TREE
             c->origin->child_merkle_hash[i] = c->child_merkle_hash[i];
+#elif VERI_TYPE == DEFERRED_MEMORY
+            c->from->verifier[c->part]->add_write(c->node_id, c->get_hash(), c->origin);
 #endif
         }
     }
@@ -141,14 +160,14 @@ void IndexBTEnc::flush_out(BTNode *c) {
 #if VERI_TYPE == PAGE_VERI
     assert(c->get_hash() == c->origin->get_hash());
     assert(c->origin->from->release_latch(c->origin) == LATCH_EX);
-#else
+#elif VERI_TYPE == MERKLE_TREE
 //    assert(c->hash() == c->origin->hash());
     assert(c->origin->merkle_hash == c->hash());
     assert(c->origin->from->release_latch(c->origin->from->roots[c->part]) == LATCH_EX);
+#elif VERI_TYPE == DEFERRED_MEMORY
+    // check if need to perform the verification.
+    assert(c->from->verifier[c->part]->verification());
 #endif
-//    if (cur % 1000 == 0) {
-//        printf("flushed: %lu\n", cur);
-//    }
 }
 
 BTNode* IndexBTEnc::load_next(BTNode *cur_node) {
@@ -204,6 +223,10 @@ BTNode* IndexBTEnc::load_next(BTNode *cur_node) {
         delete flushed_node;
         //TODO: support merkle tree delayed hash update.
         // because we use lock-free cache load, the flushed_node could be used by another thread concurrently.
+#elif VERI_TYPE == DEFERRED_MEMORY
+        while (!latch_node(flushed_node, LATCH_EX)) {}
+        flush_out(flushed_node);
+        delete flushed_node;
 #endif
     }
 #if VERI_TYPE == PAGE_VERI
@@ -217,6 +240,13 @@ BTNode* IndexBTEnc::load_next(BTNode *cur_node) {
 #elif VERI_TYPE == MERKLE_TREE
     if (cur != new_node) delete new_node;
     assert(false);  // merkle tree current does not support next.
+#elif VERI_TYPE == DEFERRED_MEMORY
+    if (cur != new_node) delete new_node;
+    else if (cur->is_leaf) {
+        // only need to verify the leaf node.
+        verifier[cur->part]->add_read(cur->node_id, cur->get_hash(), cur->origin);
+        assert(verifier[cur->part]->verification());
+    }
 #endif
     return cur;
 }
@@ -267,7 +297,7 @@ BTNode* IndexBTEnc::load_child(BTNode *cur_node, int i) {
         return cur;
     }
     // get latch
-#if VERI_TYPE == PAGE_VERI
+#if VERI_TYPE == PAGE_VERI or VERI_TYPE == DEFERRED_MEMORY
     if (i == -1) return nullptr;
     while (!origin_node->from->latch_node(origin_node, LATCH_EX)) {};
 #else
@@ -283,7 +313,7 @@ BTNode* IndexBTEnc::load_child(BTNode *cur_node, int i) {
     while (rc != RCOK) {
         rc = _cache->load_and_swap(cur_node->part, new_node->node_id, sizeof (*new_node), (void *) new_node, swapped, sw_part, sw_node_id, cur_void);
     }
-#if VERI_TYPE == PAGE_VERI
+#if VERI_TYPE == PAGE_VERI or VERI_TYPE == DEFERRED_MEMORY
     assert (origin_node->from->release_latch(origin_node) == LATCH_EX);
 #else
     assert (origin_node->from->release_latch(origin_node->from->roots[cur_node->part]) == LATCH_EX);
@@ -318,6 +348,10 @@ BTNode* IndexBTEnc::load_child(BTNode *cur_node, int i) {
         // delayed update in FastVer.
         flush_out(flushed_node);
         delete flushed_node;
+#elif VERI_TYPE == DEFERRED_MEMORY
+        while (!latch_node(flushed_node, LATCH_EX)) {}
+        flush_out(flushed_node);
+        delete flushed_node;
 #endif
     }
 #if VERI_TYPE == PAGE_VERI
@@ -340,11 +374,18 @@ BTNode* IndexBTEnc::load_child(BTNode *cur_node, int i) {
             assert(cur_node->child_merkle_hash[i] == cur->merkle_hash);
         }
     }
+#elif VERI_TYPE == DEFERRED_MEMORY
+    if (cur != new_node) delete new_node;
+    else if (cur->is_leaf) {
+        // only need to verify the leaf node.
+        verifier[cur->part]->add_read(cur->node_id, cur->get_hash(), cur->origin);
+        assert(verifier[cur->part]->verification());
+    }
 #endif
     return cur;
 }
 
-#include "common/config.h"
+#include "../../common/config.h"
 
 RC IndexBTEnc::dfs(BTNode* c) { // force load BTree nodes.
     assert(c != nullptr);
@@ -362,6 +403,10 @@ RC IndexBTEnc::dfs(BTNode* c) { // force load BTree nodes.
 RC IndexBTEnc::load_all(std::string iname) {
     for (UInt32 part_id = 0; part_id < part_cnt; part_id ++) {
         roots[part_id] = make_node(((index_btree *) inner_index_map->_indexes[iname])->roots[part_id], part_id);
+#if VERI_TYPE == DEFERRED_MEMORY
+        // todo: support multiple parts.
+        verifier[part_id]->init(BTREE_NODE_NUM, roots[part_id]);
+#endif
     }
 #if PRE_LOAD == 1
     for (UInt32 part_id = 0; part_id < part_cnt; part_id ++) {
@@ -403,7 +448,7 @@ RC IndexBTEnc::index_read(idx_key_t key, itemid_t *& item, int part_id, int thd_
     assert(part_id != -1);
     params.part_id = part_id;
     BTNode * leaf;
-#if VERI_TYPE == PAGE_VERI
+#if VERI_TYPE == PAGE_VERI or VERI_TYPE == DEFERRED_MEMORY
     find_leaf(params, key, INDEX_NONE, leaf);
 #else
     find_leaf(params, key, INDEX_NONE, leaf);
@@ -413,7 +458,7 @@ RC IndexBTEnc::index_read(idx_key_t key, itemid_t *& item, int part_id, int thd_
     for (UInt32 i = 0; i < leaf->num_keys; i++)
         if (leaf->keys[i] == key) {
             item = (itemid_t *) leaf->data[i];
-#if VERI_TYPE == PAGE_VERI
+#if VERI_TYPE == PAGE_VERI or VERI_TYPE == DEFERRED_MEMORY
             release_latch(leaf);
 #endif
             return RCOK;
@@ -1147,5 +1192,60 @@ RC IndexBTEnc::make_node(uint64_t part_id, BTNode *& node, bool is_leaf) {
 //    assert(rc == RCOK);
     return RCOK;
 }
+
+#ifdef VERI_TYPE == DEFERRED_MEMORY
+const uint64_t default_veri_set_value = 0;
+
+bool memory_verifier::verification() {
+    if (get_enc_time() - last_verification < VERI_BATCH) {
+        return true;
+    }
+    last_verification = get_enc_time();
+    // 1. verify the read/write set.
+    for (int i = 0;i < _limit; i++) {
+        if (updates[i] != nullptr) {
+            assert(updates[i]->verify()); // verify the data record.
+            updates[i]->get_latch(); // before free the record, get the lock.
+            delete updates[i];
+            updates[i] = nullptr;
+        }
+    }
+    return true;
+    // 2. update the merkle hash at the root.
+    // update the root merkle hash.
+    // current implementation does not need it since all data is stored on the leaf node, which can be ensured to be integrate by memory verification.
+//    root->from->dfs(root);
+}
+
+void memory_verifier::init(uint64_t _size, BTNode* _root) {
+    // the accepted length for update records.
+    root = _root;
+    latch = false;
+    last_verification = get_enc_time();
+    updates = (verify_record**) malloc(sizeof(verify_record*) * _size);
+}
+
+void memory_verifier::add_read(uint64_t page_key, uint64_t read_value, bt_node* origin) {
+    uint64_t i = page_key;
+    if (updates[i] == nullptr) {
+        auto new_record = new verify_record;
+        new_record->locked = true;
+        new_record->init(read_value, origin);
+        ATOM_CAS(updates[i], nullptr, new_record);
+    }
+    updates[i]->add_read(read_value);
+}
+
+void memory_verifier::add_write(uint64_t page_key, uint64_t write_value, bt_node* origin) {
+    uint64_t i = page_key;
+    if (updates[i] == nullptr) {
+        auto new_record = new verify_record;
+        new_record->locked = true;
+        new_record->init(default_veri_set_value, origin);
+        ATOM_CAS(updates[i], nullptr, new_record);
+    }
+    updates[i]->add_write(write_value);
+}
+#endif
 
 #endif

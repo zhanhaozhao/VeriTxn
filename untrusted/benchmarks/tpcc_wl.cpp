@@ -103,7 +103,7 @@ RC tpcc_wl::init_table() {
 #else
         index_init_ecall(g_part_cnt, (void *) (tables[tname]), iname, (void*)indexes[iname] ,
                          BTREE_NODE_NUM);
-        #ifdef BATCH_MERKLE
+        #if VERI_TYPE == MERKLE_TREE
         indexes[iname]->calculate_hash();
         #endif
         index_load_ecall(g_part_cnt, (void *) (tables[tname]), iname, (void*)indexes[iname] ,

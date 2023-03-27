@@ -3,7 +3,7 @@
 
 // #include "global_common.h"
 // #include "common/helper.h"
-#include "index_base.h"
+#include "../../common/index_base.h"
 #include "string"
 // #include "common/helper.h"
 #include "base_row.h"
@@ -23,7 +23,7 @@ typedef struct bt_node {
     uint64_t merkle_hash;
     uint64_t *child_merkle_hash;
     uint64_t hash() const;
-#elif VERI_TYPE == PAGE_VERI
+#elif VERI_TYPE == PAGE_VERI or VERI_TYPE == DEFERRED_MEMORY
     uint64_t get_hash() {
         uint64_t res = 0ULL;
         for (UInt32 i=0;i<num_keys;i++) {
@@ -134,10 +134,10 @@ public:
 #if VERI_TYPE == MERKLE_TREE
     void        update_hash(bt_node * c);
     void up_to_root(bt_node *c);
+    RC calculate_hash();
 #endif
 
     RC dfs(bt_node *c);
-    RC calculate_hash();
 
     uint64_t btree_node_id;
 private:

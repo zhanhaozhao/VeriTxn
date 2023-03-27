@@ -5,15 +5,20 @@
 #ifndef DBX1000_INDEX_BTREE_ENC_H
 #define DBX1000_INDEX_BTREE_ENC_H
 
-#include "common/index_btree.h"
-#include "common/global_common.h"
-#include "index_base.h"
+#include "../../common/index_btree.h"
+#include "../../common/global_common.h"
+#include "../../common/index_base.h"
 #include "string"
-#include "common/base_row.h"
-#include "common/helper.h"
-#include "common/lru_cache.h"
+#include "../../common/base_row.h"
+#include "../../common/helper.h"
+#include "../../common/lru_cache.h"
 
 class IndexBTEnc;
+
+#ifdef VERI_TYPE == DEFERRED_MEMORY
+struct verify_record;
+struct memory_verifier;
+#endif
 
 struct BTNode {
     // TODO bad hack!
@@ -40,6 +45,8 @@ struct BTNode {
     uint64_t hash() const;
 #elif VERI_TYPE == PAGE_VERI
     uint64_t get_hash();
+#elif VERI_TYPE == DEFERRED_MEMORY
+    uint64_t get_hash();
 #endif
 };
 
@@ -55,14 +62,14 @@ public:
     RC          dfs(BTNode* c);
 
 #if VERI_TYPE == MERKLE_TREE
-    //
     void            update_hash(BTNode* c);
     bool            latch;
-//    int             root_owner_thread;    // merkle tree contend on the root hash and thus no concurrency.
-//    RC   get_root_latch(int thread_id);
-//    void release_root_latch(int thread_id);
     RC merkle_update(BTNode *c);
     void up_to_root(BTNode *c);
+#elif VERI_TYPE == PAGE_VERI
+    uint64_t    **_verify_hash;
+#else
+    memory_verifier **verifier;
 #endif
     std::string     index_name;
     table_t*        table;
@@ -72,7 +79,6 @@ public:
 
     RC index_insert(idx_key_t key, itemid_t *item, int part_id);
 
-    uint64_t    **_verify_hash;
 private:
     // index structures may have part_cnt = 1 or PART_CNT.
     uint64_t part_cnt;
@@ -108,6 +114,88 @@ private:
     RC make_node(uint64_t part_id, BTNode *&node, bool isleaf);
     RC add_to_cache(BTNode *old);
 };
+
+#ifdef VERI_TYPE == DEFERRED_MEMORY
+// the record used when performing batch verification,
+// we defer the generation of timestamp to avoid extra memory cost from ts generator.
+struct verify_record {
+    uint64_t read_set_hash;
+    uint64_t write_set_hash;
+    uint64_t timestamp;
+    uint64_t old_value_hash;
+    bt_node * origin_node;
+    bool locked;
+
+    void get_latch() {
+        while ( !ATOM_CAS(locked, false, true) ) {};
+    }
+
+    void release_latch() {
+        bool ok = ATOM_CAS(locked, true, false);
+        assert(ok);
+    }
+
+    void init(uint64_t cur_value, bt_node *_origin_node) {
+        assert(locked); // for concurrency, the record should be locked before calling init function.
+        read_set_hash = 0;
+        write_set_hash = cur_value;
+        old_value_hash = cur_value;
+        origin_node = _origin_node;
+        release_latch();
+    }
+
+    // needs latch before.
+    bool verify () {
+        while (!origin_node->from->latch_node(origin_node, LATCH_EX)) {};
+        uint64_t cur_value = origin_node->get_hash();
+        assert(origin_node->from->release_latch(origin_node) == LATCH_EX);
+        old_value_hash = cur_value;
+        read_set_hash ^= (cur_value ^ timestamp);
+        bool ok = read_set_hash == write_set_hash;
+        return ok;
+    };
+
+    void add_read(uint64_t read_value) {
+        get_latch();
+        read_set_hash ^= read_value ^ timestamp;
+        write_set_hash ^= read_value ^ timestamp;
+        release_latch();
+    }
+
+    void add_write(uint64_t write_value) {
+        get_latch();
+        read_set_hash ^= old_value_hash ^ timestamp;
+        timestamp ++;
+        write_set_hash ^= write_value ^ timestamp;
+        old_value_hash = write_value;
+        release_latch();
+    }
+};
+
+// memory_verifier a memory_verifier that control the memory verification of a sub-tree.
+// page level verification.
+struct memory_verifier {
+    bool latch;
+    BTNode* root;
+    verify_record** updates;
+    uint64_t _limit;
+    uint64_t last_verification;
+
+    void get_latch() {
+        while ( !ATOM_CAS(latch, false, true) ) {};
+    }
+
+    void release_latch() {
+        bool ok = ATOM_CAS(latch, true, false);
+        assert(ok);
+    }
+
+    bool verification();
+    void init(uint64_t _size, BTNode *root);
+    void add_read(uint64_t key, uint64_t read_value, bt_node* origin);
+    void add_write(uint64_t key, uint64_t write_value, bt_node* origin);
+};
+#endif
 
 
 #endif //DBX1000_INDEX_BTREE_ENC_H
