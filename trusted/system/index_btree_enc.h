@@ -78,6 +78,9 @@ public:
     RC release_up_cache(BTNode *c);
 
     RC index_insert(idx_key_t key, itemid_t *item, int part_id);
+    bool 		latch_node(BTNode * node, latch_t latch_type);
+    latch_t		release_latch(BTNode * node);
+    RC		 	upgrade_latch(BTNode * node);
 
 private:
     // index structures may have part_cnt = 1 or PART_CNT.
@@ -92,9 +95,6 @@ private:
 #endif
     BTNode *   find_root(uint64_t part_id);
 
-    bool 		latch_node(BTNode * node, latch_t latch_type);
-    latch_t		release_latch(BTNode * node);
-    RC		 	upgrade_latch(BTNode * node);
     // clean up all the LATCH_EX up tp last_ex
     RC 			cleanup(BTNode * node, BTNode * last_ex);
     uint64_t    _default_bt_veri_hash = 0;
@@ -124,6 +124,7 @@ struct verify_record {
     uint64_t timestamp;
     uint64_t old_value_hash;
     bt_node * origin_node;
+    IndexBTEnc* from;
     bool locked;
 
     void get_latch() {
@@ -135,24 +136,40 @@ struct verify_record {
         assert(ok);
     }
 
-    void init(uint64_t cur_value, bt_node *_origin_node) {
+    void init(uint64_t cur_value, bt_node *_origin_node, IndexBTEnc * _from) {
         assert(locked); // for concurrency, the record should be locked before calling init function.
         read_set_hash = 0;
         write_set_hash = cur_value;
         old_value_hash = cur_value;
         origin_node = _origin_node;
+        assert(origin_node->node_id > 0);
+        from = _from;
+        timestamp = 0;
         release_latch();
     }
 
     // needs latch before.
     bool verify () {
-        while (!origin_node->from->latch_node(origin_node, LATCH_EX)) {};
-        uint64_t cur_value = origin_node->get_hash();
-        assert(origin_node->from->release_latch(origin_node) == LATCH_EX);
-        old_value_hash = cur_value;
-        read_set_hash ^= (cur_value ^ timestamp);
-        bool ok = read_set_hash == write_set_hash;
-        return ok;
+        assert(PART_CNT == 1);
+        auto cur = (BTNode*)(from->_cache->try_load(0, origin_node->node_id));
+        uint64_t cur_value;
+        if (cur != nullptr) {
+            // if cached, no need to read and verify current data.
+            read_set_hash ^= (old_value_hash);
+            bool ok = read_set_hash == write_set_hash;
+            assert(ok);
+            return ok;
+        } else {
+            while (!origin_node->from->latch_node(origin_node, LATCH_EX)) {};
+            cur_value = origin_node->get_hash();
+            assert(origin_node->from->release_latch(origin_node) == LATCH_EX);
+            timestamp = 0;
+            old_value_hash = cur_value ^ timestamp;
+            read_set_hash ^= (cur_value ^ timestamp);
+            bool ok = read_set_hash == write_set_hash;
+            assert(ok);
+            return ok;
+        }
     };
 
     void add_read(uint64_t read_value) {
@@ -164,10 +181,10 @@ struct verify_record {
 
     void add_write(uint64_t write_value) {
         get_latch();
-        read_set_hash ^= old_value_hash ^ timestamp;
+        read_set_hash ^= old_value_hash;
         timestamp ++;
         write_set_hash ^= write_value ^ timestamp;
-        old_value_hash = write_value;
+        old_value_hash = write_value ^ timestamp;
         release_latch();
     }
 };
@@ -192,8 +209,8 @@ struct memory_verifier {
 
     bool verification();
     void init(uint64_t _size, BTNode *root);
-    void add_read(uint64_t key, uint64_t read_value, bt_node* origin);
-    void add_write(uint64_t key, uint64_t write_value, bt_node* origin);
+    void add_read(uint64_t key, uint64_t read_value, bt_node* origin, IndexBTEnc *from);
+    void add_write(uint64_t key, uint64_t write_value, bt_node* origin, IndexBTEnc *from);
 };
 #endif
 

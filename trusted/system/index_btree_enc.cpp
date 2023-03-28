@@ -152,7 +152,7 @@ void IndexBTEnc::flush_out(BTNode *c) {
 #elif VERI_TYPE == MERKLE_TREE
             c->origin->child_merkle_hash[i] = c->child_merkle_hash[i];
 #elif VERI_TYPE == DEFERRED_MEMORY
-            c->from->verifier[c->part]->add_write(c->node_id, c->get_hash(), c->origin);
+            c->from->verifier[c->part]->add_write(c->node_id, c->get_hash(), c->origin, c->from);
 #endif
         }
     }
@@ -244,7 +244,7 @@ BTNode* IndexBTEnc::load_next(BTNode *cur_node) {
     if (cur != new_node) delete new_node;
     else if (cur->is_leaf) {
         // only need to verify the leaf node.
-        verifier[cur->part]->add_read(cur->node_id, cur->get_hash(), cur->origin);
+        verifier[cur->part]->add_read(cur->node_id, cur->get_hash(), cur->origin, cur->from);
         assert(verifier[cur->part]->verification());
     }
 #endif
@@ -378,7 +378,7 @@ BTNode* IndexBTEnc::load_child(BTNode *cur_node, int i) {
     if (cur != new_node) delete new_node;
     else if (cur->is_leaf) {
         // only need to verify the leaf node.
-        verifier[cur->part]->add_read(cur->node_id, cur->get_hash(), cur->origin);
+        verifier[cur->part]->add_read(cur->node_id, cur->get_hash(), cur->origin, cur->from);
         assert(verifier[cur->part]->verification());
     }
 #endif
@@ -1223,25 +1223,26 @@ void memory_verifier::init(uint64_t _size, BTNode* _root) {
     latch = false;
     last_verification = get_enc_time();
     updates = (verify_record**) malloc(sizeof(verify_record*) * _size);
+    _limit = _size;
 }
 
-void memory_verifier::add_read(uint64_t page_key, uint64_t read_value, bt_node* origin) {
+void memory_verifier::add_read(uint64_t page_key, uint64_t read_value, bt_node* origin, IndexBTEnc *from) {
     uint64_t i = page_key;
     if (updates[i] == nullptr) {
         auto new_record = new verify_record;
         new_record->locked = true;
-        new_record->init(read_value, origin);
+        new_record->init(read_value, origin, from);
         ATOM_CAS(updates[i], nullptr, new_record);
     }
     updates[i]->add_read(read_value);
 }
 
-void memory_verifier::add_write(uint64_t page_key, uint64_t write_value, bt_node* origin) {
+void memory_verifier::add_write(uint64_t page_key, uint64_t write_value, bt_node* origin, IndexBTEnc *from) {
     uint64_t i = page_key;
     if (updates[i] == nullptr) {
         auto new_record = new verify_record;
         new_record->locked = true;
-        new_record->init(default_veri_set_value, origin);
+        new_record->init(origin->get_hash(), origin, from);
         ATOM_CAS(updates[i], nullptr, new_record);
     }
     updates[i]->add_write(write_value);

@@ -132,13 +132,13 @@
 // max number of rows touched per transaction
 #define MAX_ROW_PER_TXN				128
 #define QUERY_INTVL 				1UL
-#define MAX_TXN_PER_PART 10000
+#define MAX_TXN_PER_PART 1000
 #define FIRST_PART_LOCAL 			true
 #define MAX_TUPLE_SIZE				1024 // in bytes
 // ==== [YCSB] ====
 #define INIT_PARALLELISM 8
-#define SYNTH_TABLE_SIZE 1024
-#define ZIPF_THETA 0.2
+#define SYNTH_TABLE_SIZE 1048576
+#define ZIPF_THETA 0.5
 #define READ_PERC 0.5
 #define WRITE_PERC 0.5
 #define SCAN_PERC 					0
@@ -241,31 +241,29 @@ extern enum TestCases					g_test_case;
 // Verification type
 #define PAGE_VERI                   1
 #define MERKLE_TREE                 2
-#define MERKLE_TREE_LAZY            3
+#define DEFERRED_MEMORY             3
 
 #define MSG_SIZE_MAX 4096
 #define MSG_TIME_LIMIT 0
 #define TPORT_PORT 6000
 #define MAX_TPORT_NAME				128
 // turn on SGX
-#define USE_SGX 0
+#define USE_SGX 1
 #define TPORT_TYPE tcp
 #define USE_NANOMSG                 1
 #define USE_ASYNC_HASH              1
-#define USE_LOG 1
+#define USE_LOG 0
 #define RPC_SERVER                  "127.0.0.1"
 #define LOG_BATCH_SIZE              10
 
 // cache parameters
-#define VERIFIED_CACHE_SIZ 536870912
-#define ENABLE_DATA_CACHE false
+#define VERIFIED_CACHE_SIZ (1 * 1024 * 1024)
+#define ENABLE_DATA_CACHE true
 #define LAZY_OFFLOADING 1
 #define BASE_LEASE      100
-#define VERI_TYPE PAGE_VERI
-#if VERI_TYPE == MERKLE_TREE
+#define VERI_TYPE DEFERRED_MEMORY
+#define VERI_BATCH (1000000UL * 1000 * 1) // 1 second batch verification.
 #define BATCH_MERKLE 1 // calculate the merkle hash in batch to avoid too costly init.
-// #define SEPARATE_MERKLE // calculate the merkle hash online.
-#endif
 #define BUCKET_FACTOR 1
 
 #if INDEX_STRUCT == IDX_HASH

@@ -60,7 +60,7 @@
 #define ENABLE_LATCH				true
 #define CENTRAL_INDEX				false
 #define CENTRAL_MANAGER 			false
-#define INDEX_STRUCT IDX_HASH
+#define INDEX_STRUCT IDX_BTREE
 #define BTREE_ORDER 				16
 #define INDEX_NAME_LENGTH       	16
 
@@ -137,7 +137,7 @@
 #define MAX_TUPLE_SIZE				1024 // in bytes
 // ==== [YCSB] ====
 #define INIT_PARALLELISM 8
-#define SYNTH_TABLE_SIZE 1048576
+#define SYNTH_TABLE_SIZE 524288
 #define ZIPF_THETA 0.5
 #define READ_PERC 0.5
 #define WRITE_PERC 0.5
@@ -248,7 +248,7 @@ extern enum TestCases					g_test_case;
 #define TPORT_PORT 6000
 #define MAX_TPORT_NAME				128
 // turn on SGX
-#define USE_SGX 1
+#define USE_SGX 0
 #define TPORT_TYPE tcp
 #define USE_NANOMSG                 1
 #define USE_ASYNC_HASH              1
@@ -257,12 +257,12 @@ extern enum TestCases					g_test_case;
 #define LOG_BATCH_SIZE              10
 
 // cache parameters
-#define VERIFIED_CACHE_SIZ (1 * 1024 * 1024)
+#define VERIFIED_CACHE_SIZ 17179869184
 #define ENABLE_DATA_CACHE true
 #define LAZY_OFFLOADING 1
 #define BASE_LEASE      100
-#define VERI_TYPE PAGE_VERI
-#define VERI_BATCH (1000000UL * 1000 * 1) // 1 second batch verification.
+#define VERI_TYPE DEFERRED_MEMORY
+#define VERI_BATCH 1000000000
 #define BATCH_MERKLE 1 // calculate the merkle hash in batch to avoid too costly init.
 #define BUCKET_FACTOR 1
 
@@ -272,14 +272,14 @@ extern enum TestCases					g_test_case;
 #define PAGE bt_node
 #endif
 
-#define PRE_LOAD 1
-#define PROFILING true
+#define PRE_LOAD 0
+#define PROFILING false
 #define TEST_FRESHNESS 0
 #define REAL_TIME 0
 #define FAST_VERI_CHAIN_ACCESS 1
 #define FRESHNESS_STATS_CNT 20000
-#define SYNC_VERSION_BATCH 4
-#define VACCUM_TRIGGER 16
+#define SYNC_VERSION_BATCH 16
+#define VACCUM_TRIGGER 128
 
 // Log queue type
 #define LOG_CIRCUL_BUFF 1

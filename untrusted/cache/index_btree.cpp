@@ -84,7 +84,7 @@ RC index_btree::init(uint64_t part_cnt) {
     return RCOK;
 }
 
-#elif VERI_TYPE == PAGE_VERI
+#elif VERI_TYPE == PAGE_VERI or VERI_TYPE == DEFERRED_MEMORY
 
 RC index_btree::init(uint64_t part_cnt) {
 	this->part_cnt = part_cnt;

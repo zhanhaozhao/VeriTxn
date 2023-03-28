@@ -31,7 +31,7 @@ def insert_job(alg="OCC", workload="YCSB", thread_num=4, theta=0.5, bkt_fac=1, r
                cs=GB * 32, veri="PAGE_VERI", index="IDX_HASH", pre_load=1, use_log=0, txn_per_thd=10000,
                database_size=GB * 100, txn_length=64, enable_data_cache=True, pt=1, prof="false", wh=16,
                full_tpcc="false", nodes=1, test_freshness=0, veri_hash_buf_siz=KB * 4, real_time=0, sync_batch=16,
-               vaccum=128, lazy_offloading=1, fast_chain=1, small_cs=False):
+               vaccum=128, lazy_offloading=1, fast_chain=1, small_cs=False, veri_batch_sec = 1):
     global count_job
     count_job = count_job + 1
     jobs[count_job] = {
@@ -66,7 +66,8 @@ def insert_job(alg="OCC", workload="YCSB", thread_num=4, theta=0.5, bkt_fac=1, r
         "VACCUM_TRIGGER"        : vaccum,
         "LAZY_OFFLOADING"       : lazy_offloading,
         "FAST_VERI_CHAIN_ACCESS" : fast_chain,
-        "SMALL_CACHE_SIZE"      : small_cs
+        "SMALL_CACHE_SIZE"      : small_cs,
+        "VERI_BATCH": veri_batch_sec * 1000000000,
     }
 
 
@@ -309,12 +310,15 @@ def run_database_size_test():
     global jobs
     jobs = OrderedDict()
     if BigTest:
-        x_con = [1 * GB, 8 * GB, 32 * GB, 64 * GB, 100 * GB] #, 64 * GB, 100 * GB
+        # x_con = [1 * GB, 8 * GB, 16 * GB, 32 * GB, 64 * GB]
+        x_con = [1 * GB]
         for cs in x_con:
-            insert_job('NO_WAIT', 'YCSB', use_sgx=True, database_size=cs, txn_per_thd=1000)
-            insert_job('NO_WAIT', 'YCSB', use_sgx=True, index="IDX_BTREE", database_size=cs, pre_load=0, txn_per_thd=1000)
-            insert_job('NO_WAIT', 'YCSB', use_sgx=True, index="IDX_BTREE", veri="MERKLE_TREE", database_size=cs, pre_load=0,
+            # insert_job('NO_WAIT', 'YCSB', use_sgx=True, database_size=cs, txn_per_thd=1000)
+            # insert_job('NO_WAIT', 'YCSB', use_sgx=True, index="IDX_BTREE", database_size=cs, pre_load=0, txn_per_thd=1000)
+            insert_job('NO_WAIT', 'YCSB', use_sgx=True, index="IDX_BTREE", veri="DEFERRED_MEMORY", database_size=cs, pre_load=0,
                        txn_per_thd=1000)
+            # insert_job('NO_WAIT', 'YCSB', use_sgx=True, index="IDX_BTREE", veri="MERKLE_TREE", database_size=cs, pre_load=0,
+            #            txn_per_thd=1000)
     else:
         x_con = [32 * GB] #, 64 * GB
         # for cs in x_con:
@@ -426,20 +430,20 @@ def run_lazy_offloading():
 
 
 # single node, small mem
-run_thread_exp()
-run_tpc_exp()
-run_theta_exp()
+# run_thread_exp()
+# run_tpc_exp()
+# run_theta_exp()
 # run_rw_exp()
-run_profiling()
+# run_profiling()
 # run_common_test()
-run_full_tpcc_test()
+# run_full_tpcc_test()
 
 # single node, large mem
 run_database_size_test()
-run_cache_size_impact_for_different_methods_test()
-run_database_skew_test()
-run_database_varying_txn_length()
-run_single_layer_cache_exp()
+# run_cache_size_impact_for_different_methods_test()
+# run_database_skew_test()
+# run_database_varying_txn_length()
+# run_single_layer_cache_exp()
 
 # RO and RW
 # run_freshness_test()
