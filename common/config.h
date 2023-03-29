@@ -261,7 +261,7 @@ extern enum TestCases					g_test_case;
 #define ENABLE_DATA_CACHE true
 #define LAZY_OFFLOADING 1
 #define BASE_LEASE      100
-#define VERI_TYPE DEFERRED_MEMORY
+#define VERI_TYPE MERKLE_TREE
 #define VERI_BATCH 1000000000
 #define BATCH_MERKLE 1 // calculate the merkle hash in batch to avoid too costly init.
 #define BUCKET_FACTOR 1

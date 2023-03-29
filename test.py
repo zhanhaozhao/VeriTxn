@@ -80,9 +80,9 @@ def test_compile(job):
         else:
             os.system("make sgx-release 2>&1")
         pattern = r"<HeapMaxSize>.*</HeapMaxSize>"
-        tp = max(min(job["SYNTH_TABLE_SIZE"]*2, job["VERIFIED_CACHE_SIZ"] *2*KB) * 4, 256* MB*4)
+        tp = max(min(job["SYNTH_TABLE_SIZE"]*2, job["VERIFIED_CACHE_SIZ"] *2*KB) * 4, 1*GB*4)
         # if job["SMALL_CACHE_SIZE"]:
-        siz = hex(min(tp, 16* GB))
+        siz = hex(min(tp, 32* GB))
         # else:
         # siz = hex(tp)
         print(siz)
@@ -310,13 +310,13 @@ def run_database_size_test():
     global jobs
     jobs = OrderedDict()
     if BigTest:
-        # x_con = [1 * GB, 8 * GB, 16 * GB, 32 * GB, 64 * GB]
-        x_con = [1 * GB]
+        x_con = [1 * GB, 8 * GB, 16 * GB, 32 * GB, 64 * GB]
+        # x_con = [1 * GB]
         for cs in x_con:
-            # insert_job('NO_WAIT', 'YCSB', use_sgx=True, database_size=cs, txn_per_thd=1000)
-            # insert_job('NO_WAIT', 'YCSB', use_sgx=True, index="IDX_BTREE", database_size=cs, pre_load=0, txn_per_thd=1000)
-            insert_job('NO_WAIT', 'YCSB', use_sgx=True, index="IDX_BTREE", veri="DEFERRED_MEMORY", database_size=cs, pre_load=0,
-                       txn_per_thd=1000)
+            insert_job('NO_WAIT', 'YCSB', use_sgx=True, database_size=cs, txn_per_thd=1000)
+            insert_job('NO_WAIT', 'YCSB', use_sgx=True, index="IDX_BTREE", database_size=cs, pre_load=0, txn_per_thd=1000)
+            # insert_job('NO_WAIT', 'YCSB', use_sgx=True, index="IDX_BTREE", veri="DEFERRED_MEMORY", database_size=cs, pre_load=0,
+            #            txn_per_thd=1000)
             # insert_job('NO_WAIT', 'YCSB', use_sgx=True, index="IDX_BTREE", veri="MERKLE_TREE", database_size=cs, pre_load=0,
             #            txn_per_thd=1000)
     else:

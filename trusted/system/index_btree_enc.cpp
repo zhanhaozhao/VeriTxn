@@ -1193,7 +1193,7 @@ RC IndexBTEnc::make_node(uint64_t part_id, BTNode *& node, bool is_leaf) {
     return RCOK;
 }
 
-#ifdef VERI_TYPE == DEFERRED_MEMORY
+#if VERI_TYPE == DEFERRED_MEMORY
 const uint64_t default_veri_set_value = 0;
 
 bool memory_verifier::verification() {

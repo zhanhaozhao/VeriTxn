@@ -15,7 +15,7 @@
 
 class IndexBTEnc;
 
-#ifdef VERI_TYPE == DEFERRED_MEMORY
+#if VERI_TYPE == DEFERRED_MEMORY
 struct verify_record;
 struct memory_verifier;
 #endif
@@ -115,7 +115,7 @@ private:
     RC add_to_cache(BTNode *old);
 };
 
-#ifdef VERI_TYPE == DEFERRED_MEMORY
+#if VERI_TYPE == DEFERRED_MEMORY
 // the record used when performing batch verification,
 // we defer the generation of timestamp to avoid extra memory cost from ts generator.
 struct verify_record {
