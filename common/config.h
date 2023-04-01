@@ -263,6 +263,8 @@ extern enum TestCases					g_test_case;
 #define BASE_LEASE      100
 #define VERI_TYPE DEFERRED_MEMORY
 #define VERI_BATCH 1000000000
+#define HOT_RECORD_NUM (SYNTH_TABLE_SIZE / 10 / BTREE_ORDER)  // we let 128K records to be hot ones,
+// too large results in too long verification.
 #define BATCH_MERKLE 1 // calculate the merkle hash in batch to avoid too costly init.
 #define BUCKET_FACTOR 1
 

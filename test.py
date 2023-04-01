@@ -313,16 +313,16 @@ def run_database_size_test():
     if BigTest:
         # x_con = [1 * GB, 8 * GB, 16 * GB, 32 * GB, 64 * GB] # all the data size.
         # x_con = [64 * KB, 1 * MB, 2 * MB, 4 * MB, 8 * MB]
-        # x_con = [64 * KB, 1 * MB, 2 * MB, 4 * MB, 8 * MB, 16 * MB]
-        x_con = [16 * MB]
+        x_con = [64 * KB, 1 * MB, 2 * MB, 4 * MB, 8 * MB, 16 * MB]
+        # x_con = [64 * KB]
         for cs in x_con:
             # insert_job('NO_WAIT', 'YCSB', use_sgx=True, table_size=cs, txn_per_thd=1000)
             # insert_job('NO_WAIT', 'YCSB', use_sgx=True, index="IDX_BTREE", table_size=cs, pre_load=1, txn_per_thd=1000)
             # insert_job('NO_WAIT', 'YCSB', use_sgx=True, index="IDX_BTREE", table_size=cs, pre_load=0, txn_per_thd=1000)
-            insert_job('NO_WAIT', 'YCSB', use_sgx=True, index="IDX_BTREE", veri="MERKLE_TREE", table_size=cs, pre_load=0,
-                       txn_per_thd=1000)
-            # insert_job('NO_WAIT', 'YCSB', use_sgx=True, index="IDX_BTREE", veri="DEFERRED_MEMORY", table_size=cs, pre_load=0,
+            # insert_job('NO_WAIT', 'YCSB', use_sgx=True, index="IDX_BTREE", veri="MERKLE_TREE", table_size=cs, pre_load=0,
             #            txn_per_thd=1000)
+            insert_job('NO_WAIT', 'YCSB', use_sgx=True, index="IDX_BTREE", veri="DEFERRED_MEMORY", table_size=cs, pre_load=0,
+                       txn_per_thd=1000)
     else:
         x_con = [32 * GB] #, 64 * GB
         # for cs in x_con:

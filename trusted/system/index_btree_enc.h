@@ -91,8 +91,6 @@ private:
     RC 			find_leaf(glob_param params, idx_key_t key, idx_acc_t access_type, BTNode *& leaf);
     UInt32	 	order; // # of keys in a node(for both leaf and non-leaf)
     BTNode** 	roots; // each partition has a different root
-#if VERI_TYPE == PAGE_VERI
-#endif
     BTNode *   find_root(uint64_t part_id);
 
     // clean up all the LATCH_EX up tp last_ex
@@ -150,6 +148,7 @@ struct verify_record {
 
     // needs latch before.
     bool verify () {
+//        return true;
         assert(PART_CNT == 1);
         auto cur = (BTNode*)(from->_cache->try_load(0, origin_node->node_id));
         uint64_t cur_value;
@@ -174,19 +173,19 @@ struct verify_record {
 
     // the latch has already been got in the page level, thus no need for further latch.
     void add_read(uint64_t read_value) {
-//        get_latch();
+        get_latch();
         read_set_hash ^= read_value ^ timestamp;
         write_set_hash ^= read_value ^ timestamp;
-//        release_latch();
+        release_latch();
     }
 
     void add_write(uint64_t write_value) {
-//        get_latch();
+        get_latch();
         read_set_hash ^= old_value_hash;
         timestamp ++;
         write_set_hash ^= write_value ^ timestamp;
         old_value_hash = write_value ^ timestamp;
-//        release_latch();
+        release_latch();
     }
 };
 

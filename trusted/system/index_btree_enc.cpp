@@ -225,7 +225,9 @@ BTNode* IndexBTEnc::load_next(BTNode *cur_node) {
         // because we use lock-free cache load, the flushed_node could be used by another thread concurrently.
 #elif VERI_TYPE == DEFERRED_MEMORY
         while (!latch_node(flushed_node, LATCH_EX)) {}
-        flush_out(flushed_node);
+        if (flushed_node->is_leaf) {
+            flush_out(flushed_node);
+        }
         delete flushed_node;
 #endif
     }
@@ -405,6 +407,7 @@ RC IndexBTEnc::load_all(std::string iname) {
         roots[part_id] = make_node(((index_btree *) inner_index_map->_indexes[iname])->roots[part_id], part_id);
 #if VERI_TYPE == DEFERRED_MEMORY
         // todo: support multiple parts.
+//        verifier[part_id]->init(std::min(BTREE_NODE_NUM, HOT_RECORD_NUM), roots[part_id]);
         verifier[part_id]->init(BTREE_NODE_NUM, roots[part_id]);
 #endif
     }
@@ -1197,19 +1200,19 @@ RC IndexBTEnc::make_node(uint64_t part_id, BTNode *& node, bool is_leaf) {
 const uint64_t default_veri_set_value = 0;
 
 bool memory_verifier::verification() {
-//    if (get_enc_time() - last_verification < VERI_BATCH) {
-//        return true;
-//    }
-//    last_verification = get_enc_time();
-//    // 1. verify the read/write set.
-//    for (int i = 0;i < _limit; i++) {
-//        if (updates[i] != nullptr) {
-//            assert(updates[i]->verify()); // verify the data record.
-//            updates[i]->get_latch(); // before free the record, get the lock.
-//            delete updates[i];
-//            updates[i] = nullptr;
-//        }
-//    }
+    if (get_enc_time() - last_verification < VERI_BATCH) {
+        return true;
+    }
+    last_verification = get_enc_time();
+    // 1. verify the read/write set.
+    for (int i = 0;i < _limit; i++) {
+        if (updates[i] != nullptr) {
+            assert(updates[i]->verify()); // verify the data record.
+            updates[i]->get_latch(); // before free the record, get the lock.
+            delete updates[i];
+            updates[i] = nullptr;
+        }
+    }
     return true;
     // 2. update the merkle hash at the root.
     // update the root merkle hash.
@@ -1223,11 +1226,15 @@ void memory_verifier::init(uint64_t _size, BTNode* _root) {
     latch = false;
     last_verification = get_enc_time();
     updates = (verify_record**) malloc(sizeof(verify_record*) * _size);
+    for (int i = 0;i < _size; i++) {
+        updates[i] = nullptr;
+    }
     _limit = _size;
 }
 
 void memory_verifier::add_read(uint64_t page_key, uint64_t read_value, bt_node* origin, IndexBTEnc *from) {
     uint64_t i = page_key;
+//    if (i >= _limit) return;
     if (updates[i] == nullptr) {
         auto new_record = new verify_record;
         new_record->locked = true;
@@ -1236,12 +1243,14 @@ void memory_verifier::add_read(uint64_t page_key, uint64_t read_value, bt_node* 
             delete new_record;
         }
     }
-    assert(updates[i] && i < BTREE_NODE_NUM);
+    assert(updates[i] && i < _limit);
+    assert(updates[i]->from == from);
     updates[i]->add_read(read_value);
 }
 
 void memory_verifier::add_write(uint64_t page_key, uint64_t write_value, bt_node* origin, IndexBTEnc *from) {
     uint64_t i = page_key;
+//    if (i >= _limit) return;
     if (updates[i] == nullptr) {
         auto new_record = new verify_record;
         new_record->locked = true;
@@ -1250,7 +1259,8 @@ void memory_verifier::add_write(uint64_t page_key, uint64_t write_value, bt_node
             delete new_record;
         }
     }
-    assert(updates[i] && i < BTREE_NODE_NUM);
+    assert(updates[i] && i < _limit);
+    assert(updates[i]->from == from);
     updates[i]->add_write(write_value);
 }
 #endif
