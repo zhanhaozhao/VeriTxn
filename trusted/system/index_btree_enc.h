@@ -172,20 +172,21 @@ struct verify_record {
         }
     };
 
+    // the latch has already been got in the page level, thus no need for further latch.
     void add_read(uint64_t read_value) {
-        get_latch();
+//        get_latch();
         read_set_hash ^= read_value ^ timestamp;
         write_set_hash ^= read_value ^ timestamp;
-        release_latch();
+//        release_latch();
     }
 
     void add_write(uint64_t write_value) {
-        get_latch();
+//        get_latch();
         read_set_hash ^= old_value_hash;
         timestamp ++;
         write_set_hash ^= write_value ^ timestamp;
         old_value_hash = write_value ^ timestamp;
-        release_latch();
+//        release_latch();
     }
 };
 

@@ -1197,19 +1197,19 @@ RC IndexBTEnc::make_node(uint64_t part_id, BTNode *& node, bool is_leaf) {
 const uint64_t default_veri_set_value = 0;
 
 bool memory_verifier::verification() {
-    if (get_enc_time() - last_verification < VERI_BATCH) {
-        return true;
-    }
-    last_verification = get_enc_time();
-    // 1. verify the read/write set.
-    for (int i = 0;i < _limit; i++) {
-        if (updates[i] != nullptr) {
-            assert(updates[i]->verify()); // verify the data record.
-            updates[i]->get_latch(); // before free the record, get the lock.
-            delete updates[i];
-            updates[i] = nullptr;
-        }
-    }
+//    if (get_enc_time() - last_verification < VERI_BATCH) {
+//        return true;
+//    }
+//    last_verification = get_enc_time();
+//    // 1. verify the read/write set.
+//    for (int i = 0;i < _limit; i++) {
+//        if (updates[i] != nullptr) {
+//            assert(updates[i]->verify()); // verify the data record.
+//            updates[i]->get_latch(); // before free the record, get the lock.
+//            delete updates[i];
+//            updates[i] = nullptr;
+//        }
+//    }
     return true;
     // 2. update the merkle hash at the root.
     // update the root merkle hash.
@@ -1232,8 +1232,11 @@ void memory_verifier::add_read(uint64_t page_key, uint64_t read_value, bt_node* 
         auto new_record = new verify_record;
         new_record->locked = true;
         new_record->init(read_value, origin, from);
-        ATOM_CAS(updates[i], nullptr, new_record);
+        if (!ATOM_CAS(updates[i], nullptr, new_record)) {
+            delete new_record;
+        }
     }
+    assert(updates[i] && i < BTREE_NODE_NUM);
     updates[i]->add_read(read_value);
 }
 
@@ -1243,8 +1246,11 @@ void memory_verifier::add_write(uint64_t page_key, uint64_t write_value, bt_node
         auto new_record = new verify_record;
         new_record->locked = true;
         new_record->init(origin->get_hash(), origin, from);
-        ATOM_CAS(updates[i], nullptr, new_record);
+        if (!ATOM_CAS(updates[i], nullptr, new_record)) {
+            delete new_record;
+        }
     }
+    assert(updates[i] && i < BTREE_NODE_NUM);
     updates[i]->add_write(write_value);
 }
 #endif

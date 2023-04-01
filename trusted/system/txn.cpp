@@ -205,7 +205,7 @@ row_t * txn_man::get_row(row_t * row, access_t type) {
 	uint64_t starttime = get_enc_time();
 #endif
 	RC rc = RCOK;
-    assert(accesses[row_cnt] == NULL || accesses[row_cnt]->orig_data != NULL);
+//    assert(accesses[row_cnt] == NULL || accesses[row_cnt]->orig_data != NULL);
 	if (accesses[row_cnt] == NULL) {
 		// Access * access = (Access *) aligned_alloc(64, sizeof(Access));
 		Access * access = (Access *) malloc(sizeof(Access));

@@ -1,45 +1,53 @@
-SGX_SDK ?= /opt/intel/sgxsdk
-SGX_MODE ?= HW
-SGX_ARCH ?= x64
-SGX_DEBUG ?= 0
+PROJECT_ROOT ?= $(shell readlink -f .)
 
-PROJECT_ROOT_DIR := $(shell readlink -f ..)
-# Enclave_Search_Dirs ?= $(shell \
-# 	find $(INFERENCE_RT_DIR)/include -maxdepth 1 -type d -not -path '*/.' -printf '--search-path %p '\
-# )
 
-INSTALL ?= install
-INSTALL_PREFIX ?= ./install
-INSTALL_LIB_DIR = $(INSTALL_PREFIX)/lib
-INSTALL_INCLUDE_DIR = $(INSTALL_PREFIX)/include
+CC=g++
+CFLAGS=-w -g -std=c++0x -no-pie
 
-.PHONY: all install clean mrproper
+.SUFFIXES: .o .cc .cpp .h
 
 SRC_DIRS = ./ ./common/ ./untrusted/system/ ./untrusted/benchmarks/ ./untrusted/cache/ ./trusted/system/ ./trusted/concurrency_control/
+INCLUDE = -I. -I./common/ -I./untrusted/system/ -I./untrusted/benchmarks/ -I./untrusted/cache/ -I./trusted/system/ -I./trusted/concurrency_control/
+
+# SRC_DIRS = ./ ./common ./untrusted/system/ ./untrusted/benchmarks/ ./untrusted/cache/
+# INCLUDE = -I. -I./common -I./untrusted/system -I./untrusted/benchmarks/ -I./untrusted/cache/
+
+# CFLAGS += $(INCLUDE) -D NOGRAPHITE=1 -no-pie -O0
+# LDFLAGS = -Wall -L. -L./libs -pthread -g -lrt -std=c++0x -O0 -ljemalloc
+
+# protoc --cpp_out=. --grpc_out=. --plugin=protoc-gen-grpc=`which grpc_cpp_plugin` storage.proto
+CFLAGS += $(INCLUDE) -D NOGRAPHITE=1 -Werror -Wno-comment -O0 `pkg-config --cflags protobuf grpc`
+LDFLAGS = -Wall -L.  -L./libs -pthread -g -lrt -std=c++0x -O0 -ljemalloc -lnanomsg  -lrocksdb `pkg-config --libs protobuf grpc++ grpc`
+# LDFLAGS = -Wall -L. -pthread -g -lrt -std=c++0x -O0 -ljemalloc -fsanitize=address -fno-omit-frame-pointer -static-libasan
+LDFLAGS += $(CFLAGS)
+
 CPPS = $(foreach dir, $(SRC_DIRS), $(wildcard $(dir)*.cpp))
+CCS = $(foreach dir, $(SRC_DIRS), $(wildcard $(dir)*.cc))
+CCOBJS = $(CCS:.cc=.o)
 OBJS = $(CPPS:.cpp=.o)
 DEPS = $(CPPS:.cpp=.d)
 
-all:
-	$(MAKE) -ef sgx_t.mk all SGX_MODE=$(SGX_MODE) SGX_DEBUG=$(SGX_DEBUG) Enclave_Search_Dirs="$(Enclave_Search_Dirs)"
-	$(MAKE) -ef sgx_u.mk all SGX_MODE=$(SGX_MODE) SGX_DEBUG=$(SGX_DEBUG) Enclave_Search_Dirs="$(Enclave_Search_Dirs)"
+all:App
 
-HEADERS := untrusted/worker.h
+App : $(CCOBJS) $(OBJS)
+	$(CC) -o $@ $^ $(LDFLAGS)
 
-install:
-	$(INSTALL) -d $(INSTALL_INCLUDE_DIR)
-	$(INSTALL) -d $(INSTALL_LIB_DIR)
-	# $(INSTALL) -C -m 644 ${HEADERS} $(INSTALL_INCLUDE_DIR)
-	# $(INSTALL) -C -m 664 *.signed.so $(INSTALL_LIB_DIR)
-	# $(INSTALL) -C -m 644 *.a $(INSTALL_LIB_DIR)
+-include $(CCOBJS:%.o=%.d) $(OBJS:%.o=%.d)
+
+%.d: %.cc
+	$(CC) -MM -MT $*.o -MF $@ $(CFLAGS) $<
+
+%.d: %.cpp
+	$(CC) -MM -MT $*.o -MF $@ $(CFLAGS) $<
+
+%.o: %.cc
+	$(CC) -c $(CFLAGS) -o $@ $<
+
+%.o: %.cpp
+	$(CC) -c $(CFLAGS) -o $@ $<
 
 clean:
-	$(MAKE) -ef sgx_t.mk clean
-	$(MAKE) -ef sgx_u.mk clean
-	rm -f rundb ./trusted/*.o ./trusted/*.d ./untrusted/*.o ./untrusted/*.d ./common/*.o ./common/*.d $(OBJS) $(DEPS)
-
-mrproper: clean
-	rm -rf ./install
+	rm -f App ./trusted/*.o ./trusted/*.d ./trusted/system/*.o ./trusted/system/*.d ./trusted/concurrency_control/*.o trusted/concurrency_control/*.d ./untrusted/*.o ./untrusted/*.d ./untrusted/system/*.o ./untrusted/system/*.d ./untrusted/benchmarks/*.o ./untrusted/benchmarks/*.d ./untrusted/cache/*.o ./untrusted/cache/*.d ./common/*.o ./common/*.d $(OBJS) $(DEPS)
 
 no-sgx:
 	cp ./sgx_files/Makefile.no-sgx Makefile
@@ -59,3 +67,7 @@ sgx-debug:
 	cp ./sgx_files/debug/sgx_u.mk ./sgx_u.mk
 	cp ./sgx_files/debug/Enclave.config.xml ./trusted/Enclave.config.xml
 	cp ./sgx_files/Makefile.sgx Makefile
+
+exp:
+	cd ./untrusted/system && protoc --cpp_out=. --grpc_out=. --plugin=protoc-gen-grpc=`which grpc_cpp_plugin` storage.proto
+	cd ./script/ && pwd && python ./run_experiments.py -e -r -ns -c vcloud ycsb_debug

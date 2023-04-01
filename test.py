@@ -28,8 +28,8 @@ count_job = 0
 
 
 def insert_job(alg="OCC", workload="YCSB", thread_num=4, theta=0.5, bkt_fac=1, read_perc=0.5, use_sgx=True,
-               cs=GB * 32, veri="PAGE_VERI", index="IDX_HASH", pre_load=1, use_log=0, txn_per_thd=10000,
-               database_size=GB * 100, txn_length=64, enable_data_cache=True, pt=1, prof="false", wh=16,
+               cs=GB * 16, veri="PAGE_VERI", index="IDX_HASH", pre_load=1, use_log=0, txn_per_thd=10000,
+               table_size=16 * MB, txn_length=64, enable_data_cache=True, pt=1, prof="false", wh=16,
                full_tpcc="false", nodes=1, test_freshness=0, veri_hash_buf_siz=KB * 4, real_time=0, sync_batch=16,
                vaccum=128, lazy_offloading=1, fast_chain=1, small_cs=False, veri_batch_sec = 1):
     global count_job
@@ -44,14 +44,14 @@ def insert_job(alg="OCC", workload="YCSB", thread_num=4, theta=0.5, bkt_fac=1, r
         "READ_PERC"			: read_perc,
         "WRITE_PERC"		: 1-read_perc,
         "USE_SGX"			: 1 if use_sgx else 0,
-        "VERIFIED_CACHE_SIZ": int(cs / 2),
+        "VERIFIED_CACHE_SIZ": cs,
         "ENABLE_DATA_CACHE" : "true" if enable_data_cache else "false",
         "VERI_TYPE"			: veri,
         "INDEX_STRUCT"		: index,
         "PRE_LOAD"			: pre_load,
         "USE_LOG"			: use_log,
         "MAX_TXN_PER_PART"	: txn_per_thd,
-        "SYNTH_TABLE_SIZE"	: int(database_size / 2 / KB), # 2kb per record
+        "SYNTH_TABLE_SIZE"	: table_size, # 2kb per record
         "REQ_PER_QUERY"		: txn_length,
         "PART_CNT"          : pt,
         "PROFILING"         : prof,
@@ -80,9 +80,10 @@ def test_compile(job):
         else:
             os.system("make sgx-release 2>&1")
         pattern = r"<HeapMaxSize>.*</HeapMaxSize>"
-        tp = max(min(job["SYNTH_TABLE_SIZE"]*2, job["VERIFIED_CACHE_SIZ"] *2*KB) * 4, 1*GB*4)
+        max_siz_per_record = 4 * KB
+        tp = max(min(job["SYNTH_TABLE_SIZE"] * max_siz_per_record, job["VERIFIED_CACHE_SIZ"] *2) * 4, 1*GB)
         # if job["SMALL_CACHE_SIZE"]:
-        siz = hex(min(tp, 32* GB))
+        siz = hex(min(tp, 28 * GB * 4))
         # else:
         # siz = hex(tp)
         print(siz)
@@ -100,7 +101,6 @@ def test_compile(job):
         replacement = "#define " + param + ' ' + str(value)
         replace(dbms_cfg[1], pattern, replacement)
 
-    # print("clean finished!!!!")
     os.system("rm -f storage/rocksdb/* 2>&1")
     time.sleep(0.5)
     os.system("make clean> temp.out 2>&1")
@@ -163,6 +163,7 @@ def test_run(job, f, test=''):
 
     if job["USE_LOG"] == 1:
         process_store.kill()
+    # exit(0)
 
 
 testRound = 1
@@ -310,14 +311,17 @@ def run_database_size_test():
     global jobs
     jobs = OrderedDict()
     if BigTest:
-        x_con = [1 * GB, 8 * GB, 16 * GB, 32 * GB, 64 * GB]
-        # x_con = [1 * GB]
+        # x_con = [1 * GB, 8 * GB, 16 * GB, 32 * GB, 64 * GB] # all the data size.
+        # x_con = [64 * KB, 1 * MB, 2 * MB, 4 * MB, 8 * MB]
+        # x_con = [64 * KB, 1 * MB, 2 * MB, 4 * MB, 8 * MB, 16 * MB]
+        x_con = [16 * MB]
         for cs in x_con:
-            insert_job('NO_WAIT', 'YCSB', use_sgx=True, database_size=cs, txn_per_thd=1000)
-            insert_job('NO_WAIT', 'YCSB', use_sgx=True, index="IDX_BTREE", database_size=cs, pre_load=0, txn_per_thd=1000)
-            # insert_job('NO_WAIT', 'YCSB', use_sgx=True, index="IDX_BTREE", veri="DEFERRED_MEMORY", database_size=cs, pre_load=0,
-            #            txn_per_thd=1000)
-            # insert_job('NO_WAIT', 'YCSB', use_sgx=True, index="IDX_BTREE", veri="MERKLE_TREE", database_size=cs, pre_load=0,
+            # insert_job('NO_WAIT', 'YCSB', use_sgx=True, table_size=cs, txn_per_thd=1000)
+            # insert_job('NO_WAIT', 'YCSB', use_sgx=True, index="IDX_BTREE", table_size=cs, pre_load=1, txn_per_thd=1000)
+            # insert_job('NO_WAIT', 'YCSB', use_sgx=True, index="IDX_BTREE", table_size=cs, pre_load=0, txn_per_thd=1000)
+            insert_job('NO_WAIT', 'YCSB', use_sgx=True, index="IDX_BTREE", veri="MERKLE_TREE", table_size=cs, pre_load=0,
+                       txn_per_thd=1000)
+            # insert_job('NO_WAIT', 'YCSB', use_sgx=True, index="IDX_BTREE", veri="DEFERRED_MEMORY", table_size=cs, pre_load=0,
             #            txn_per_thd=1000)
     else:
         x_con = [32 * GB] #, 64 * GB
