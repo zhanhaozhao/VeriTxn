@@ -1,4 +1,5 @@
 #include "disk.h"
+#include "../../common/config.h"
 
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -69,6 +70,11 @@ RemoteStorage::RemoteStorage() {
 }
 
 void RemoteStorage::load_page_disk(std::string iname, int part_id, uint64_t pg_id) {
+#if INDEX_STRUCT != IDX_HASH
+    // currently, we only support to load log from disk for hash index.
+    usleep(MISS_PENALTY/ 1000);
+        // For index btree, we only care about cache + single node. Thus replace the remote call with timeout.
+#endif
 
     pthread_mutex_lock(&mtx);
     // Instantiate the client. It requires a channel, out of which the actual RPCs
@@ -90,9 +96,6 @@ void RemoteStorage::load_page_disk(std::string iname, int part_id, uint64_t pg_i
 		perror("server terminated prematurely");
 		exit(1);
 	}
-#if INDEX_STRUCT != IDX_HASH
-	assert(false);  // currently, we only support to load log from disk for hash index.
-#endif
 //    std::cout<< "received from client:" << atol(recvline) << std::endl;
     pthread_mutex_unlock(&mtx);
 }

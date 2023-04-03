@@ -29,7 +29,7 @@ algs = ['NO_WAIT']
 count_job = 0
 
 
-def insert_job(alg="OCC", workload="YCSB", thread_num=4, theta=0.5, bkt_fac=1, read_perc=0.5, use_sgx=UseSGX,
+def insert_job(alg="OCC", workload="YCSB", thread_num=4, theta=0.5, bkt_fac=1, read_perc=0.5, use_sgx=False,
                cs=GB * 16, veri="PAGE_VERI", index="IDX_HASH", pre_load=1, use_log=0, txn_per_thd=10000,
                table_size=32 * MB, txn_length=64, enable_data_cache=True, pt=1, prof="false", wh=16,
                full_tpcc="false", nodes=1, test_freshness=0, veri_hash_buf_siz=KB * 4, real_time=0, sync_batch=16,
@@ -292,14 +292,14 @@ def run_cache_size_impact_for_different_methods_test():
 def run_database_size_test():
     global jobs, UseSGX
     jobs = OrderedDict()
-    x_con = [1 * MB, 4 * MB]
+    x_con = [64 * MB]
     UseSGX = False
     # x_con = [128 * MB]
     # x_con = [32 * MB, 48 * MB, 64 * MB, 96 * MB, 128 * MB]
     for cs in x_con:
-        insert_job(index="IDX_BTREE", table_size=cs, cs=256 * MB)
-        insert_job(index="IDX_BTREE", veri="MERKLE_TREE", table_size=cs)
-        insert_job(index="IDX_BTREE", veri="DEFERRED_MEMORY", table_size=cs, cs=256 * MB, enable_data_cache=False)
+        insert_job(index="IDX_BTREE", table_size=cs, cs=8 * GB)
+        insert_job(index="IDX_BTREE", veri="MERKLE_TREE", table_size=cs, cs=8 * GB)
+        insert_job(index="IDX_BTREE", veri="DEFERRED_MEMORY", table_size=cs, cs=8 * GB)
     run_all_test(jobs, "ycsb.cache.db.result")
 
 def run_database_varying_txn_length():

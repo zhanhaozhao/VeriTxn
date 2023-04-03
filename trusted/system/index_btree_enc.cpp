@@ -4,6 +4,7 @@
 #include "atomic"
 #include "../../common/index_btree.h"
 #include "../../common/base_row.h"
+#include "../../common/api.h"
 
 RC IndexBTEnc::init(uint64_t part_cnt) {
     this->part_cnt = part_cnt;
@@ -302,6 +303,10 @@ BTNode* IndexBTEnc::load_child(BTNode *cur_node, int i) {
     if (cur != nullptr) {
         return cur;
     }
+#if !ENABLE_DATA_CACHE
+    sync_bucket_from_disk(index_name, index_name.size(), cur_node->part, inner_node_id);
+#endif
+
     // get latch
 #if VERI_TYPE == PAGE_VERI or VERI_TYPE == DEFERRED_MEMORY
     if (i == -1) return nullptr;

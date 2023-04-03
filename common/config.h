@@ -282,6 +282,8 @@ extern enum TestCases					g_test_case;
 #define FRESHNESS_STATS_CNT 20000
 #define SYNC_VERSION_BATCH 16
 #define VACCUM_TRIGGER 128
+#define MISS_PENALTY 1000000UL
+
 
 // Log queue type
 #define LOG_CIRCUL_BUFF 1

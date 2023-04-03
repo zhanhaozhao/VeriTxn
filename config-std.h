@@ -261,9 +261,9 @@ extern enum TestCases					g_test_case;
 #define ENABLE_DATA_CACHE true
 #define LAZY_OFFLOADING 1
 #define BASE_LEASE      100
-#define VERI_TYPE DEFERRED_MEMORY
+#define VERI_TYPE MERKLE_TREE
 #define VERI_BATCH 1000000000
-#define HOT_RECORD_NUM (16 / BTREE_ORDER)  // we let 128K records to be hot ones,
+#define HOT_RECORD_NUM (SYNTH_TABLE_SIZE / 10 / BTREE_ORDER)  // we let 128K records to be hot ones,
 // too large results in too long verification.
 #define BATCH_MERKLE 1 // calculate the merkle hash in batch to avoid too costly init.
 #define BUCKET_FACTOR 1
@@ -274,7 +274,7 @@ extern enum TestCases					g_test_case;
 #define PAGE bt_node
 #endif
 
-#define PRE_LOAD 0
+#define PRE_LOAD 1
 #define PROFILING false
 #define TEST_FRESHNESS 0
 #define REAL_TIME 0
@@ -282,6 +282,8 @@ extern enum TestCases					g_test_case;
 #define FRESHNESS_STATS_CNT 20000
 #define SYNC_VERSION_BATCH 16
 #define VACCUM_TRIGGER 128
+#define MISS_PENALTY 10 * 1000000UL
+
 
 // Log queue type
 #define LOG_CIRCUL_BUFF 1
