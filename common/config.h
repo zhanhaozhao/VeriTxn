@@ -274,7 +274,7 @@ extern enum TestCases					g_test_case;
 #define PAGE bt_node
 #endif
 
-#define PRE_LOAD 0
+#define PRE_LOAD 1
 #define PROFILING false
 #define TEST_FRESHNESS 0
 #define REAL_TIME 0
