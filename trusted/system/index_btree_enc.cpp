@@ -88,21 +88,23 @@ uint64_t flush_num = 0;
 // which increases cache miss rate and add-on Ecalls and Ocalls.
 void IndexBTEnc::flush_out(BTNode *c) {
     auto cur = ATOM_ADD_FETCH(flush_num, 1);
+//    printf("cur flushed out %d:%d:%d\n", cur, c->node_id, c->hash());
 #if VERI_TYPE == MERKLE_TREE
     // online updated hash.
     while (!c->origin->from->latch_node(c->origin->from->roots[c->part], LATCH_EX));
-    c->merkle_hash = c->hash();
-    c->origin->merkle_hash = c->merkle_hash;
     auto pa = load_child(c, -1);
-    if (pa) {
+    if (c->parent!=-1 && pa) {
         UInt32 i;
         for (i = 0; i < pa->num_keys; i++) {
             if (c->keys[0] < pa->keys[i])
                 break;
         }
         assert(pa->child[i] == c->node_id);
+        assert(pa->child_merkle_hash[i] == c->merkle_hash);
+        assert(c->origin->merkle_hash = c->merkle_hash);
+        c->merkle_hash = c->hash();
         pa->child_merkle_hash[i] = c->merkle_hash;
-        pa->merkle_hash = pa->hash();
+        _cache->release(pa->part, pa->node_id);
     }
 #elif VERI_TYPE == PAGE_VERI
     assert(c->is_leaf); // only need to keep leaf data on time, since no parent hash is maintained.
@@ -161,7 +163,8 @@ void IndexBTEnc::flush_out(BTNode *c) {
     assert(c->get_hash() == c->origin->get_hash());
     assert(c->origin->from->release_latch(c->origin) == LATCH_EX);
 #elif VERI_TYPE == MERKLE_TREE
-//    assert(c->hash() == c->origin->hash());
+    assert(c->hash() == c->origin->hash());
+    c->origin->merkle_hash = c->origin->hash();
     assert(c->origin->merkle_hash == c->hash());
     assert(c->origin->from->release_latch(c->origin->from->roots[c->part]) == LATCH_EX);
 #elif VERI_TYPE == DEFERRED_MEMORY
@@ -218,6 +221,7 @@ BTNode* IndexBTEnc::load_next(BTNode *cur_node) {
         }
         delete flushed_node;
 #elif VERI_TYPE == MERKLE_TREE
+        merkle_update(flushed_node);
         while (!latch_node(flushed_node, LATCH_EX)) {}
         flush_out(flushed_node);
         delete flushed_node;
@@ -311,6 +315,7 @@ BTNode* IndexBTEnc::load_child(BTNode *cur_node, int i) {
     int sw_part = 0;
     uint64_t sw_node_id = 0;
     void *cur_void = nullptr;
+    latch_node(new_node, LATCH_EX);
     RC rc = Abort;
     while (rc != RCOK) {
         rc = _cache->load_and_swap(cur_node->part, new_node->node_id, sizeof (*new_node), (void *) new_node, swapped, sw_part, sw_node_id, cur_void);
@@ -345,6 +350,7 @@ BTNode* IndexBTEnc::load_child(BTNode *cur_node, int i) {
         }
         delete flushed_node;
 #elif VERI_TYPE == MERKLE_TREE
+        merkle_update(flushed_node);
         while (!latch_node(flushed_node, LATCH_EX)) {}
         // because we use lock-free cache load, the flushed_node could be used by another thread concurrently.
         // delayed update in FastVer.
@@ -375,6 +381,7 @@ BTNode* IndexBTEnc::load_child(BTNode *cur_node, int i) {
             assert(cur->hash() == cur->merkle_hash);
             assert(cur_node->child_merkle_hash[i] == cur->merkle_hash);
         }
+        assert(release_latch(cur) == LATCH_EX);
     }
 #elif VERI_TYPE == DEFERRED_MEMORY
     if (cur != new_node) delete new_node;
@@ -783,7 +790,7 @@ void IndexBTEnc::update_hash(BTNode* c) {
             if (c->keys[0] < pa->keys[i])
                 break;
         }
-        assert(load_child(pa, i) == c);
+//        assert(load_child(pa, i) == c);
         pa -> child_merkle_hash[i] = c->merkle_hash;
         _cache->release(pa->part, pa->node_id);
     }

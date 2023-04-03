@@ -114,8 +114,8 @@ void txn_man::cleanup(RC rc) {
 #if VERI_TYPE == MERKLE_TREE
     for (int i = 0; i < row_cnt; i++) {
         Access *access = accesses[i];
-        if (access->type == WR)
-            pages[i]->from->merkle_update(pages[i]);
+//        if (access->type == WR)
+//            pages[i]->from->merkle_update(pages[i]);
         pages[i]->from->release_up_cache(pages[i]);
     }
 //    for (int i = 0; i < row_cnt; i ++) {
