@@ -12,6 +12,7 @@
 #include "../../common/base_row.h"
 #include "../../common/helper.h"
 #include "../../common/lru_cache.h"
+//#include "row_enc.h"
 
 class IndexBTEnc;
 
@@ -38,6 +39,19 @@ struct BTNode {
     bt_node *origin;
     uint64_t node_id;
     IndexBTEnc* from;
+
+    uint64_t get_size() {
+        if (is_leaf) return 1024 * num_keys;
+        uint64_t  res = (sizeof (*this));
+        // pointers and data
+        res += sizeof (idx_key_t) * (num_keys+1); // keys
+        if (child != nullptr) res += sizeof(uint64_t) * (num_keys+1);
+#if VERI_TYPE == MERKLE_TREE
+        res += sizeof(uint64_t) * (num_keys+1); // child hashmake
+#endif
+        // the size of pointed data.
+        return res;
+    }
 
 #if VERI_TYPE == MERKLE_TREE
     uint64_t merkle_hash;

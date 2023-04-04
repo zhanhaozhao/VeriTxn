@@ -197,7 +197,7 @@ BTNode* IndexBTEnc::load_next(BTNode *cur_node) {
     void *cur_void = nullptr;
     RC rc = Abort;
     while (rc != RCOK) {
-        rc = _cache->load_and_swap(cur_node->part, new_node->node_id, sizeof (*new_node), (void *) new_node, swapped, sw_part, sw_node_id, cur_void);
+        rc = _cache->load_and_swap(cur_node->part, new_node->node_id, new_node->get_size(), (void *) new_node, swapped, sw_part, sw_node_id, cur_void);
     }
     assert (origin_node->from->release_latch(origin_node) == LATCH_EX);
     cur = (BTNode*)cur_void;
@@ -326,10 +326,10 @@ BTNode* IndexBTEnc::load_child(BTNode *cur_node, int i) {
     int sw_part = 0;
     uint64_t sw_node_id = 0;
     void *cur_void = nullptr;
-    latch_node(new_node, LATCH_EX);
+//    latch_node(new_node, LATCH_EX);
     RC rc = Abort;
     while (rc != RCOK) {
-        rc = _cache->load_and_swap(cur_node->part, new_node->node_id, sizeof (*new_node), (void *) new_node, swapped, sw_part, sw_node_id, cur_void);
+        rc = _cache->load_and_swap(cur_node->part, new_node->node_id, new_node->get_size(), (void *) new_node, swapped, sw_part, sw_node_id, cur_void);
     }
 #if VERI_TYPE == PAGE_VERI or VERI_TYPE == DEFERRED_MEMORY
     assert (origin_node->from->release_latch(origin_node) == LATCH_EX);
@@ -361,8 +361,8 @@ BTNode* IndexBTEnc::load_child(BTNode *cur_node, int i) {
         }
         delete flushed_node;
 #elif VERI_TYPE == MERKLE_TREE
-        merkle_update(flushed_node);
         while (!latch_node(flushed_node, LATCH_EX)) {}
+        merkle_update(flushed_node);
         // because we use lock-free cache load, the flushed_node could be used by another thread concurrently.
         // delayed update in FastVer.
         flush_out(flushed_node);
@@ -389,10 +389,10 @@ BTNode* IndexBTEnc::load_child(BTNode *cur_node, int i) {
 //            assert(cur->hash() == cur->merkle_hash);
         } else {
             // need to verify all nodes.
-            assert(cur->hash() == cur->merkle_hash);
+//            assert(cur->hash() == cur->merkle_hash); could get concurrently changed.
             assert(cur_node->child_merkle_hash[i] == cur->merkle_hash);
         }
-        assert(release_latch(cur) == LATCH_EX);
+//        assert(release_latch(cur) == LATCH_EX);
     }
 #elif VERI_TYPE == DEFERRED_MEMORY
     if (cur != new_node) delete new_node;
@@ -1037,7 +1037,7 @@ RC IndexBTEnc::add_to_cache(BTNode* cur) {
     int sw_part = 0;
     uint64_t sw_node_id = 0;
     void *cur_void = nullptr;
-    RC rc = _cache->load_and_swap(cur->part, cur->node_id, sizeof (*cur), (void *) cur,
+    RC rc = _cache->load_and_swap(cur->part, cur->node_id, cur->get_size(), (void *) cur,
                                swapped, sw_part, sw_node_id, cur_void);
     assert(swapped == nullptr);
     return rc;

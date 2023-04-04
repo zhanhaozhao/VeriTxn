@@ -54,7 +54,7 @@ def insert_job(alg="OCC", workload="YCSB", thread_num=4, theta=0.5, bkt_fac=1, r
         "PRE_LOAD"			: pre_load,
         "USE_LOG"			: use_log,
         "MAX_TXN_PER_PART"	: txn_per_thd,
-        "SYNTH_TABLE_SIZE"	: table_size, # 2kb per record
+        "SYNTH_TABLE_SIZE"	: table_size,
         "REQ_PER_QUERY"		: txn_length,
         "PART_CNT"          : pt,
         "PROFILING"         : prof,
@@ -292,7 +292,7 @@ def run_cache_size_impact_for_different_methods_test():
 # Large memory, single node.
 def run_database_size_test():
     global jobs, CompileOnly, max_siz_per_record
-    CompileOnly = True
+    # CompileOnly = True
     max_siz_per_record = KB
     jobs = OrderedDict()
     x_con = [1 * MB,  2 * MB, 4 * MB, 8 * MB, 16 * MB]
@@ -302,6 +302,21 @@ def run_database_size_test():
         insert_job(index="IDX_BTREE", veri="MERKLE_TREE", table_size=cs)
     for cs in x_con:
         insert_job(index="IDX_BTREE", veri="DEFERRED_MEMORY", table_size=cs)
+    run_all_test(jobs, "ycsb.cache.db.result")
+
+def run_database_cache_size_test():
+    global jobs, CompileOnly, max_siz_per_record
+    CompileOnly = True
+    max_siz_per_record = KB
+    jobs = OrderedDict()
+    # 1 * MB,  2 * MB, 4 * MB, 8 * MB, 16 * MB]
+    x_con = [4 * MB]
+    # for cs in x_con:
+    #     insert_job(index="IDX_BTREE", veri="PAGE_VERI", table_size=cs, use_sgx=False)
+    # for cs in x_con:
+    #     insert_job(index="IDX_BTREE", veri="MERKLE_TREE", table_size=cs, use_sgx=False)
+    for cs in x_con:
+        insert_job(index="IDX_BTREE", veri="DEFERRED_MEMORY", table_size=cs, cs=1*GB, use_sgx=False)
     run_all_test(jobs, "ycsb.cache.db.result")
 
 def run_database_varying_txn_length():
@@ -396,7 +411,7 @@ def run_lazy_offloading():
 # run_full_tpcc_test()
 
 # single node, large mem
-run_database_size_test()
+run_database_cache_size_test()
 # run_cache_size_impact_for_different_methods_test()
 # # run_database_size_test()
 # run_database_varying_txn_length()
