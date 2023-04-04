@@ -84,6 +84,7 @@ public:
 
 private:
     // index structures may have part_cnt = 1 or PART_CNT.
+    bool   preloading = false;
     uint64_t part_cnt;
     BTNode*		make_node(bt_node* out, int64_t part);
 

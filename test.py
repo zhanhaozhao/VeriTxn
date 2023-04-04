@@ -5,13 +5,14 @@ import subprocess, datetime, time, signal
 
 from collections import defaultdict, OrderedDict
 
-UseSGX = True
+UseSGX = False
 BigTest = True
 CompileOnly = False
 KB = 1024
 MB = 1024 * KB
 GB = 1024 * MB
 ReadOnly = False
+max_siz_per_record = 4 * KB
 
 def replace(filename, pattern, replacement):
     f = open(filename)
@@ -30,8 +31,8 @@ count_job = 0
 
 
 def insert_job(alg="OCC", workload="YCSB", thread_num=4, theta=0.5, bkt_fac=1, read_perc=0.5, use_sgx=True,
-               cs=GB * 16, veri="PAGE_VERI", index="IDX_HASH", pre_load=1, use_log=0, txn_per_thd=10000,
-               table_size=32 * MB, txn_length=64, enable_data_cache=True, pt=1, prof="false", wh=16,
+               cs=GB * 4, veri="PAGE_VERI", index="IDX_HASH", pre_load=1, use_log=0, txn_per_thd=10000,
+               table_size=16 * MB, txn_length=64, enable_data_cache=True, pt=1, prof="false", wh=16,
                full_tpcc="false", nodes=1, test_freshness=0, veri_hash_buf_siz=KB * 4, real_time=0, sync_batch=16,
                vaccum=128, lazy_offloading=1, fast_chain=1, small_cs=False, veri_batch_sec = 1):
     global count_job
@@ -82,9 +83,9 @@ def test_compile(job):
         else:
             os.system("make sgx-release 2>&1")
         pattern = r"<HeapMaxSize>.*</HeapMaxSize>"
-        max_siz_per_record = 4 * KB
         tp = max(job["SYNTH_TABLE_SIZE"] * max_siz_per_record * 4, 1*GB)
         # if job["SMALL_CACHE_SIZE"]:
+        print(tp)
         siz = hex(min(tp, 28 * GB * 4))
         # else:
         # siz = hex(tp)
@@ -290,13 +291,17 @@ def run_cache_size_impact_for_different_methods_test():
 
 # Large memory, single node.
 def run_database_size_test():
-    global jobs, UseSGX
+    global jobs, CompileOnly, max_siz_per_record
+    CompileOnly = True
+    max_siz_per_record = KB
     jobs = OrderedDict()
-    x_con = [16 * MB, 24 * MB, 32 * MB, 48 * MB, 64 * MB, 96 * MB]
+    x_con = [1 * MB,  2 * MB, 4 * MB, 8 * MB, 16 * MB]
     for cs in x_con:
-        # insert_job(index="IDX_BTREE", table_size=cs)
+        insert_job(index="IDX_BTREE", veri="PAGE_VERI", table_size=cs)
+    for cs in x_con:
         insert_job(index="IDX_BTREE", veri="MERKLE_TREE", table_size=cs)
-        insert_job(index="IDX_BTREE", veri="DEFERRED_MEMORY", table_size=cs, enable_data_cache=False)
+    for cs in x_con:
+        insert_job(index="IDX_BTREE", veri="DEFERRED_MEMORY", table_size=cs)
     run_all_test(jobs, "ycsb.cache.db.result")
 
 def run_database_varying_txn_length():
@@ -377,13 +382,7 @@ def run_lazy_offloading():
         insert_job("NO_WAIT", 'YCSB', use_sgx=True, cs=200*GB, database_size = siz, small_cs=True, txn_per_thd=1000) # No offloading
     run_all_test(jobs, "ycsb.cache.lazy.offloading")
 
-def run_common_test():
-    global jobs, CompileOnly
-    CompileOnly = True
-    jobs = OrderedDict()
-    # insert_job(index="IDX_BTREE", use_sgx=False, table_size=1 * MB)
-    insert_job(index="IDX_BTREE", veri="MERKLE_TREE", cs=256 * MB, use_sgx=False, table_size=1 * MB)
-    run_all_test(jobs, "btree.profiling.result")
+# def run_common_test():
 
 
 # profiling_4_btree()
@@ -398,9 +397,9 @@ def run_common_test():
 
 # single node, large mem
 run_database_size_test()
-run_cache_size_impact_for_different_methods_test()
+# run_cache_size_impact_for_different_methods_test()
 # # run_database_size_test()
-run_database_varying_txn_length()
+# run_database_varying_txn_length()
 # run_single_layer_cache_exp()
 # run_database_skew_test()
 

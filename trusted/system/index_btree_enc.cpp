@@ -7,6 +7,7 @@
 #include "../../common/api.h"
 
 RC IndexBTEnc::init(uint64_t part_cnt) {
+    preloading = false;
     this->part_cnt = part_cnt;
     order = BTREE_ORDER;
     // these pointers can be mapped anywhere. They won't be changed
@@ -300,12 +301,16 @@ BTNode* IndexBTEnc::load_child(BTNode *cur_node, int i) {
         return nullptr;
     }
 #endif
+    if (origin_node->parent == nullptr) {
+        return roots[cur_node->part];
+    }
     auto cur = (BTNode*) _cache->try_load(cur_node->part, inner_node_id);
     if (cur != nullptr) {
         return cur;
     }
 #if !ENABLE_DATA_CACHE
-    sync_bucket_from_disk(index_name, index_name.size(), cur_node->part, inner_node_id);
+    if (!preloading)
+        sync_bucket_from_disk(index_name, index_name.size(), cur_node->part, inner_node_id);
 #endif
 
     // get latch
@@ -410,7 +415,10 @@ RC IndexBTEnc::dfs(BTNode* c) { // force load BTree nodes.
         return RCOK;
     }
     for (UInt32 i = 0; i <= c->num_keys; i ++) {
-        dfs(load_child(c, i));
+        preloading = true;
+        auto ch = load_child(c, i);
+        preloading = false;
+        dfs(ch);
     }
     return RCOK;
 }

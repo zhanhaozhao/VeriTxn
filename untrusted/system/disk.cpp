@@ -70,10 +70,11 @@ RemoteStorage::RemoteStorage() {
 }
 
 void RemoteStorage::load_page_disk(std::string iname, int part_id, uint64_t pg_id) {
-#if INDEX_STRUCT != IDX_HASH
+#if INDEX_STRUCT == IDX_BTREE
     // currently, we only support to load log from disk for hash index.
     usleep(MISS_PENALTY/ 1000);
         // For index btree, we only care about cache + single node. Thus replace the remote call with timeout.
+    return;
 #endif
 
     pthread_mutex_lock(&mtx);
