@@ -174,9 +174,9 @@ struct verify_record {
             assert(ok);
             return ok;
         } else {
-            while (!origin_node->from->latch_node(origin_node, LATCH_EX)) {};
+//            while (!origin_node->from->latch_node(origin_node, LATCH_EX)) {};
             cur_value = origin_node->get_hash();
-            assert(origin_node->from->release_latch(origin_node) == LATCH_EX);
+//            assert(origin_node->from->release_latch(origin_node) == LATCH_EX);
             timestamp = 0;
             old_value_hash = cur_value ^ timestamp;
             read_set_hash ^= (cur_value ^ timestamp);
@@ -212,6 +212,7 @@ struct memory_verifier {
     verify_record** updates;
     uint64_t _limit;
     uint64_t last_verification;
+    bool verifying = false;
 
     void get_latch() {
         while ( !ATOM_CAS(latch, false, true) ) {};

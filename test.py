@@ -282,11 +282,12 @@ def run_database_skew_test():
 def run_cache_size_impact_for_different_methods_test():
     global jobs
     jobs = OrderedDict()
-    x_con = [64 * MB, 256 * MB, 1 * GB, 4 * GB, 16 * GB]
+    x_con = [512 * MB, 1 * GB, 2 * GB, 4 * GB, 8 * GB]
     for cs in x_con:
-        insert_job(index="IDX_BTREE", cs=cs)
-        insert_job(index="IDX_BTREE", veri="MERKLE_TREE", cs=cs)
+        # insert_job(index="IDX_BTREE", cs=cs)
+        # insert_job(index="IDX_BTREE", veri="MERKLE_TREE", cs=cs)
         insert_job(index="IDX_BTREE", veri="DEFERRED_MEMORY", cs=cs, enable_data_cache=False)
+        insert_job(index="IDX_BTREE", veri="DEFERRED_MEMORY", cs=cs)
     run_all_test(jobs, "ycsb.cache.size.result")
 
 # Large memory, single node.
@@ -296,27 +297,28 @@ def run_database_size_test():
     max_siz_per_record = KB
     jobs = OrderedDict()
     x_con = [1 * MB,  2 * MB, 4 * MB, 8 * MB, 16 * MB]
-    for cs in x_con:
-        insert_job(index="IDX_BTREE", veri="PAGE_VERI", table_size=cs)
-    for cs in x_con:
-        insert_job(index="IDX_BTREE", veri="MERKLE_TREE", table_size=cs)
+    # for cs in x_con:
+    #     insert_job(index="IDX_BTREE", veri="PAGE_VERI", table_size=cs)
+    # for cs in x_con:
+    #     insert_job(index="IDX_BTREE", veri="MERKLE_TREE", table_size=cs)
     for cs in x_con:
         insert_job(index="IDX_BTREE", veri="DEFERRED_MEMORY", table_size=cs)
     run_all_test(jobs, "ycsb.cache.db.result")
 
-def run_database_cache_size_test():
+def run_database_c_size_test():
     global jobs, CompileOnly, max_siz_per_record
-    CompileOnly = True
+    # CompileOnly = True
     max_siz_per_record = KB
     jobs = OrderedDict()
-    # 1 * MB,  2 * MB, 4 * MB, 8 * MB, 16 * MB]
-    x_con = [4 * MB]
-    # for cs in x_con:
-    #     insert_job(index="IDX_BTREE", veri="PAGE_VERI", table_size=cs, use_sgx=False)
-    # for cs in x_con:
-    #     insert_job(index="IDX_BTREE", veri="MERKLE_TREE", table_size=cs, use_sgx=False)
+    x_con = [1 * MB,  2 * MB, 4 * MB, 8 * MB, 16 * MB]
+    # x_con = [4 * MB]
     for cs in x_con:
-        insert_job(index="IDX_BTREE", veri="DEFERRED_MEMORY", table_size=cs, cs=1*GB, use_sgx=False)
+        # insert_job(index="IDX_BTREE", table_size=cs)
+    # for cs in x_con:
+    #     insert_job(index="IDX_BTREE", veri="MERKLE_TREE", table_size=cs)
+    # for cs in x_con:
+        insert_job(index="IDX_BTREE", veri="DEFERRED_MEMORY", table_size=cs)
+        # insert_job(index="IDX_BTREE", veri="DEFERRED_MEMORY", table_size=cs, enable_data_cache=False)
     run_all_test(jobs, "ycsb.cache.db.result")
 
 def run_database_varying_txn_length():
@@ -324,9 +326,10 @@ def run_database_varying_txn_length():
     jobs = OrderedDict()
     x_con = [1, 4, 16, 32]
     for ll in x_con:
-        insert_job(index="IDX_BTREE", txn_length=ll, use_sgx=False)
-        insert_job(index="IDX_BTREE", txn_length=ll)
-        insert_job(index="IDX_BTREE", veri="MERKLE_TREE", txn_length=ll)
+        # insert_job(index="IDX_BTREE", txn_length=ll, use_sgx=False, cs=16 * GB) # unlimited baseline.
+        # insert_job(index="IDX_BTREE", txn_length=ll)
+        # insert_job(index="IDX_BTREE", veri="MERKLE_TREE", txn_length=ll)
+        insert_job(index="IDX_BTREE", veri="DEFERRED_MEMORY", txn_length=ll)
         insert_job(index="IDX_BTREE", veri="DEFERRED_MEMORY", txn_length=ll, enable_data_cache=False)
     run_all_test(jobs, "ycsb.cache.txn_length.result")
 
@@ -397,8 +400,16 @@ def run_lazy_offloading():
         insert_job("NO_WAIT", 'YCSB', use_sgx=True, cs=200*GB, database_size = siz, small_cs=True, txn_per_thd=1000) # No offloading
     run_all_test(jobs, "ycsb.cache.lazy.offloading")
 
-# def run_common_test():
-
+def run_common_test():
+    global jobs, CompileOnly, max_siz_per_record
+    # CompileOnly = True
+    max_siz_per_record = KB
+    jobs = OrderedDict()
+    x_con = [16 * MB]
+    for cs in x_con:
+        insert_job(index="IDX_BTREE", veri="DEFERRED_MEMORY", table_size=cs)
+        #  enable_data_cache=False
+    run_all_test(jobs, "common.result")
 
 # profiling_4_btree()
 # single node, small mem
@@ -411,10 +422,10 @@ def run_lazy_offloading():
 # run_full_tpcc_test()
 
 # single node, large mem
-run_database_cache_size_test()
-# run_cache_size_impact_for_different_methods_test()
+run_database_c_size_test()
+run_cache_size_impact_for_different_methods_test()
 # # run_database_size_test()
-# run_database_varying_txn_length()
+run_database_varying_txn_length()
 # run_single_layer_cache_exp()
 # run_database_skew_test()
 

@@ -43,7 +43,7 @@
 /***********************************************/
 // WAIT_DIE, NO_WAIT, DL_DETECT, TIMESTAMP, MVCC, HEKATON, HSTORE, OCC, VLL, TICTOC, SILO
 // TODO TIMESTAMP does not work at this moment
-#define CC_ALG NO_WAIT
+#define CC_ALG OCC
 #define ISOLATION_LEVEL SERIALIZABLE
 
 // all transactions acquire tuples according to the primary key order.
@@ -132,12 +132,12 @@
 // max number of rows touched per transaction
 #define MAX_ROW_PER_TXN				128
 #define QUERY_INTVL 				1UL
-#define MAX_TXN_PER_PART 1000
+#define MAX_TXN_PER_PART 10000
 #define FIRST_PART_LOCAL 			true
 #define MAX_TUPLE_SIZE				1024 // in bytes
 // ==== [YCSB] ====
 #define INIT_PARALLELISM 8
-#define SYNTH_TABLE_SIZE 524288
+#define SYNTH_TABLE_SIZE 4194304
 #define ZIPF_THETA 0.5
 #define READ_PERC 0.5
 #define WRITE_PERC 0.5
@@ -257,11 +257,11 @@ extern enum TestCases					g_test_case;
 #define LOG_BATCH_SIZE              10
 
 // cache parameters
-#define VERIFIED_CACHE_SIZ 17179869184
-#define ENABLE_DATA_CACHE true
+#define VERIFIED_CACHE_SIZ 1073741824
+#define ENABLE_DATA_CACHE false
 #define LAZY_OFFLOADING 1
 #define BASE_LEASE      100
-#define VERI_TYPE MERKLE_TREE
+#define VERI_TYPE DEFERRED_MEMORY
 #define VERI_BATCH 1000000000
 #define HOT_RECORD_NUM (SYNTH_TABLE_SIZE / 10 / BTREE_ORDER)  // we let 128K records to be hot ones,
 // too large results in too long verification.
@@ -282,7 +282,7 @@ extern enum TestCases					g_test_case;
 #define FRESHNESS_STATS_CNT 20000
 #define SYNC_VERSION_BATCH 16
 #define VACCUM_TRIGGER 128
-#define MISS_PENALTY 10 * 1000000UL
+#define MISS_PENALTY 1000000UL
 
 
 // Log queue type
