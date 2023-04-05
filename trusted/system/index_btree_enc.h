@@ -164,23 +164,27 @@ struct verify_record {
     // needs latch before.
     bool verify () {
 //        return true;
+        assert(origin_node->is_leaf);
         assert(PART_CNT == 1);
         auto cur = (BTNode*)(from->_cache->try_load(0, origin_node->node_id));
         uint64_t cur_value;
         if (cur != nullptr) {
             // if cached, no need to read and verify current data.
-            read_set_hash ^= (old_value_hash);
-            bool ok = read_set_hash == write_set_hash;
+            get_latch();
+            bool ok = (read_set_hash^old_value_hash) == write_set_hash;
+            release_latch();
             assert(ok);
             return ok;
         } else {
 //            while (!origin_node->from->latch_node(origin_node, LATCH_EX)) {};
             cur_value = origin_node->get_hash();
 //            assert(origin_node->from->release_latch(origin_node) == LATCH_EX);
-            timestamp = 0;
-            old_value_hash = cur_value ^ timestamp;
-            read_set_hash ^= (cur_value ^ timestamp);
-            bool ok = read_set_hash == write_set_hash;
+            get_latch();
+//            timestamp = 0;
+//            old_value_hash = cur_value ^ timestamp;
+            auto newh = (cur_value ^ timestamp);
+            bool ok = (read_set_hash ^ newh) == write_set_hash;
+            release_latch();
             assert(ok);
             return ok;
         }

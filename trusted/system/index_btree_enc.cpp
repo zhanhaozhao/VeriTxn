@@ -100,6 +100,7 @@ void IndexBTEnc::flush_out(BTNode *c) {
     while (!c->origin->from->latch_node(c->origin, LATCH_EX));
 #elif VERI_TYPE == DEFERRED_MEMORY
     // avoid concurrent load in and flush out.
+    c->from->verifier[c->part]->add_write(c->node_id, c->get_hash(), c->origin, c->from);
     while (!c->origin->from->latch_node(c->origin, LATCH_EX));
 #endif
     c->origin->num_keys = c->num_keys;
@@ -137,12 +138,12 @@ void IndexBTEnc::flush_out(BTNode *c) {
                 last_item = new_item;
             }
         } else {
-#if VERI_TYPE == PAGE_VERI
+#if VERI_TYPE == PAGE_VERI or VERI_TYPE == DEFERRED_MEMORY
             assert(false);  // non-leaf nodes should not be flushed out in VeriTXN.
 #elif VERI_TYPE == MERKLE_TREE
             c->origin->child_merkle_hash[i] = c->child_merkle_hash[i];
-#elif VERI_TYPE == DEFERRED_MEMORY
-            c->from->verifier[c->part]->add_write(c->node_id, c->get_hash(), c->origin, c->from);
+//#elif VERI_TYPE == DEFERRED_MEMORY
+//            c->from->verifier[c->part]->add_write(c->node_id, c->get_hash(), c->origin, c->from);
 #endif
         }
     }
