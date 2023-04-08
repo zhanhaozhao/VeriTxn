@@ -228,7 +228,7 @@ BucketHeader_ENC* IndexEnc::load_bucket(std::string iname, int part_id, uint64_t
     }
     if (cur == nullptr) {
         auto res_bucket = new BucketHeader_ENC;
-        uint total_size = 0;
+        uint total_rec = 0;
         auto idx = (IndexHash *) inner_index_map->_indexes[iname];
 #if !ENABLE_DATA_CACHE and USE_LOG and !LOG_RECOVER
         // idx->sync_bucket_from_disk(part_id, bkt_idx);
@@ -250,6 +250,7 @@ BucketHeader_ENC* IndexEnc::load_bucket(std::string iname, int part_id, uint64_t
             for (auto pt = it->items; pt; pt = pt->next) {
                 auto old_row = (base_row_t *) pt->location;
                 auto new_row = new row_t;
+                total_rec++;
                 new_row->from_page = (void*) res_bucket;
                 new_row->offset = 0;
                 int n = old_row->table->get_schema()->get_tuple_size();
@@ -260,13 +261,11 @@ BucketHeader_ENC* IndexEnc::load_bucket(std::string iname, int part_id, uint64_t
                 new_row->set_row_id(old_row->get_row_id());
                 new_row->set_primary_key(old_row->get_primary_key());
                 assert(new_row->hash() == old_row->hash());
-                total_size += sizeof (*new_row);
                 auto new_item = new itemid_t;
                 new_item->next = nullptr;
                 new_item->location = (void *) new_row;
                 new_item->valid = true;
                 new_item->type = DT_row;
-                total_size += sizeof (*new_item);
                 if (last_item == nullptr) {
                     node->items = new_item;
                 } else {
@@ -274,7 +273,6 @@ BucketHeader_ENC* IndexEnc::load_bucket(std::string iname, int part_id, uint64_t
                 }
                 last_item = new_item;
             }
-            total_size += sizeof (*node);
             assert(node->hash() == it->hash());
             if (last_node == nullptr) {
                 res_bucket->first_node = node;
@@ -284,7 +282,7 @@ BucketHeader_ENC* IndexEnc::load_bucket(std::string iname, int part_id, uint64_t
             last_node = node;
         }
         assert(last_node == nullptr || last_node->next== nullptr);
-        total_size += sizeof(*res_bucket);
+        auto total_size = total_rec * 1024;
         assert(res_bucket->get_hash() == res_bucket->origin->get_hash());
         void* swapped = nullptr;
         int sw_pt = 0;
@@ -292,7 +290,7 @@ BucketHeader_ENC* IndexEnc::load_bucket(std::string iname, int part_id, uint64_t
         void * cur_void;
         RC rc = Abort;
         while (rc != RCOK) {
-            rc = _cache->load_and_swap(part_id, bkt_idx, total_size, (void *) res_bucket, swapped, sw_pt, sw_bk, cur_void);
+            rc = _cache->load_and_swap(part_id, bkt_idx, (uint64_t) total_size, (void *) res_bucket, swapped, sw_pt, sw_bk, cur_void);
         }
         idx->release_latch(res_bucket->origin);
         assert(rc == RCOK);
