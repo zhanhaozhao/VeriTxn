@@ -116,7 +116,7 @@ int run_txn_ecall(void * thd, ts_t txn_ts) {
 	thread_t * h_thd = (thread_t *) thd;
 
 	RC rc = RCOK;
-	txn_man * m_txn;
+	txn_man * m_txn = nullptr;
 	uint64_t thd_id = h_thd->get_thd_id();
 
 	assert (glob_manager_enc);

@@ -612,6 +612,7 @@ tpcc_txn_man::run_delivery(tpcc_query * query) {
 		uint64_t key = distKey(d_id, query->w_id);
 //		INDEX * index = _wl->i_orderline;
 		itemid_t * item = index_read("ORDER-LINE_IDX", key, wh_to_part(query->w_id));
+        if (item == NULL) return Abort;
 		assert(item != NULL);
 		while (item->next != NULL) {
 			item = item->next;
