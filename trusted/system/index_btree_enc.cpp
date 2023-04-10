@@ -286,9 +286,11 @@ BTNode* IndexBTEnc::load_child(BTNode *cur_node, int i) {
         return nullptr;
     }
 #endif
+#if !FULL_TPCC
     if (origin_node->parent == nullptr) {
         return roots[cur_node->part];
     }
+#endif
     auto cur = (BTNode*) _cache->try_load(cur_node->part, inner_node_id);
     if (cur != nullptr) {
         return cur;
@@ -707,6 +709,7 @@ RC IndexBTEnc::find_leaf(glob_param params, idx_key_t key, idx_acc_t access_type
 //        assert(key <= c->keys[i] && i <= c->num_keys);
 //        assert(c->latch_type == LATCH_SH);
         child = load_child(c, i); // load pointer function.
+        child->parent = c->node_id;
         assert(child->parent == c->node_id);
 //        assert(key <= child->keys[child->num_keys]);
         assert(c->latch_type == LATCH_SH);
