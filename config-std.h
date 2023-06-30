@@ -259,6 +259,7 @@ extern enum TestCases					g_test_case;
 // cache parameters
 #define VERIFIED_CACHE_SIZ 17179869184
 #define ENABLE_DATA_CACHE true
+#define DATA_CACHE_SIZE 1073741824
 #define LAZY_OFFLOADING 1
 #define BASE_LEASE      100
 #define VERI_TYPE MERKLE_TREE
@@ -282,7 +283,7 @@ extern enum TestCases					g_test_case;
 #define FRESHNESS_STATS_CNT 20000
 #define SYNC_VERSION_BATCH 16
 #define VACCUM_TRIGGER 128
-#define MISS_PENALTY  1000000UL / 2
+#define MISS_PENALTY  10000000UL
 
 
 // Log queue type

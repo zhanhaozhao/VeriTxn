@@ -124,6 +124,7 @@ private:
 //    uint64_t freshness_queue_st, freshness_queue_ed;
 //#endif
 
+    bool inside_data_cache(uint64_t pg_id);
 };
 
 #endif

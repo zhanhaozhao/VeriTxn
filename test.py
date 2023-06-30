@@ -31,7 +31,7 @@ count_job = 0
 
 
 def insert_job(alg="OCC", workload="YCSB", thread_num=4, theta=0.5, bkt_fac=1, read_perc=0.5, use_sgx=True,
-               cs=GB * 4, veri="PAGE_VERI", index="IDX_HASH", pre_load=1, use_log=0, txn_per_thd=10000,
+               cs=GB * 4, ds=GB * 16, veri="PAGE_VERI", index="IDX_HASH", pre_load=1, use_log=0, txn_per_thd=10000,
                table_size=10 * MB, txn_length=16, enable_data_cache=True, pt=1, prof="false", wh=16,
                full_tpcc="false", nodes=1, test_freshness=0, veri_hash_buf_siz=KB * 4, real_time=0, sync_batch=16,
                vaccum=128, lazy_offloading=1, fast_chain=1, small_cs=False, veri_batch_sec = 1):
@@ -48,6 +48,7 @@ def insert_job(alg="OCC", workload="YCSB", thread_num=4, theta=0.5, bkt_fac=1, r
         "WRITE_PERC"		: 1-read_perc,
         "USE_SGX"			: 1 if use_sgx else 0,
         "VERIFIED_CACHE_SIZ": cs,
+        "DATA_CACHE_SIZE" : ds,
         "ENABLE_DATA_CACHE" : "true" if enable_data_cache else "false",
         "VERI_TYPE"			: veri,
         "INDEX_STRUCT"		: index,
@@ -130,7 +131,7 @@ def test_run(job, f, test=''):
     if job["USE_LOG"] == 1:
         process_store = subprocess.Popen("./Store>./store.log", stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                          shell=True)
-        time.sleep(7)
+        time.sleep(5)
     if job["NODE_CNT"] == 1:
         cmd = "./App %s" % (app_flags)  # + fimeName
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
@@ -292,6 +293,18 @@ def run_cache_size_impact_for_different_methods_test():
         # insert_job(index="IDX_BTREE", veri="DEFERRED_MEMORY", cs=cs, pre_load=0)
     run_all_test(jobs, "ycsb.cache.size.result")
 
+def run_parameters():
+    global jobs, max_siz_per_record
+    max_siz_per_record = KB
+    jobs = OrderedDict()
+    # x_con = [512 * MB, 1 * GB, 2 * GB, 4 * GB, 8 * GB]
+    x_con = [1 * GB, 2 * GB, 3 * GB, 4 *GB]
+    # varying data cache size.
+    for cs in x_con:
+        for ds in x_con:
+            insert_job(table_size=4 * MB, cs=cs, ds=ds, use_log=1)
+    run_all_test(jobs, "ycsb.cache.parameter.result")
+
 # Large memory, single node.
 def run_database_size_test():
     global jobs, CompileOnly, max_siz_per_record
@@ -425,7 +438,7 @@ def run_common_test():
 
 # single node, large mem
 # run_database_c_size_test()
-run_cache_size_impact_for_different_methods_test()
+run_parameters()
 # # run_database_size_test()
 # run_database_varying_txn_length()
 # run_single_layer_cache_exp()

@@ -121,6 +121,27 @@ bool IndexEnc::index_exist(idx_key_t key) {
 //    assert(ok);
 //}
 
+int load_cnt = 0;
+int miss_cnt = 0;
+int max_pg_id = 0;
+
+bool IndexEnc::inside_data_cache(uint64_t pg_id) {
+    // we simulate keeping record 0 -- data_cache_size inside caches, since they are mostly accessed.
+    load_cnt ++;
+    if (pg_id > max_pg_id) {
+        max_pg_id = pg_id;
+    }
+    uint64_t lm = _bucket_cnt_per_part / 2048.0 * (DATA_CACHE_SIZE / SYNTH_TABLE_SIZE  + VERIFIED_CACHE_SIZ / SYNTH_TABLE_SIZE );
+//    if (load_cnt % 1000 == 0) {
+//        printf("%.3f\n", 1.0 * miss_cnt / load_cnt);
+//        printf("updated %d - %d\n", max_pg_id, lm);
+//    }
+    if (pg_id > lm) {
+        miss_cnt ++;
+        return false;
+    }
+    return true;
+}
 
 RC IndexEnc::index_insert(idx_key_t key, itemid_t * item, int part_id) {
     assert(false);  // TODO: currently no insert support to the verifiable hash index.
@@ -170,6 +191,7 @@ RC IndexEnc::index_read(std::string iname, idx_key_t key, itemid_t * &item, int 
 
 #include "common/index_hash.h"
 #include "common/base_row.h"
+#include "../../common/api.h"
 
 // flush_out the data to data cache.
 void flush_out(std::string iname, int part_id, uint64_t bkt_idx, BucketHeader_ENC *c) {
@@ -230,11 +252,15 @@ BucketHeader_ENC* IndexEnc::load_bucket(std::string iname, int part_id, uint64_t
         auto res_bucket = new BucketHeader_ENC;
         uint total_rec = 0;
         auto idx = (IndexHash *) inner_index_map->_indexes[iname];
+        if (!inside_data_cache(bkt_idx)) {
+            sync_bucket_from_disk(iname, iname.size(), part_id, bkt_idx);
+        } else {
 #if !ENABLE_DATA_CACHE and USE_LOG and !LOG_RECOVER
         // idx->sync_bucket_from_disk(part_id, bkt_idx);
         // replace with an ocall function
         sync_bucket_from_disk(iname, iname.size(), part_id, bkt_idx);
 #endif
+        }
         res_bucket->origin = &(idx->_buckets[part_id][bkt_idx]);
         idx->get_latch(res_bucket->origin);
         res_bucket->init();
