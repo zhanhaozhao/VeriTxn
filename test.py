@@ -322,14 +322,9 @@ def run_tamper():
     global jobs, max_siz_per_record
     max_siz_per_record = KB
     jobs = OrderedDict()
-    # x_con = [512 * MB, 1 * GB, 2 * GB, 4 * GB, 8 * GB]
-    tamper =  [1] #[0, 1, 2, 4, 8, 16]
-    # veri_cache = [4 * GB]
-    # insert_job(table_size=4 * MB, cs=1 * GB, ds=2 * GB, use_log=1)
-    # insert_job(table_size=4 * MB, cs=1 * GB, ds=2 * GB, use_log=1)
-    # varying data cache size.
+    tamper =  [0, 1, 2, 3, 4]
     for tp in tamper:
-        insert_job(tamper=tp, use_sgx=False)
+        insert_job(tamper=tp, theta=0)
     run_all_test(jobs, "ycsb.cache.tamper.result")
 
 # Large memory, single node.

@@ -119,7 +119,8 @@ RC thread_t::run() {
 
 	}
 
-	while (true) {
+    bool is_retry = true;
+	while (is_retry) {
 		starttime = get_sys_clock();
 
 		generate_txn_for_run(this->m_query);
@@ -149,10 +150,7 @@ RC thread_t::run() {
 					}
 				}
 			}
-		} else if (rc == ERROR) {
-            rc = Abort;
-            return FINISH;
-        }
+		}
 
 		ts_t endtime = get_sys_clock();
 		uint64_t timespan = endtime - starttime;
@@ -168,7 +166,13 @@ RC thread_t::run() {
 			INC_STATS(get_thd_id(), abort_cnt, 1);
 			stats.abort(get_thd_id());
 			// m_txn->abort_cnt ++;
-		}
+		} else if (rc == ERROR) {
+            INC_STATS(get_thd_id(), time_abort, timespan);
+            INC_STATS(get_thd_id(), abort_cnt, 1);
+            stats.abort(get_thd_id());
+            is_retry = false;
+            rc = FINISH;
+        }
 
 		if (rc == FINISH)
 			return rc;
