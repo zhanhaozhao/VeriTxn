@@ -149,7 +149,10 @@ RC thread_t::run() {
 					}
 				}
 			}
-		}
+		} else if (rc == ERROR) {
+            rc = Abort;
+            return FINISH;
+        }
 
 		ts_t endtime = get_sys_clock();
 		uint64_t timespan = endtime - starttime;

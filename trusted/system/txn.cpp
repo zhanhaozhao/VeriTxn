@@ -308,6 +308,9 @@ txn_man::index_read(std::string iname, idx_key_t key, int part_id) {
     RC rc = index_enc->index_read(key, item, part_id, get_thd_id());
 #endif
     INC_TMP_STATS_ENC(get_thd_id(), time_index, get_enc_time() - starttime);
+    if (rc == ERROR) {
+        return (itemid_t*)(0x1);
+    }
     if (rc != RCOK) {
         return nullptr;
     }
@@ -355,7 +358,10 @@ txn_man::index_read(std::string iname, idx_key_t key, int part_id, itemid_t *& i
 //        tab_map->_indexes[index->index_name] = index_enc;
     }
 #if INDEX_STRUCT == IDX_HASH
-    index_enc->index_read(iname, key, item, part_id, get_thd_id());
+    RC rc = index_enc->index_read(iname, key, item, part_id, get_thd_id());
+    if (rc == ERROR) {
+        assert(false);
+    }
 #else
     index_enc->index_read(key, item, part_id, get_thd_id());
 #endif

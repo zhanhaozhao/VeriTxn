@@ -34,7 +34,7 @@ def insert_job(alg="OCC", workload="YCSB", thread_num=4, theta=0.5, bkt_fac=1, r
                cs=GB * 4, ds=GB * 16, veri="PAGE_VERI", index="IDX_HASH", pre_load=1, use_log=0, txn_per_thd=10000,
                table_size=10 * MB, txn_length=16, enable_data_cache=True, pt=1, prof="false", wh=16,
                full_tpcc="false", nodes=1, test_freshness=0, veri_hash_buf_siz=KB * 4, real_time=0, sync_batch=16,
-               vaccum=128, lazy_offloading=1, fast_chain=1, small_cs=False, veri_batch_sec = 1):
+               vaccum=128, lazy_offloading=1, fast_chain=1, small_cs=False, veri_batch_sec = 1, tamper = 0):
     global count_job
     count_job = count_job + 1
     jobs[count_job] = {
@@ -49,6 +49,7 @@ def insert_job(alg="OCC", workload="YCSB", thread_num=4, theta=0.5, bkt_fac=1, r
         "USE_SGX"			: 1 if use_sgx else 0,
         "VERIFIED_CACHE_SIZ": cs,
         "DATA_CACHE_SIZE" : ds,
+        "TAMPER_PERCENTAGE" : tamper,
         "ENABLE_DATA_CACHE" : "true" if enable_data_cache else "false",
         "VERI_TYPE"			: veri,
         "INDEX_STRUCT"		: index,
@@ -129,8 +130,8 @@ def test_run(job, f, test=''):
         app_flags = "-Ac -t4"
 
     if job["USE_LOG"] == 1:
-        process_store = subprocess.Popen("./Store>./store.log", stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                         shell=True)
+        process_store = subprocess.Popen("./Store", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        # process_store = subprocess.Popen(["./Store", ">./store.log"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         time.sleep(5)
     if job["NODE_CNT"] == 1:
         cmd = "./App %s" % (app_flags)  # + fimeName
@@ -166,8 +167,16 @@ def test_run(job, f, test=''):
             f.flush()
 
     if job["USE_LOG"] == 1:
-        process_store.kill()
+        # exit(0)
+        pid = process_store.pid
+        os.kill(pid, 9)
+        # process_store.kill()
+        process_store.wait()
     # exit(0)
+    #     pid = process_store.pid
+    #     os.kill(pid, 9)
+    #     print("we are here")
+    #     process_store.wait()
 
 
 testRound = 1
@@ -298,12 +307,30 @@ def run_parameters():
     max_siz_per_record = KB
     jobs = OrderedDict()
     # x_con = [512 * MB, 1 * GB, 2 * GB, 4 * GB, 8 * GB]
-    x_con = [1 * GB, 2 * GB, 3 * GB, 4 *GB]
+    veri_cache = [GB / 2, 1 * GB, GB + GB / 2, 2 * GB, 2 * GB + GB / 2, 3 * GB,  3 * GB + GB / 2, 4 * GB]
+    # veri_cache = [4 * GB]
+    data_cache = [GB / 2, 1 * GB, GB + GB / 2, 2 * GB, 2 * GB + GB / 2, 3 * GB,  3 * GB + GB / 2, 4 * GB]
+    # insert_job(table_size=4 * MB, cs=1 * GB, ds=2 * GB, use_log=1)
+    # insert_job(table_size=4 * MB, cs=1 * GB, ds=2 * GB, use_log=1)
     # varying data cache size.
-    for cs in x_con:
-        for ds in x_con:
+    for cs in veri_cache:
+        for ds in data_cache:
             insert_job(table_size=4 * MB, cs=cs, ds=ds, use_log=1)
     run_all_test(jobs, "ycsb.cache.parameter.result")
+
+def run_tamper():
+    global jobs, max_siz_per_record
+    max_siz_per_record = KB
+    jobs = OrderedDict()
+    # x_con = [512 * MB, 1 * GB, 2 * GB, 4 * GB, 8 * GB]
+    tamper =  [1] #[0, 1, 2, 4, 8, 16]
+    # veri_cache = [4 * GB]
+    # insert_job(table_size=4 * MB, cs=1 * GB, ds=2 * GB, use_log=1)
+    # insert_job(table_size=4 * MB, cs=1 * GB, ds=2 * GB, use_log=1)
+    # varying data cache size.
+    for tp in tamper:
+        insert_job(tamper=tp, use_sgx=False)
+    run_all_test(jobs, "ycsb.cache.tamper.result")
 
 # Large memory, single node.
 def run_database_size_test():
@@ -438,7 +465,7 @@ def run_common_test():
 
 # single node, large mem
 # run_database_c_size_test()
-run_parameters()
+run_tamper()
 # # run_database_size_test()
 # run_database_varying_txn_length()
 # run_single_layer_cache_exp()

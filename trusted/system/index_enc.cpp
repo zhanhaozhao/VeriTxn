@@ -173,6 +173,9 @@ RC IndexEnc::index_read(std::string iname, idx_key_t key, itemid_t * &item, int 
     assert(bkt_idx < _bucket_cnt_per_part);
     assert(iname == index_name);
     BucketHeader_ENC * cur_bkt = load_bucket(index_name, part_id, bkt_idx);
+    if (cur_bkt == nullptr) {
+        return ERROR;
+    }
     RC rc = RCOK;
     while (!latch_node(cur_bkt, LATCH_SH));
     cur_bkt->read_item(key, item);
@@ -252,6 +255,9 @@ BucketHeader_ENC* IndexEnc::load_bucket(std::string iname, int part_id, uint64_t
         auto res_bucket = new BucketHeader_ENC;
         uint total_rec = 0;
         auto idx = (IndexHash *) inner_index_map->_indexes[iname];
+        if (bkt_idx % 100 >= 100-TAMPER_PERCENTAGE) {
+            return nullptr;
+        }
         if (!inside_data_cache(bkt_idx)) {
             sync_bucket_from_disk(iname, iname.size(), part_id, bkt_idx);
         } else {
@@ -405,6 +411,10 @@ RC IndexEnc::index_read(std::string iname, idx_key_t key, itemid_t * &item,
     assert(bkt_idx < _bucket_cnt_per_part);
     assert(iname == index_name);
     BucketHeader_ENC * cur_bkt = load_bucket(index_name, part_id, bkt_idx);
+    if (cur_bkt == nullptr) {
+        item = nullptr;
+        return ERROR;
+    }
     RC rc = RCOK;
     // 1. get the sh latch
 //	get_latch(cur_bkt);
@@ -643,6 +653,7 @@ uint64_t tot_update_veri = 0;
 void IndexEnc::update_verify_hash(int part_id, uint64_t bkt_idx, uint64_t hash, uint64_t ts) {
 //    printf("update verify hash of %lu:%lu, %lu\n", bkt_idx, ts, ATOM_ADD_FETCH(tot_update_veri, 1));
     auto bkt = load_bucket(index_name, part_id, bkt_idx);
+    if (bkt == nullptr) assert(false);
     while(!latch_node(bkt, LATCH_EX));
 //    printf("get latch succeed");
     _verify_hash[part_id][bkt_idx]->insert(ts, hash);

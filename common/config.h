@@ -60,7 +60,7 @@
 #define ENABLE_LATCH				true
 #define CENTRAL_INDEX				false
 #define CENTRAL_MANAGER 			false
-#define INDEX_STRUCT IDX_BTREE
+#define INDEX_STRUCT IDX_HASH
 #define BTREE_ORDER 				16
 #define INDEX_NAME_LENGTH       	16
 
@@ -284,6 +284,8 @@ extern enum TestCases					g_test_case;
 #define SYNC_VERSION_BATCH 16
 #define VACCUM_TRIGGER 128
 #define MISS_PENALTY 5000000UL
+
+#define TAMPER_PERCENTAGE 0
 
 
 // Log queue type

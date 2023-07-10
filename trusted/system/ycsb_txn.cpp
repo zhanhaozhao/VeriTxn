@@ -42,6 +42,10 @@ RC ycsb_txn_man::run_txn(base_query * query) {
                     rc = Abort;
                     goto final;
                 }
+                if (m_item == (itemid_t*)0x1) {
+                    rc = ERROR;
+                    goto final;
+                }
             }
 #if INDEX_STRUCT == IDX_BTREE
 			else {
