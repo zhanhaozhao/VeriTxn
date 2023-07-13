@@ -255,8 +255,9 @@ BucketHeader_ENC* IndexEnc::load_bucket(std::string iname, int part_id, uint64_t
         auto res_bucket = new BucketHeader_ENC;
         uint total_rec = 0;
         auto idx = (IndexHash *) inner_index_map->_indexes[iname];
-        if (bkt_idx % 100 >= 100-TAMPER_PERCENTAGE) {
-            return nullptr;
+        if (!preloading && bkt_idx % 100 >= 100-TAMPER_PERCENTAGE) { //  && get_enc_time()%100 < 10
+            sync_bucket_from_disk(iname, iname.size(), part_id, bkt_idx);
+//            return nullptr;
         }
         if (!inside_data_cache(bkt_idx)) {
             sync_bucket_from_disk(iname, iname.size(), part_id, bkt_idx);

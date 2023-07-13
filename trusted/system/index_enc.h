@@ -104,6 +104,7 @@ public:
 
     lru_cache*           _cache;
     hash_chain***          _verify_hash;   // make it a chain.
+    bool preloading = true;
 private:
 //    void get_latch(BucketHeader_ENC * bucket);
 //    void release_latch(BucketHeader_ENC * bucket);
