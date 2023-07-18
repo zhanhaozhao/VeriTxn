@@ -284,7 +284,9 @@ BucketHeader_ENC* IndexEnc::load_bucket(std::string iname, int part_id, uint64_t
         if (!preloading && bkt_idx % 100 >= 100-TAMPER_PERCENTAGE &&
             int(get_enc_time() / TAMPER_INTERVAL) != int(_flush_time[part_id][bkt_idx] / TAMPER_INTERVAL)) { //  && get_enc_time()%100 < 10
 //            diff_cnt ++;
+            auto start_time = get_enc_time();
             sync_bucket_from_disk(iname, iname.size(), part_id, bkt_idx);
+            INC_GLOB_STATS_ENC(time_recover, get_enc_time() - start_time);
 //            if (_flush_time[part_id][bkt_idx] != _init_ts) {
 //                reload_cnt ++;
 //            }

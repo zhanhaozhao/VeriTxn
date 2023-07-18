@@ -63,8 +63,9 @@ public:
     uint64_t freshness_cnt;
     uint64_t version_chain_length;
     uint64_t access_cnt;
+    double time_recover;
 
-	// GLOBAL statistics
+    // GLOBAL statistics
 	double dl_detect_time;
 	double dl_wait_time;
 	uint64_t cycle_detect;

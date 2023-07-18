@@ -57,6 +57,7 @@ void Stats::init() {
     freshness_cnt = 0;
     version_chain_length = 0;
     access_cnt = 0;
+    time_recover = 0;
     for(int i = 0;i < g_thread_cnt;i ++) {
         begin_ts[i] = 0;
     }
@@ -151,7 +152,6 @@ void Stats::print() {
 		total_time_ts_alloc += _stats[tid]->time_ts_alloc;
 		total_latency += _stats[tid]->latency;
 		total_time_query += _stats[tid]->time_query;
-		
 //		printf("[tid=%ld] txn_cnt=%ld,abort_cnt=%ld,thread_cnt=%u\n",
 //			tid,
 //			_stats[tid]->txn_cnt,
@@ -179,7 +179,7 @@ void Stats::print() {
 		", run_time=%f, time_wait=%f, time_ts_alloc=%f"
 		", time_man=%f, time_index=%f, time_abort=%f, time_cleanup=%f, time_cache=%f, latency=%f"
 		", deadlock_cnt=%ld, cycle_detect=%ld, dl_detect_time=%f, dl_wait_time=%f"
-		", time_query=%f, debug1=%f, debug2=%f, debug3=%f, debug4=%f, debug5=%f, avg_read_ts_dist=%f, avg_ver=%f\n",
+		", time_query=%f, debug1=%f, debug2=%f, debug3=%f, debug4=%f, debug5=%f, avg_read_ts_dist=%f, avg_ver=%f, time_recover=%f\n",
 		total_txn_cnt, 
 		total_abort_cnt,
 		total_run_time / BILLION,
@@ -202,7 +202,8 @@ void Stats::print() {
 		total_debug4, // / BILLION,
 		total_debug5,  // / BILLION
 		_freshness / BILLION,
-        access_length
+        access_length,
+        time_recover /  (double)(total_txn_cnt) / BILLION
 	);
 	if (g_prt_lat_distr)
 		print_lat_distr();
