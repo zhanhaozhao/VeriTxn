@@ -283,9 +283,10 @@ extern enum TestCases					g_test_case;
 #define FRESHNESS_STATS_CNT 20000
 #define SYNC_VERSION_BATCH 16
 #define VACCUM_TRIGGER 128
-#define MISS_PENALTY 5000000UL
+#define MISS_PENALTY 500000UL
 
 #define TAMPER_PERCENTAGE 0
+#define TAMPER_INTERVAL 1000000000
 
 
 // Log queue type

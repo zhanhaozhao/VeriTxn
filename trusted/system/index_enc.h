@@ -104,7 +104,10 @@ public:
 
     lru_cache*           _cache;
     hash_chain***          _verify_hash;   // make it a chain.
+    ts_t **          _flush_time;   // make it a chain.
     bool preloading = true;
+    RC init_ts(int part_cnt);
+
 private:
 //    void get_latch(BucketHeader_ENC * bucket);
 //    void release_latch(BucketHeader_ENC * bucket);
@@ -113,6 +116,7 @@ private:
     uint64_t hash(idx_key_t key) {	return key % _bucket_cnt_per_part; }
 
     uint64_t 			_bucket_cnt_per_part;
+    ts_t _init_ts;
 //    hash_chain***          _verify_hash;   // make it a chain.
     // maximum commit timestamp of transactions involving this block.
 #ifndef SGX_DISK

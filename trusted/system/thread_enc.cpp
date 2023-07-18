@@ -70,6 +70,7 @@ void index_load_ecall(int part_cnt, void * table, std::string iname, void * inde
             if (!index->_cache->can_force_load())
                 break;
         }
+    index->init_ts(part_cnt);
     index->preloading = false;
     #endif
 #else

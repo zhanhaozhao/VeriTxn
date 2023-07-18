@@ -285,7 +285,8 @@ extern enum TestCases					g_test_case;
 #define VACCUM_TRIGGER 128
 #define MISS_PENALTY 5000000UL
 
-#define TAMPER_PERCENTAGE 0
+#define TAMPER_PERCENTAGE 100
+#define TAMPER_INTERVAL 10000000
 
 
 // Log queue type

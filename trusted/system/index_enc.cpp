@@ -72,6 +72,10 @@ RC IndexEnc::init(uint64_t bucket_cnt, int part_cnt) {
 //#endif
     _bucket_cnt_per_part = bucket_cnt / part_cnt;
     _verify_hash = new hash_chain ** [part_cnt];
+    _flush_time = new ts_t * [part_cnt];
+    for (int i = 0;i < part_cnt; i ++) {
+        _flush_time[i] = new ts_t [_bucket_cnt_per_part];
+    }
     _cache = new lru_cache;
 #if WORKLOAD == YCSB
     _cache->init(bucket_cnt, part_cnt, VERIFIED_CACHE_SIZ);
@@ -98,6 +102,15 @@ RC IndexEnc::init(uint64_t bucket_cnt, int part_cnt) {
         }
     }
     return RCOK;
+}
+
+RC IndexEnc::init_ts(int part_cnt) {
+    for (int i = 0;i < part_cnt; i ++) {
+        for (int j = 0; j < _bucket_cnt_per_part; j ++) {
+            _flush_time[i][j] = 0;
+        }
+    }
+    _init_ts = get_enc_time();
 }
 
 RC
@@ -196,10 +209,17 @@ RC IndexEnc::index_read(std::string iname, idx_key_t key, itemid_t * &item, int 
 #include "common/base_row.h"
 #include "../../common/api.h"
 
+//int flush_count = 0;
+
 // flush_out the data to data cache.
 void flush_out(std::string iname, int part_id, uint64_t bkt_idx, BucketHeader_ENC *c) {
     auto res = new BucketHeader;
     res->init();
+    c->from->_flush_time[part_id][bkt_idx] = get_enc_time();
+//    flush_count ++;
+//    if (flush_count % 1000 == 0) {
+//        printf("flush = %d\n", flush_count);
+//    }
     res->locked = false;
     BucketNode *last_node = nullptr;
     for (auto it = c->first_node; it; it = it->next) {
@@ -243,6 +263,9 @@ void flush_out(std::string iname, int part_id, uint64_t bkt_idx, BucketHeader_EN
     assert(c->get_hash() == c->origin->get_hash());
 }
 
+int diff_cnt = 0;
+int reload_cnt = 0;
+
 BucketHeader_ENC* IndexEnc::load_bucket(std::string iname, int part_id, uint64_t bkt_idx) {
     auto cur = (BucketHeader_ENC*) _cache->try_load(part_id, bkt_idx);
     if (cur != nullptr) {
@@ -255,8 +278,19 @@ BucketHeader_ENC* IndexEnc::load_bucket(std::string iname, int part_id, uint64_t
         auto res_bucket = new BucketHeader_ENC;
         uint total_rec = 0;
         auto idx = (IndexHash *) inner_index_map->_indexes[iname];
-        if (!preloading && bkt_idx % 100 >= 100-TAMPER_PERCENTAGE) { //  && get_enc_time()%100 < 10
+        if (_flush_time[part_id][bkt_idx] == 0) {
+            _flush_time[part_id][bkt_idx] = _init_ts;
+        }
+        if (!preloading && bkt_idx % 100 >= 100-TAMPER_PERCENTAGE &&
+            int(get_enc_time() / TAMPER_INTERVAL) != int(_flush_time[part_id][bkt_idx] / TAMPER_INTERVAL)) { //  && get_enc_time()%100 < 10
+//            diff_cnt ++;
             sync_bucket_from_disk(iname, iname.size(), part_id, bkt_idx);
+//            if (_flush_time[part_id][bkt_idx] != _init_ts) {
+//                reload_cnt ++;
+//            }
+//            if (diff_cnt % 1000 == 0) {
+//                printf("recovery count = %d, %d\n", diff_cnt, reload_cnt);
+//            }
 //            return nullptr;
         }
         if (!inside_data_cache(bkt_idx)) {
