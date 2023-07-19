@@ -32,10 +32,11 @@ count_job = 0
 
 
 def insert_job(alg="OCC", workload="YCSB", thread_num=4, theta=0.5, bkt_fac=1, read_perc=0.5, use_sgx=True,
-               cs=GB * 4, ds=GB * 16, veri="PAGE_VERI", index="IDX_HASH", pre_load=1, use_log=0, txn_per_thd=10000,
+               cs=GB * 4, ds=GB * 4, veri="PAGE_VERI", index="IDX_HASH", pre_load=1, use_log=0, txn_per_thd=10000,
                table_size=10 * MB, txn_length=16, enable_data_cache=True, pt=1, prof="false", wh=16,
                full_tpcc="false", nodes=1, test_freshness=0, veri_hash_buf_siz=KB * 4, real_time=0, sync_batch=16,
-               vaccum=128, lazy_offloading=1, fast_chain=1, small_cs=False, veri_batch_sec = 1, tamper = 0, tamper_interval = BILLION):
+               vaccum=128, lazy_offloading=1, fast_chain=1, small_cs=False, veri_batch_sec = 1, tamper = 0, tamper_interval = 1,
+               tamper_recovery = 1):
     global count_job
     count_job = count_job + 1
     jobs[count_job] = {
@@ -52,6 +53,7 @@ def insert_job(alg="OCC", workload="YCSB", thread_num=4, theta=0.5, bkt_fac=1, r
         "DATA_CACHE_SIZE" : ds,
         "TAMPER_PERCENTAGE" : tamper,
         "TAMPER_INTERVAL" : tamper_interval,
+        "TAMPER_RECOVERY" : tamper_recovery,
         "ENABLE_DATA_CACHE" : "true" if enable_data_cache else "false",
         "VERI_TYPE"			: veri,
         "INDEX_STRUCT"		: index,
@@ -312,23 +314,15 @@ def run_heatmap():
     # veri_cache = [GB / 2, 1 * GB, GB + GB / 2, 2 * GB, 2 * GB + GB / 2, 3 * GB,  3 * GB + GB / 2,
     #               4 * GB, 4 * GB + GB/2, 5 * GB, 5 * GB + GB/2, 6 * GB]
     # veri_cache = [2* GB, 4* GB, 6* GB, 8* GB, 10* GB, 12* GB, 14* GB, 16* GB, 18* GB, 20* GB]
-    veri_cache = [18* GB, 20* GB, 18* GB, 20* GB, 18* GB, 20* GB, 18* GB, 20* GB]
-    # veri_cache = [4 * GB]
-    # data_cache = [GB / 2, 1 * GB, GB + GB / 2, 2 * GB, 2 * GB + GB / 2, 3 * GB,  3 * GB + GB / 2,
-    #               4 * GB, 4 * GB + GB/2, 5 * GB, 5 * GB + GB/2, 6 * GB]
-    data_cache = [20* GB]
+    insert_job(index="IDX_BTREE")
+    veri_cache = [GB / 2, 1 * GB, GB + GB / 2, 2 * GB, 2 * GB + GB / 2, 3 * GB,  3 * GB + GB / 2,
+                  4 * GB]
+    data_cache = [GB / 2, 1 * GB, GB + GB / 2, 2 * GB, 2 * GB + GB / 2, 3 * GB,  3 * GB + GB / 2,
+                  4 * GB]
     # varying data cache size.
     for cs in veri_cache:
         for ds in data_cache:
-            # if cs == 16 * GB and (ds < 10 *GB or ds == 16*GB):
-            #     continue
-            # if cs != 14 * GB and (cs + ds > 20 * GB):
-            #     continue
-            # if cs + ds > 22 * GB:
-            #     continue
-            insert_job(table_size=20 * MB, cs=cs, ds=ds, use_log=1)
-            # if cs == 1 * GB and ds == 16 *GB:
-                # insert_job(table_size=4 * MB, cs=cs, ds=ds, use_log=1)
+            insert_job(cs=cs, ds=ds, index="IDX_BTREE")
     run_all_test(jobs, "ycsb.cache.heatmap.result")
 
 def run_tamper():
@@ -339,6 +333,16 @@ def run_tamper():
     for tp in tamper:
         insert_job(tamper=tp, use_log=1)
     run_all_test(jobs, "ycsb.cache.tamper.result")
+
+def run_tamper_txn_length():
+    global jobs, max_siz_per_record
+    max_siz_per_record = KB
+    jobs = OrderedDict()
+    txn_length =  [16] #[1, 2, 4, 8]
+    for len in txn_length:
+        insert_job(tamper=10, txn_length=len, use_log=1, tamper_recovery=1)
+        insert_job(tamper=10, txn_length=len, use_log=1, tamper_recovery=0)
+    run_all_test(jobs, "ycsb.cache.tamper-length.result")
 
 def run_tamper_interval():
     global jobs, max_siz_per_record
@@ -487,9 +491,10 @@ def run_common_test():
 # single node, large mem
 # run_database_c_size_test()
 # run_tamper()
-run_tamper_interval()
-# run_heatmap()
-# # run_database_size_test()
+# run_tamper_interval()
+# run_tamper_txn_length()
+run_heatmap()
+# run_database_size_test()
 # run_database_varying_txn_length()
 # run_single_layer_cache_exp()
 # run_database_skew_test()

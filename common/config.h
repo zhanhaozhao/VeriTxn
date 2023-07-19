@@ -287,6 +287,7 @@ extern enum TestCases					g_test_case;
 
 #define TAMPER_PERCENTAGE 100
 #define TAMPER_INTERVAL 10000000
+#define TAMPER_RECOVERY 0
 
 
 // Log queue type

@@ -33,6 +33,21 @@ RC IndexBTEnc::init(uint64_t part_cnt) {
     return RCOK;
 }
 
+bool IndexBTEnc::inside_data_cache(bt_node* node) {
+    if (!node->is_leaf) return true;
+    else {
+        uint64_t lm = BTREE_NODE_NUM / 1024 * (DATA_CACHE_SIZE/SYNTH_TABLE_SIZE + VERIFIED_CACHE_SIZ/SYNTH_TABLE_SIZE);
+        if (node->node_id > lm) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool IndexBTEnc::need_tamper_recovery(bt_node* node) {
+    return !preloading && node->node_id % 100 >= 100-TAMPER_PERCENTAGE;
+}
+
 #if VERI_TYPE == MERKLE_TREE
 uint64_t BTNode::hash() const {
     uint64_t res = 0ULL;
@@ -294,6 +309,18 @@ BTNode* IndexBTEnc::load_child(BTNode *cur_node, int i) {
     auto cur = (BTNode*) _cache->try_load(cur_node->part, inner_node_id);
     if (cur != nullptr) {
         return cur;
+    }
+    if (!inside_data_cache(origin_node)) {
+        sync_bucket_from_disk(index_name, index_name.size(), cur_node->part, inner_node_id);
+    }
+    if (need_tamper_recovery(origin_node)) {
+#if TAMPER_RECOVERY == 1
+        auto start_time = get_enc_time();
+        sync_bucket_from_disk(index_name, index_name.size(), cur_node->part, inner_node_id);
+        INC_GLOB_STATS_ENC(time_recover, get_enc_time() - start_time);
+#else
+        return nullptr;
+#endif
     }
 #if !ENABLE_DATA_CACHE
     if (!preloading)

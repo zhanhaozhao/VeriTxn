@@ -140,15 +140,12 @@ int max_pg_id = 0;
 
 bool IndexEnc::inside_data_cache(uint64_t pg_id) {
     // we simulate keeping record 0 -- data_cache_size inside caches, since they are mostly accessed.
+//    return true;
     load_cnt ++;
     if (pg_id > max_pg_id) {
         max_pg_id = pg_id;
     }
-    uint64_t lm = _bucket_cnt_per_part / 2048.0 * (DATA_CACHE_SIZE / SYNTH_TABLE_SIZE  + VERIFIED_CACHE_SIZ / SYNTH_TABLE_SIZE );
-//    if (load_cnt % 1000 == 0) {
-//        printf("%.3f\n", 1.0 * miss_cnt / load_cnt);
-//        printf("updated %d - %d\n", max_pg_id, lm);
-//    }
+    uint64_t lm = std::uint64_t (_bucket_cnt_per_part / 1024.0 * (1.0*DATA_CACHE_SIZE/SYNTH_TABLE_SIZE + 1.0*VERIFIED_CACHE_SIZ/SYNTH_TABLE_SIZE));
     if (pg_id > lm) {
         miss_cnt ++;
         return false;
@@ -283,18 +280,23 @@ BucketHeader_ENC* IndexEnc::load_bucket(std::string iname, int part_id, uint64_t
         }
         if (!preloading && bkt_idx % 100 >= 100-TAMPER_PERCENTAGE &&
             int(get_enc_time() / TAMPER_INTERVAL) != int(_flush_time[part_id][bkt_idx] / TAMPER_INTERVAL)) { //  && get_enc_time()%100 < 10
+            // case 1: the page get tampered, load from disk.
 //            diff_cnt ++;
+#if TAMPER_RECOVERY == 1
             auto start_time = get_enc_time();
             sync_bucket_from_disk(iname, iname.size(), part_id, bkt_idx);
             INC_GLOB_STATS_ENC(time_recover, get_enc_time() - start_time);
+#else
 //            if (_flush_time[part_id][bkt_idx] != _init_ts) {
 //                reload_cnt ++;
 //            }
 //            if (diff_cnt % 1000 == 0) {
 //                printf("recovery count = %d, %d\n", diff_cnt, reload_cnt);
 //            }
-//            return nullptr;
+            return nullptr;
+#endif
         }
+
         if (!inside_data_cache(bkt_idx)) {
             sync_bucket_from_disk(iname, iname.size(), part_id, bkt_idx);
         } else {

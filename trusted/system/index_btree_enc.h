@@ -126,6 +126,9 @@ private:
     int leaf_has_key(BTNode *leaf, idx_key_t key);
     RC make_node(uint64_t part_id, BTNode *&node, bool isleaf);
     RC add_to_cache(BTNode *old);
+    bool inside_data_cache(bt_node *node);
+
+    bool need_tamper_recovery(bt_node *node);
 };
 
 #if VERI_TYPE == DEFERRED_MEMORY
