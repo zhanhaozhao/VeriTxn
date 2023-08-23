@@ -65,7 +65,7 @@
 #define INDEX_NAME_LENGTH       	16
 
 #if WORKLOAD == YCSB
-#define BTREE_NODE_NUM              (SYNTH_TABLE_SIZE  + SYNTH_TABLE_SIZE/4+10)
+#define BTREE_NODE_NUM              (SYNTH_TABLE_SIZE  + SYNTH_TABLE_SIZE/2+10)
 #else
 #define BTREE_NODE_NUM              2000000
 #endif
@@ -151,13 +151,14 @@
 // For large warehouse count, the tables do not fit in memory
 // small tpcc schemas shrink the table size.
 #define TPCC_SMALL					false
-#define FULL_TPCC true
+#define FULL_TPCC false
 // Some of the transactions read the data but never use them.
 // If TPCC_ACCESS_ALL == fales, then these parts of the transactions
 // are not modeled.
-#define TPCC_ACCESS_ALL 			true
+#define TPCC_ACCESS_ALL 			false
 #define WH_UPDATE					true
 #define NUM_WH 16
+#define LONG_PAYMENT 1
 //
 enum TPCCTxnType {TPCC_ALL,
     TPCC_PAYMENT,
@@ -283,7 +284,7 @@ extern enum TestCases					g_test_case;
 #define FRESHNESS_STATS_CNT 20000
 #define SYNC_VERSION_BATCH 16
 #define VACCUM_TRIGGER 128
-#define MISS_PENALTY 1000000UL
+#define MISS_PENALTY 500000UL
 
 #define TAMPER_PERCENTAGE 0
 #define TAMPER_INTERVAL 1000000000

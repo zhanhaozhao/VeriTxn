@@ -36,7 +36,7 @@ def insert_job(alg="OCC", workload="YCSB", thread_num=4, theta=0.5, bkt_fac=1, r
                table_size=10 * MB, txn_length=16, enable_data_cache=True, pt=1, prof="false", wh=16,
                full_tpcc="false", nodes=1, test_freshness=0, veri_hash_buf_siz=KB * 4, real_time=0, sync_batch=16,
                vaccum=128, lazy_offloading=1, fast_chain=1, small_cs=False, veri_batch_sec = 1, tamper = 0, tamper_interval = 1,
-               tamper_recovery = 1, access_all=False):
+               tamper_recovery = 1, access_all=False, replace_payment=False):
     global count_job
     count_job = count_job + 1
     jobs[count_job] = {
@@ -55,6 +55,7 @@ def insert_job(alg="OCC", workload="YCSB", thread_num=4, theta=0.5, bkt_fac=1, r
         "TAMPER_INTERVAL" : tamper_interval,
         "TAMPER_RECOVERY" : tamper_recovery,
         "TPCC_ACCESS_ALL" : "true" if access_all else "false",
+        "LONG_PAYMENT"  : 1 if replace_payment else 0,
         "ENABLE_DATA_CACHE" : "true" if enable_data_cache else "false",
         "VERI_TYPE"			: veri,
         "INDEX_STRUCT"		: index,
@@ -450,9 +451,12 @@ def run_full_tpcc_test():
     # insert_job("NO_WAIT", 'TPCC', use_sgx=True, full_tpcc="true", index="IDX_BTREE", thread_num=1, wh=4, txn_per_thd=1000)
     # insert_job("NO_WAIT", 'TPCC', use_sgx=True, full_tpcc="true", index="IDX_BTREE", thread_num=4, wh=4, txn_per_thd=1000)
     # insert_job("NO_WAIT", 'TPCC', use_sgx=True, full_tpcc="true", index="IDX_BTREE", thread_num=8, wh=4, txn_per_thd=1000)
-    # insert_job("NO_WAIT", 'TPCC', use_sgx=True, full_tpcc="true", index="IDX_BTREE", thread_num=1, wh=16, txn_per_thd=1000)
-    insert_job("NO_WAIT", 'TPCC', use_sgx=True, access_all=True, full_tpcc="true", index="IDX_BTREE", thread_num=4, wh=16, txn_per_thd=1000)
-    insert_job("NO_WAIT", 'TPCC', use_sgx=True, access_all=False, full_tpcc="true", index="IDX_BTREE", thread_num=4, wh=16, txn_per_thd=1000)
+    # insert_job("NO_WAIT", 'TPCC', use_sgx=True, access_all=True, full_tpcc="true", index="IDX_BTREE", wh=16)
+    # insert_job("NO_WAIT", 'TPCC', use_sgx=True, access_all=False, full_tpcc="true", index="IDX_BTREE", wh=16)
+    # insert_job("NO_WAIT", 'TPCC', use_sgx=True, access_all=True, full_tpcc="true", index="IDX_BTREE", wh=16)
+    insert_job("NO_WAIT", 'TPCC', use_sgx=True, replace_payment=True, full_tpcc="true", index="IDX_BTREE", wh=16)
+    insert_job("NO_WAIT", 'TPCC', use_sgx=True, replace_payment=False, full_tpcc="true", index="IDX_BTREE", wh=16)
+    # insert_job("NO_WAIT", 'TPCC', use_sgx=True, access_all=False, full_tpcc="true", index="IDX_BTREE", wh=16)
     run_all_test(jobs, "tpcc.full.result")
 
 
