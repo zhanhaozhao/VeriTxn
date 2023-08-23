@@ -65,7 +65,7 @@
 #define INDEX_NAME_LENGTH       	16
 
 #if WORKLOAD == YCSB
-#define BTREE_NODE_NUM              (SYNTH_TABLE_SIZE  + SYNTH_TABLE_SIZE/4+10)
+#define BTREE_NODE_NUM              (SYNTH_TABLE_SIZE  + SYNTH_TABLE_SIZE/2+10)
 #else
 #define BTREE_NODE_NUM              2000000
 #endif
@@ -283,7 +283,7 @@ extern enum TestCases					g_test_case;
 #define FRESHNESS_STATS_CNT 20000
 #define SYNC_VERSION_BATCH 16
 #define VACCUM_TRIGGER 128
-#define MISS_PENALTY 1000000UL
+#define MISS_PENALTY 500000UL
 
 #define TAMPER_PERCENTAGE 0
 #define TAMPER_INTERVAL 1000000000

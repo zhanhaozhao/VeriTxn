@@ -559,7 +559,15 @@ tpcc_txn_man::run_order_status(tpcc_query * query) {
 		r_cust = (row_t *) item->location;
 	}
 #if TPCC_ACCESS_ALL
-	assert(false);
+    row_t * r_cust_local = get_row(r_cust, RD);
+	if (r_cust_local == NULL) {
+		return finish(Abort);
+	}
+	double c_balance;
+	r_cust_local->get_value(C_BALANCE, c_balance);
+	char * c_first = r_cust_local->get_value(C_FIRST);
+	char * c_middle = r_cust_local->get_value(C_MIDDLE);
+	char * c_last = r_cust_local->get_value(C_LAST);
 #endif
 	// EXEC SQL SELECT o_id, o_carrier_id, o_entry_d
 	// INTO :o_id, :o_carrier_id, :entdate FROM orders
@@ -575,6 +583,10 @@ tpcc_txn_man::run_order_status(tpcc_query * query) {
 
 	uint64_t o_id, o_entry_d, o_carrier_id;
 	r_order_local->get_value(O_ID, o_id);
+#if TPCC_ACCESS_ALL
+    r_order_local->get_value(O_ENTRY_D, o_entry_d);
+    r_order_local->get_value(O_CARRIER_ID, o_carrier_id);
+#endif
 
 	// EXEC SQL DECLARE c_line CURSOR FOR SELECT ol_i_id, ol_supply_w_id, ol_quantity,
 	// ol_amount, ol_delivery_d
@@ -592,6 +604,18 @@ tpcc_txn_man::run_order_status(tpcc_query * query) {
 //	index = _wl->i_orderline;
 	item = index_read("ORDER-LINE_IDX", key, wh_to_part(query->w_id));
 //	assert(item != NULL);
+#if TPCC_ACCESS_ALL
+    while (item != NULL) {
+        row_t * r_orderline = (row_t *) item->location;
+        int64_t ol_i_id, ol_supply_w_id, ol_quantity, ol_amount, ol_delivery_d;
+        r_orderline->get_value(OL_I_ID, ol_i_id);
+        r_orderline->get_value(OL_SUPPLY_W_ID, ol_supply_w_id);
+        r_orderline->get_value(OL_QUANTITY, ol_quantity);
+        r_orderline->get_value(OL_AMOUNT, ol_amount);
+        r_orderline->get_value(OL_DELIVERY_D, ol_delivery_d);
+        item = item->next;
+    }
+#endif
 
 final:
 	assert( rc == RCOK );

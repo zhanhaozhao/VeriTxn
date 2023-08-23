@@ -34,13 +34,14 @@ RC IndexBTEnc::init(uint64_t part_cnt) {
 }
 
 bool IndexBTEnc::inside_data_cache(bt_node* node) {
-    if (!node->is_leaf) return true;
-    else {
-        uint64_t lm = BTREE_NODE_NUM / 1024 * (DATA_CACHE_SIZE/SYNTH_TABLE_SIZE + VERIFIED_CACHE_SIZ/SYNTH_TABLE_SIZE);
-        if (node->node_id > lm) {
-            return false;
-        }
+    if (preloading) return true;
+    uint64_t lm = BTREE_NODE_NUM / 1024 * (DATA_CACHE_SIZE/SYNTH_TABLE_SIZE + VERIFIED_CACHE_SIZ/SYNTH_TABLE_SIZE);
+    if (node->is_leaf && node->keys[0] > lm) {
+        return false;
     }
+//    if (!node->is_leaf && node->node_id > lm) {
+//        return false;
+//    }
     return true;
 }
 

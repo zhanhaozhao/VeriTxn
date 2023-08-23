@@ -36,7 +36,7 @@ def insert_job(alg="OCC", workload="YCSB", thread_num=4, theta=0.5, bkt_fac=1, r
                table_size=10 * MB, txn_length=16, enable_data_cache=True, pt=1, prof="false", wh=16,
                full_tpcc="false", nodes=1, test_freshness=0, veri_hash_buf_siz=KB * 4, real_time=0, sync_batch=16,
                vaccum=128, lazy_offloading=1, fast_chain=1, small_cs=False, veri_batch_sec = 1, tamper = 0, tamper_interval = 1,
-               tamper_recovery = 1):
+               tamper_recovery = 1, access_all=False):
     global count_job
     count_job = count_job + 1
     jobs[count_job] = {
@@ -54,6 +54,7 @@ def insert_job(alg="OCC", workload="YCSB", thread_num=4, theta=0.5, bkt_fac=1, r
         "TAMPER_PERCENTAGE" : tamper,
         "TAMPER_INTERVAL" : tamper_interval,
         "TAMPER_RECOVERY" : tamper_recovery,
+        "TPCC_ACCESS_ALL" : "true" if access_all else "false",
         "ENABLE_DATA_CACHE" : "true" if enable_data_cache else "false",
         "VERI_TYPE"			: veri,
         "INDEX_STRUCT"		: index,
@@ -92,7 +93,7 @@ def test_compile(job):
         tp = max(job["SYNTH_TABLE_SIZE"] * max_siz_per_record * 4, 1*GB)
         # if job["SMALL_CACHE_SIZE"]:
         print(tp)
-        siz = hex(min(tp, 28 * GB * 4))
+        siz = hex(min(tp, 32 * GB))
         # else:
         # siz = hex(tp)
         print(siz)
@@ -298,11 +299,16 @@ def run_cache_size_impact_for_different_methods_test():
     max_siz_per_record = KB
     jobs = OrderedDict()
     # x_con = [512 * MB, 1 * GB, 2 * GB, 4 * GB, 8 * GB]
-    x_con = [4 * GB, 4 * GB, 4 * GB, 8 * GB, 8 * GB, 8 * GB]
+    # insert_job(index="IDX_BTREE", cs=4  * GB, txn_length=1)
+    x_con = [512 * MB, 1 * GB, 2 * GB, 4*GB, 8*GB]
+    # for cs in x_con:
+    #     insert_job(index="IDX_BTREE", cs=cs)
+    #     insert_job(index="IDX_BTREE", veri="MERKLE_TREE", cs=cs)
+    #     insert_job(index="IDX_BTREE", veri="DEFERRED_MEMORY", cs=cs)
     for cs in x_con:
-        # insert_job(index="IDX_BTREE", cs=cs)
-        insert_job(index="IDX_BTREE", veri="MERKLE_TREE", cs=cs)
-        # insert_job(index="IDX_BTREE", veri="DEFERRED_MEMORY", cs=cs)
+        insert_job(index="IDX_BTREE", cs=cs, txn_length=1)
+        insert_job(index="IDX_BTREE", veri="MERKLE_TREE", cs=cs, txn_length=1)
+        insert_job(index="IDX_BTREE", veri="DEFERRED_MEMORY", cs=cs, txn_length=1)
         # insert_job(index="IDX_BTREE", veri="DEFERRED_MEMORY", cs=cs, pre_load=0)
     run_all_test(jobs, "ycsb.cache.size.result")
 
@@ -314,15 +320,19 @@ def run_heatmap():
     # veri_cache = [GB / 2, 1 * GB, GB + GB / 2, 2 * GB, 2 * GB + GB / 2, 3 * GB,  3 * GB + GB / 2,
     #               4 * GB, 4 * GB + GB/2, 5 * GB, 5 * GB + GB/2, 6 * GB]
     # veri_cache = [2* GB, 4* GB, 6* GB, 8* GB, 10* GB, 12* GB, 14* GB, 16* GB, 18* GB, 20* GB]
-    insert_job(index="IDX_BTREE")
-    veri_cache = [GB / 2, 1 * GB, GB + GB / 2, 2 * GB, 2 * GB + GB / 2, 3 * GB,  3 * GB + GB / 2,
-                  4 * GB]
-    data_cache = [GB / 2, 1 * GB, GB + GB / 2, 2 * GB, 2 * GB + GB / 2, 3 * GB,  3 * GB + GB / 2,
-                  4 * GB]
-    # varying data cache size.
+    # insert_job(index="IDX_BTREE", cs=10*GB, ds=10*GB)
+    # insert_job(index="IDX_BTREE", cs=1 *GB, ds=4*GB, use_sgx=False)
+    # insert_job(index="IDX_BTREE", cs=4 *GB, ds=1*GB, use_sgx=False)
+    # veri_cache = [GB / 2, 1 * GB, GB + GB / 2, 2 * GB, 2 * GB + GB / 2, 3 * GB,  3 * GB + GB / 2,
+    #               4 * GB]
+    # veri_cache = [GB / 2, 1 * GB, GB + GB / 2, 2 * GB, 2 * GB + GB / 2, 3 * GB,  3 * GB + GB / 2,
+    #               4 * GB]
+    veri_cache = [1 * GB, 2 * GB, 3 *GB, 4*GB, 5*GB, 6*GB, 7*GB, 8*GB, 9*GB, 10*GB]
+    data_cache = [1 * GB, 2 * GB, 3 *GB, 4*GB, 5*GB, 6*GB, 7*GB, 8*GB, 9*GB, 10*GB]
     for cs in veri_cache:
         for ds in data_cache:
-            insert_job(cs=cs, ds=ds, index="IDX_BTREE")
+            if ds + cs <= 8*GB or (ds == 1*GB):
+                insert_job(cs=cs, ds=ds, index="IDX_BTREE")
     run_all_test(jobs, "ycsb.cache.heatmap.result")
 
 def run_tamper():
@@ -423,16 +433,26 @@ def run_profiling():
         insert_job("NO_WAIT", 'YCSB', thread_num=th, use_sgx=True, prof="true")
     run_all_test(jobs, "ycsb.profiling.result")
 
-
-def run_full_tpcc_test():
+def run_large_size():
     global jobs
     jobs = OrderedDict()
-    insert_job("NO_WAIT", 'TPCC', use_sgx=True, full_tpcc="true", index="IDX_BTREE", thread_num=1, wh=4, txn_per_thd=1000)
-    insert_job("NO_WAIT", 'TPCC', use_sgx=True, full_tpcc="true", index="IDX_BTREE", thread_num=4, wh=4, txn_per_thd=1000)
-    insert_job("NO_WAIT", 'TPCC', use_sgx=True, full_tpcc="true", index="IDX_BTREE", thread_num=8, wh=4, txn_per_thd=1000)
-    insert_job("NO_WAIT", 'TPCC', use_sgx=True, full_tpcc="true", index="IDX_BTREE", thread_num=1, wh=16, txn_per_thd=1000)
-    insert_job("NO_WAIT", 'TPCC', use_sgx=True, full_tpcc="true", index="IDX_BTREE", thread_num=4, wh=16, txn_per_thd=1000)
-    insert_job("NO_WAIT", 'TPCC', use_sgx=True, full_tpcc="true", index="IDX_BTREE", thread_num=8, wh=16, txn_per_thd=1000)
+    # insert_job(index="INDEX_BTREE", table_size=60*GB, cs=32*GB, ds=32*GB, use_sgx=False)
+    insert_job(index="IDX_BTREE", table_size=40*MB, cs=20*GB, ds=20*GB, use_sgx=False)
+    insert_job(index="IDX_BTREE", table_size=40*MB, cs=20*GB, ds=20*GB)
+    insert_job(index="IDX_BTREE", table_size=40*MB, cs=20*GB, ds=1*GB)
+    run_all_test(jobs, "ycsb.big.result")
+
+
+def run_full_tpcc_test():
+    global jobs, CompileOnly
+    # CompileOnly = True
+    # jobs = OrderedDict()
+    # insert_job("NO_WAIT", 'TPCC', use_sgx=True, full_tpcc="true", index="IDX_BTREE", thread_num=1, wh=4, txn_per_thd=1000)
+    # insert_job("NO_WAIT", 'TPCC', use_sgx=True, full_tpcc="true", index="IDX_BTREE", thread_num=4, wh=4, txn_per_thd=1000)
+    # insert_job("NO_WAIT", 'TPCC', use_sgx=True, full_tpcc="true", index="IDX_BTREE", thread_num=8, wh=4, txn_per_thd=1000)
+    # insert_job("NO_WAIT", 'TPCC', use_sgx=True, full_tpcc="true", index="IDX_BTREE", thread_num=1, wh=16, txn_per_thd=1000)
+    insert_job("NO_WAIT", 'TPCC', use_sgx=True, access_all=True, full_tpcc="true", index="IDX_BTREE", thread_num=4, wh=16, txn_per_thd=1000)
+    insert_job("NO_WAIT", 'TPCC', use_sgx=True, access_all=False, full_tpcc="true", index="IDX_BTREE", thread_num=4, wh=16, txn_per_thd=1000)
     run_all_test(jobs, "tpcc.full.result")
 
 
@@ -486,15 +506,17 @@ def run_common_test():
 # run_rw_exp()
 # run_profiling()
 # run_common_test()
-# run_full_tpcc_test()
+run_full_tpcc_test()
 
 # single node, large mem
 # run_database_c_size_test()
 # run_tamper()
 # run_tamper_interval()
 # run_tamper_txn_length()
-run_heatmap()
 # run_database_size_test()
+# run_large_size()
+# run_cache_size_impact_for_different_methods_test()
+# run_heatmap()
 # run_database_varying_txn_length()
 # run_single_layer_cache_exp()
 # run_database_skew_test()
