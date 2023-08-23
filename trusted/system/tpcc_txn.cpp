@@ -429,7 +429,7 @@ RC tpcc_txn_man::run_new_order(tpcc_query * query) {
 	EXEC SQL SELECT d_next_o_id, d_tax
 		INTO :d_next_o_id, :d_tax
 		FROM district WHERE d_id = :d_id AND d_w_id = :w_id;
-	EXEC SQL UPDATE d istrict SET d _next_o_id = :d _next_o_id + 1
+	EXEC SQL UPDATE district SET d _next_o_id = :d _next_o_id + 1
 		WH ERE d _id = :d_id AN D d _w _id = :w _id ;
 	+===================================================*/
 	key = distKey(d_id, w_id);
@@ -443,9 +443,11 @@ RC tpcc_txn_man::run_new_order(tpcc_query * query) {
 	if (r_dist_local == NULL) {
 		return finish(Abort);
 	}
-	//double d_tax;
+#if TPCC_ACCESS_ALL
+    double d_tax;
+	d_tax = *(double *) r_dist_local->get_value(D_TAX);
+#endif
 	int64_t o_id;
-	//d_tax = *(double *) r_dist_local->get_value(D_TAX);
 	r_dist_local->get_value(D_NEXT_O_ID, o_id);
 	o_id ++;
 	r_dist_local->set_value(D_NEXT_O_ID, o_id);
@@ -749,9 +751,11 @@ tpcc_txn_man::run_delivery(tpcc_query * query) {
 		while (item != NULL) {
 			// TODO the row is not locked
 			row_t * r_orderline = (row_t *)item->location;
-//			r_orderline->set_value(OL_DELIVERY_D, query->ol_delivery_d);
-//			r_orderline->get_value(OL_AMOUNT, ol_amount);
-			sum_ol_amount += ol_amount;
+#if TPCC_ACCESS_ALL
+			r_orderline->set_value(OL_DELIVERY_D, query->ol_delivery_d);
+			r_orderline->get_value(OL_AMOUNT, ol_amount);
+#endif
+            sum_ol_amount += ol_amount;
 		}
 
 		key = custKey(o_c_id, d_id, query->w_id);
@@ -759,7 +763,13 @@ tpcc_txn_man::run_delivery(tpcc_query * query) {
 		row_t * r_cust = (row_t *)item->location;
 		double c_balance;
 		uint64_t c_delivery_cnt;
-	}
+#if TPCC_ACCESS_ALL
+        r_cust->get_value(C_DELIVERY_CNT, c_delivery_cnt);
+        r_cust->set_value(C_DELIVERY_CNT, c_delivery_cnt+1);
+        r_cust->get_value(C_BALANCE, c_balance);
+        r_cust->set_value(C_BALANCE, c_balance+sum_ol_amount);
+#endif
+    }
 	return RCOK;
 }
 
