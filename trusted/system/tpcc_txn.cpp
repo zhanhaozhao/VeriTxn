@@ -155,7 +155,13 @@ RC tpcc_txn_man::run_payment(tpcc_query * query) {
 				mid = mid->next;
 		}
 		r_cust = ((row_t *)mid->location);
-		
+        query->c_id = *(uint64_t*) r_cust->get_value(C_ID);
+        key = custKey(query->c_id, query->c_d_id, query->c_w_id);
+        auto item_tmp = index_read("CUSTOMER_ID_IDX", key, wh_to_part(query->c_w_id));
+        if (item_tmp == nullptr) {
+            return finish(Abort);
+        }
+        r_cust = ((row_t *)item_tmp->location);
 		/*============================================================================+
 			for (n=0; n<namecnt/2; n++) {
 				EXEC SQL FETCH c_byname
@@ -324,7 +330,7 @@ RC tpcc_txn_man::run_payment(tpcc_query * query) {
 
 
     key = custKey(query->c_id, query->c_d_id, query->c_w_id);
-    item = index_read("CUSTOMER_ID_IDX", key, wh_to_part(c_w_id));
+    item = index_read("CUSTOMER_ID_IDX", key, wh_to_part(query->c_w_id));
     if (item == nullptr) {
         return finish(Abort);
     }
@@ -637,7 +643,13 @@ tpcc_txn_man::run_order_status(tpcc_query * query) {
 		}
 		r_cust = ((row_t *)mid->location);
 		query->c_id = *(uint64_t*) r_cust->get_value(C_ID);
-	} else {
+        key = custKey(query->c_id, query->c_d_id, query->c_w_id);
+        auto item_tmp = index_read("CUSTOMER_ID_IDX", key, wh_to_part(query->c_w_id));
+        if (item_tmp == nullptr) {
+            return finish(Abort);
+        }
+        r_cust = ((row_t *)item_tmp->location);
+    } else {
 		// EXEC SQL SELECT c_balance, c_first, c_middle, c_last
 		// INTO :c_balance, :c_first, :c_middle, :c_last
 		// FROM customer

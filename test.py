@@ -55,7 +55,7 @@ def insert_job(alg="OCC", workload="YCSB", thread_num=4, theta=0.5, bkt_fac=1, r
         "TAMPER_INTERVAL" : tamper_interval,
         "TAMPER_RECOVERY" : tamper_recovery,
         "TPCC_ACCESS_ALL" : "true" if access_all else "false",
-        "LONG_PAYMENT"  : 1 if replace_payment else 0,
+        "LONG_PAYMENT"  : 0 if replace_payment else 1,
         "ENABLE_DATA_CACHE" : "true" if enable_data_cache else "false",
         "VERI_TYPE"			: veri,
         "INDEX_STRUCT"		: index,
@@ -459,6 +459,11 @@ def run_full_tpcc_test():
     # insert_job("NO_WAIT", 'TPCC', use_sgx=True, access_all=False, full_tpcc="true", index="IDX_BTREE", wh=16)
     run_all_test(jobs, "tpcc.full.result")
 
+def run_tmp():
+    global jobs, CompileOnly
+    CompileOnly = False
+    insert_job("NO_WAIT", 'TPCC', use_sgx=False, full_tpcc="true", index="IDX_BTREE", wh=16)
+    run_all_test(jobs, "tmp.result")
 
 def run_freshness_test():
     global jobs
@@ -511,6 +516,7 @@ def run_common_test():
 # run_profiling()
 # run_common_test()
 run_full_tpcc_test()
+# run_tmp()
 
 # single node, large mem
 # run_database_c_size_test()
