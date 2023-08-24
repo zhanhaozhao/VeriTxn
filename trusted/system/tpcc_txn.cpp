@@ -155,13 +155,6 @@ RC tpcc_txn_man::run_payment(tpcc_query * query) {
 				mid = mid->next;
 		}
 		r_cust = ((row_t *)mid->location);
-        query->c_id = *(uint64_t*) r_cust->get_value(C_ID);
-        key = custKey(query->c_id, query->c_d_id, query->c_w_id);
-        auto item_tmp = index_read("CUSTOMER_ID_IDX", key, wh_to_part(query->c_w_id));
-        if (item_tmp == nullptr) {
-            return finish(Abort);
-        }
-        r_cust = ((row_t *)item_tmp->location);
 		/*============================================================================+
 			for (n=0; n<namecnt/2; n++) {
 				EXEC SQL FETCH c_byname
@@ -212,6 +205,15 @@ RC tpcc_txn_man::run_payment(tpcc_query * query) {
 	   	EXEC SQL UPDATE customer SET c_balance = :c_balance, c_data = :c_new_data
    		WHERE c_w_id = :c_w_id AND c_d_id = :c_d_id AND c_id = :c_id;
    	+======================================================================*/
+	if (query->by_last_name) { 
+		query->c_id = *(uint64_t*) r_cust->get_value(C_ID);
+		key = custKey(query->c_id, query->c_d_id, query->c_w_id);
+		auto item_tmp = index_read("CUSTOMER_ID_IDX", key, wh_to_part(query->c_w_id));
+		if (item_tmp == nullptr) {
+			return finish(Abort);
+		}
+		r_cust = ((row_t *)item_tmp->location);
+	}
 	row_t * r_cust_local = get_row(r_cust, WR);
 	if (r_cust_local == NULL) {
 		return finish(Abort);
@@ -720,12 +722,8 @@ final:
 }
 
 
-//TODO concurrency for index related operations is not completely supported yet.
-// In correct states may happen with the current code.
-
 RC 
 tpcc_txn_man::run_delivery(tpcc_query * query) {
-	// XXX HACK if another delivery txn is running on this warehouse, simply commit.
 	if ( !ATOM_CAS(_wl->delivering[query->w_id], false, true) )
 		return finish(RCOK);
 
@@ -757,7 +755,6 @@ tpcc_txn_man::run_delivery(tpcc_query * query) {
 		double sum_ol_amount;
 		double ol_amount;
 		while (item != NULL) {
-			// TODO the row is not locked
 			row_t * r_orderline = (row_t *)item->location;
 #if TPCC_ACCESS_ALL
 			r_orderline->set_value(OL_DELIVERY_D, query->ol_delivery_d);
