@@ -660,15 +660,11 @@ tpcc_txn_man::run_order_status(tpcc_query * query) {
 		r_cust = (row_t *) item->location;
 	}
 #if TPCC_ACCESS_ALL
-    row_t * r_cust_local = get_row(r_cust, RD);
-	if (r_cust_local == NULL) {
-		return finish(Abort);
-	}
 	double c_balance;
-	r_cust_local->get_value(C_BALANCE, c_balance);
-	char * c_first = r_cust_local->get_value(C_FIRST);
-	char * c_middle = r_cust_local->get_value(C_MIDDLE);
-	char * c_last = r_cust_local->get_value(C_LAST);
+	r_cust->get_value(C_BALANCE, c_balance);
+	char * c_first = r_cust->get_value(C_FIRST);
+	char * c_middle = r_cust->get_value(C_MIDDLE);
+	char * c_last = r_cust->get_value(C_LAST);
 #endif
 	// EXEC SQL SELECT o_id, o_carrier_id, o_entry_d
 	// INTO :o_id, :o_carrier_id, :entdate FROM orders
