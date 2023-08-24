@@ -27,12 +27,12 @@ def replace(filename, pattern, replacement):
 
 jobs = OrderedDict()
 dbms_cfg = ["config-std.h", "common/config.h"]
-algs = ['NO_WAIT']
+algs = ['OCC']
 count_job = 0
 
 
 def insert_job(alg="OCC", workload="YCSB", thread_num=4, theta=0.5, bkt_fac=1, read_perc=0.5, use_sgx=True,
-               cs=GB * 4, ds=GB * 4, veri="PAGE_VERI", index="IDX_HASH", pre_load=1, use_log=0, txn_per_thd=10000,
+               cs=GB * 4, ds=GB * 4, veri="PAGE_VERI", index="IDX_BTREE", pre_load=1, use_log=0, txn_per_thd=10000,
                table_size=10 * MB, txn_length=16, enable_data_cache=True, pt=1, prof="false", wh=16,
                full_tpcc="false", nodes=1, test_freshness=0, veri_hash_buf_siz=KB * 4, real_time=0, sync_batch=16,
                vaccum=128, lazy_offloading=1, fast_chain=1, small_cs=False, veri_batch_sec = 1, tamper = 0, tamper_interval = 1,
@@ -209,20 +209,9 @@ def run_thread_exp():
     global jobs
     jobs = OrderedDict()
     for th in [1, 2, 3, 4, 5, 6, 7, 8]:
-        insert_job("OCC", 'YCSB', thread_num=th, use_sgx=False)
-        insert_job("OCC", 'YCSB', thread_num=th, use_sgx=True)
+        insert_job("OCC", 'YCSB', index="IDX_HASH", thread_num=th, use_sgx=False)
+        insert_job("OCC", 'YCSB', index="IDX_HASH", thread_num=th, use_sgx=True)
     run_all_test(jobs, "ycsb.thread.result")
-
-def run_common_exp():
-    global jobs
-    jobs = OrderedDict()
-    # insert_job("NO_WAIT", 'YCSB', use_sgx=False, table_size=1*MB) #1.398 GB
-    # insert_job("NO_WAIT", 'YCSB', use_sgx=False, table_size=10*MB) #12.76 GB
-    insert_job("NO_WAIT", 'YCSB', use_sgx=True, table_size=32*MB) #10.162 GB in side s
-    insert_job("NO_WAIT", 'YCSB', use_sgx=True, table_size=48*MB) #10.162 GB in side s
-        # insert_job("OCC", 'YCSB', thread_num=th, use_sgx=True)
-    run_all_test(jobs, "ycsb.thread.result")
-
 
 # Local machine.
 def run_tpc_exp():
@@ -235,105 +224,41 @@ def run_tpc_exp():
             insert_job(alg, 'TPCC', thread_num=th, use_sgx=False, wh=4)
             insert_job(alg, 'TPCC', thread_num=th, use_sgx=True)
             insert_job(alg, 'TPCC', thread_num=th, use_sgx=True, wh=4)
-
-
     run_all_test(jobs, "tpcc.thread.wh.result")
 
-# Small memory, local machine.
 def run_theta_exp():
     global jobs
     jobs = OrderedDict()
     for th in [0.0, 0.3, 0.5, 0.6, 0.8, 0.9]:
-        insert_job("NO_WAIT", 'YCSB', theta=th, use_sgx=False)
-        insert_job("NO_WAIT", 'YCSB', theta=th, use_sgx=True)
+        insert_job("OCC", 'YCSB',index="IDX_HASH", theta=th, use_sgx=False)
+        insert_job("OCC", 'YCSB',index="IDX_HASH", theta=th, use_sgx=True)
     run_all_test(jobs, "ycsb.theta.result")
 
-
-# Small memory, local machine.
-def run_rw_exp():
-    global jobs
-    jobs = OrderedDict()
-    for th in [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]:
-        insert_job("NO_WAIT", 'YCSB', read_perc=th, use_sgx=False)
-        insert_job("NO_WAIT", 'YCSB', read_perc=th, use_sgx=True)
-    run_all_test(jobs, "ycsb.rw.result")
-
-
-# def run_common_test():
-#     global jobs
-#     jobs = OrderedDict()
-#     # insert_job("NO_WAIT", 'YCSB', use_sgx=False, database_size = 16*GB,
-#     #            small_cs=True, lazy_offloading=0, cs=128 * MB, txn_per_thd=1000) # No offloading
-#     insert_job("NO_WAIT", 'YCSB', use_sgx=False, database_size = 16*GB,
-#                small_cs=True, cs=128 * MB, txn_per_thd=1000) # No offloading
-#     run_all_test(jobs, "tmp.csv")
-
-
-# Large memory, single node.
-
-# Large memory, single node.
-def run_database_skew_test():
-    global jobs
-    jobs = OrderedDict()
-    if BigTest:
-        x_con = [0.0, 0.3, 0.5, 0.6, 0.8, 0.9]
-        for cs in x_con:
-            insert_job('NO_WAIT', 'YCSB', use_sgx=True, theta=cs)
-        for cs in x_con:
-            insert_job('NO_WAIT', 'YCSB', use_sgx=True, index="IDX_BTREE", theta=cs, pre_load=0)
-        for cs in x_con:
-            insert_job('NO_WAIT', 'YCSB', use_sgx=True, index="IDX_BTREE", veri="MERKLE_TREE", theta=cs, pre_load=0,
-                       txn_per_thd=1000)
-    else:
-        x_con = [0.0,0.9]
-        for cs in x_con:
-            insert_job('NO_WAIT', 'YCSB', use_sgx=False, theta=cs)
-        for cs in x_con:
-            insert_job('NO_WAIT', 'YCSB', use_sgx=False, index="IDX_BTREE", theta=cs, pre_load=0)
-        for cs in x_con:
-            insert_job('NO_WAIT', 'YCSB', use_sgx=False, index="IDX_BTREE", veri="MERKLE_TREE", theta=cs, pre_load=0,
-                       txn_per_thd=1000)
-    run_all_test(jobs, "ycsb.cache.skew.result")
 
 def run_cache_size_impact_for_different_methods_test():
     global jobs, max_siz_per_record
     max_siz_per_record = KB
     jobs = OrderedDict()
-    # x_con = [512 * MB, 1 * GB, 2 * GB, 4 * GB, 8 * GB]
-    # insert_job(index="IDX_BTREE", cs=4  * GB, txn_length=1)
     x_con = [512 * MB, 1 * GB, 2 * GB, 4*GB, 8*GB]
-    # for cs in x_con:
-    #     insert_job(index="IDX_BTREE", cs=cs)
-    #     insert_job(index="IDX_BTREE", veri="MERKLE_TREE", cs=cs)
-    #     insert_job(index="IDX_BTREE", veri="DEFERRED_MEMORY", cs=cs)
     for cs in x_con:
-        insert_job(index="IDX_BTREE", cs=cs, txn_length=1)
-        insert_job(index="IDX_BTREE", veri="MERKLE_TREE", cs=cs, txn_length=1)
-        insert_job(index="IDX_BTREE", veri="DEFERRED_MEMORY", cs=cs, txn_length=1)
-        # insert_job(index="IDX_BTREE", veri="DEFERRED_MEMORY", cs=cs, pre_load=0)
+        insert_job(cs=cs)
+        insert_job(veri="MERKLE_TREE", cs=cs)
+        insert_job(veri="DEFERRED_MEMORY", cs=cs)
+    for cs in x_con:
+        insert_job(cs=cs, txn_length=1)
+        insert_job(veri="MERKLE_TREE", cs=cs, txn_length=1)
+        insert_job(veri="DEFERRED_MEMORY", cs=cs, txn_length=1)
     run_all_test(jobs, "ycsb.cache.size.result")
 
 def run_heatmap():
     global jobs, max_siz_per_record
     max_siz_per_record = KB
     jobs = OrderedDict()
-    # x_con = [512 * MB, 1 * GB, 2 * GB, 4 * GB, 8 * GB]
-    # veri_cache = [GB / 2, 1 * GB, GB + GB / 2, 2 * GB, 2 * GB + GB / 2, 3 * GB,  3 * GB + GB / 2,
-    #               4 * GB, 4 * GB + GB/2, 5 * GB, 5 * GB + GB/2, 6 * GB]
-    # veri_cache = [2* GB, 4* GB, 6* GB, 8* GB, 10* GB, 12* GB, 14* GB, 16* GB, 18* GB, 20* GB]
-    # insert_job(index="IDX_BTREE", cs=10*GB, ds=10*GB)
-    # insert_job(index="IDX_BTREE", cs=1 *GB, ds=4*GB, use_sgx=False)
-    # insert_job(index="IDX_BTREE", cs=4 *GB, ds=1*GB, use_sgx=False)
-    # veri_cache = [GB / 2, 1 * GB, GB + GB / 2, 2 * GB, 2 * GB + GB / 2, 3 * GB,  3 * GB + GB / 2,
-    #               4 * GB]
-    # veri_cache = [GB / 2, 1 * GB, GB + GB / 2, 2 * GB, 2 * GB + GB / 2, 3 * GB,  3 * GB + GB / 2,
-    #               4 * GB]
     veri_cache = [1 * GB, 2 * GB, 3 *GB, 4*GB, 5*GB, 6*GB, 7*GB, 8*GB, 9*GB, 10*GB]
     data_cache = [1 * GB, 2 * GB, 3 *GB, 4*GB, 5*GB, 6*GB, 7*GB, 8*GB, 9*GB, 10*GB]
     for cs in veri_cache:
         for ds in data_cache:
-            if ds + cs <= 8*GB or (ds == 1*GB):
-                insert_job(cs=cs, ds=ds, index="IDX_BTREE")
+            insert_job(cs=cs, ds=ds)
     run_all_test(jobs, "ycsb.cache.heatmap.result")
 
 def run_tamper():
@@ -345,42 +270,17 @@ def run_tamper():
         insert_job(tamper=tp, use_log=1)
     run_all_test(jobs, "ycsb.cache.tamper.result")
 
-def run_tamper_txn_length():
-    global jobs, max_siz_per_record
-    max_siz_per_record = KB
-    jobs = OrderedDict()
-    txn_length =  [16] #[1, 2, 4, 8]
-    for len in txn_length:
-        insert_job(tamper=10, txn_length=len, use_log=1, tamper_recovery=1)
-        insert_job(tamper=10, txn_length=len, use_log=1, tamper_recovery=0)
-    run_all_test(jobs, "ycsb.cache.tamper-length.result")
 
-def run_tamper_interval():
-    global jobs, max_siz_per_record
-    max_siz_per_record = KB
-    jobs = OrderedDict()
-    #  1 * BILLION, 4 * BILLION
-    tamper =  [1, 2 * BILLION, 4 * BILLION, 6 * BILLION, 8 * BILLION, 10 * BILLION, 12 * BILLION, 14 * BILLION, 16 * BILLION]
-    # , 4 * BILLION, 16 * BILLION, 32 * BILLION, 64 * BILLION
-    for tp in tamper:
-        insert_job(cs = 1 * GB, tamper=20, tamper_interval=tp, use_log=1)
-    # for tp in tamper:
-    #     insert_job(cs = 1 * GB, tamper=20, tamper_interval=tp, use_log=1)
-    run_all_test(jobs, "ycsb.cache.interval.result")
-
-# Large memory, single node.
 def run_database_size_test():
     global jobs, CompileOnly, max_siz_per_record
     # CompileOnly = True
     max_siz_per_record = KB
     jobs = OrderedDict()
     x_con = [1 * MB,  2 * MB, 4 * MB, 8 * MB, 16 * MB]
-    # for cs in x_con:
-    #     insert_job(index="IDX_BTREE", veri="PAGE_VERI", table_size=cs)
-    # for cs in x_con:
-    #     insert_job(index="IDX_BTREE", veri="MERKLE_TREE", table_size=cs)
     for cs in x_con:
-        insert_job(index="IDX_BTREE", veri="DEFERRED_MEMORY", table_size=cs)
+        insert_job(veri="PAGE_VERI", table_size=cs)
+        insert_job(veri="MERKLE_TREE", table_size=cs)
+        insert_job(veri="DEFERRED_MEMORY", table_size=cs)
     run_all_test(jobs, "ycsb.cache.db.result")
 
 def run_database_c_size_test():
@@ -389,154 +289,62 @@ def run_database_c_size_test():
     max_siz_per_record = KB
     jobs = OrderedDict()
     x_con = [1 * MB,  2 * MB, 4 * MB, 8 * MB, 16 * MB]
-    # x_con = [4 * MB]
     for cs in x_con:
-        # insert_job(index="IDX_BTREE", table_size=cs)
-    # for cs in x_con:
-    #     insert_job(index="IDX_BTREE", veri="MERKLE_TREE", table_size=cs)
-    # for cs in x_con:
-        insert_job(index="IDX_BTREE", veri="DEFERRED_MEMORY", table_size=cs)
-        # insert_job(index="IDX_BTREE", veri="DEFERRED_MEMORY", table_size=cs, enable_data_cache=False)
+        insert_job(table_size=cs)
+        insert_job(veri="MERKLE_TREE", table_size=cs)
+        insert_job(veri="DEFERRED_MEMORY", table_size=cs)
     run_all_test(jobs, "ycsb.cache.db.result")
 
 def run_database_varying_txn_length():
     global jobs
     jobs = OrderedDict()
-    x_con = [1, 4, 16, 32]
+    x_con = [1, 4, 16, 32, 64]
     for ll in x_con:
-        # insert_job(index="IDX_BTREE", txn_length=ll, use_sgx=False, cs=16 * GB) # unlimited baseline.
-        # insert_job(index="IDX_BTREE", txn_length=ll)
-        # insert_job(index="IDX_BTREE", veri="MERKLE_TREE", txn_length=ll)
-        insert_job(index="IDX_BTREE", veri="DEFERRED_MEMORY", txn_length=ll)
-        insert_job(index="IDX_BTREE", veri="DEFERRED_MEMORY", txn_length=ll, enable_data_cache=False)
+        insert_job(txn_length=ll, use_sgx=False, cs=16 * GB) # unlimited baseline.
+        insert_job(txn_length=ll)
+        insert_job(veri="MERKLE_TREE", txn_length=ll)
+        insert_job(veri="DEFERRED_MEMORY", txn_length=ll)
     run_all_test(jobs, "ycsb.cache.txn_length.result")
-
-def run_single_layer_cache_exp():
-    global jobs
-    jobs = OrderedDict()
-    x_con = [(0.2, 64*KB), (0.5, 64*KB), (0.8, 64*KB), (0.2, 16*MB), (0.5, 16*MB), (0.8, 16*MB)]
-    if BigTest:
-        for (the, db_siz) in x_con:
-            insert_job('NO_WAIT', 'YCSB', use_sgx=True, use_log=1, enable_data_cache=False, theta=the, table_size=db_siz)
-            insert_job('NO_WAIT', 'YCSB', use_sgx=True, use_log=1, theta=the, table_size=db_siz)
-    else:
-        # insert_job('NO_WAIT', 'YCSB', use_sgx=False, use_log=1, enable_data_cache=False, database_size=MB * 8, theta=0.9)
-        insert_job('NO_WAIT', 'YCSB', use_sgx=False, use_log=1, lazy_offloading="false", theta=0.9, database_size=2*GB)
-    run_all_test(jobs, "ycsb.single_layer.result")
-
 
 def run_profiling():
     global jobs
     jobs = OrderedDict()
     x_con = [1, 2, 3, 4, 5, 6, 7, 8]
     for th in x_con:
-        insert_job("NO_WAIT", 'YCSB', thread_num=th, use_sgx=False, prof="true")
-        insert_job("NO_WAIT", 'YCSB', thread_num=th, use_sgx=True, prof="true")
+        insert_job("OCC", 'YCSB', thread_num=th, index="IDX_HASH", use_sgx=False, prof="true")
+        insert_job("OCC", 'YCSB', thread_num=th, index="IDX_HASH", use_sgx=True, prof="true")
     run_all_test(jobs, "ycsb.profiling.result")
-
-def run_large_size():
-    global jobs
-    jobs = OrderedDict()
-    # insert_job(index="INDEX_BTREE", table_size=60*GB, cs=32*GB, ds=32*GB, use_sgx=False)
-    insert_job(index="IDX_BTREE", table_size=40*MB, cs=20*GB, ds=20*GB, use_sgx=False)
-    insert_job(index="IDX_BTREE", table_size=40*MB, cs=20*GB, ds=20*GB)
-    insert_job(index="IDX_BTREE", table_size=40*MB, cs=20*GB, ds=1*GB)
-    run_all_test(jobs, "ycsb.big.result")
 
 
 def run_full_tpcc_test():
     global jobs, CompileOnly
-    # CompileOnly = True
-    # jobs = OrderedDict()
-    # insert_job("NO_WAIT", 'TPCC', use_sgx=True, full_tpcc="true", index="IDX_BTREE", thread_num=1, wh=4, txn_per_thd=1000)
-    # insert_job("NO_WAIT", 'TPCC', use_sgx=True, full_tpcc="true", index="IDX_BTREE", thread_num=4, wh=4, txn_per_thd=1000)
-    # insert_job("NO_WAIT", 'TPCC', use_sgx=True, full_tpcc="true", index="IDX_BTREE", thread_num=8, wh=4, txn_per_thd=1000)
-    # # insert_job("NO_WAIT", 'TPCC', use_sgx=True, access_all=True, full_tpcc="true", index="IDX_BTREE", wh=16)
-    # insert_job("NO_WAIT", 'TPCC', use_sgx=False, replace_payment=True, full_tpcc="true", index="IDX_BTREE", wh=16)
-    # # insert_job("NO_WAIT", 'TPCC', use_sgx=False, replace_payment=False, full_tpcc="true", index="IDX_BTREE", wh=16)
-    # insert_job("NO_WAIT", 'TPCC', use_sgx=True, replace_payment=True, full_tpcc="true", index="IDX_BTREE", wh=16)
-    # insert_job("NO_WAIT", 'TPCC', use_sgx=True, replace_payment=False, full_tpcc="true", index="IDX_BTREE", wh=16)
-    insert_job("OCC", 'TPCC', use_sgx=True, access_all=True, full_tpcc="true", index="IDX_BTREE", wh=16)
+    insert_job("OCC", 'TPCC', use_sgx=True, full_tpcc="true", index="IDX_BTREE", wh=1)
+    insert_job("OCC", 'TPCC', use_sgx=True, full_tpcc="true", index="IDX_BTREE", wh=4)
     insert_job("OCC", 'TPCC', use_sgx=True, full_tpcc="true", index="IDX_BTREE", wh=16)
-    insert_job("OCC", 'TPCC', use_sgx=True, access_all=True, full_tpcc="true", index="IDX_BTREE", wh=16)
     insert_job("OCC", 'TPCC', use_sgx=True, access_all=True, full_tpcc="true", index="IDX_BTREE", wh=16)
     insert_job("OCC", 'TPCC', use_sgx=True, replace_payment=True, full_tpcc="true", index="IDX_BTREE", wh=16)
     run_all_test(jobs, "tpcc.full.result")
-
-def run_tmp():
-    global jobs, CompileOnly
-    CompileOnly = False
-    insert_job("NO_WAIT", 'TPCC', use_sgx=False, full_tpcc="true", index="IDX_BTREE", wh=16)
-    run_all_test(jobs, "tmp.result")
 
 def run_freshness_test():
     global jobs
     jobs = OrderedDict()
     x_con = [1, 2, 4, 8, 16, 32]
     for x in x_con:
-        insert_job("NO_WAIT", 'YCSB', use_sgx=False, nodes=2, test_freshness=1, sync_batch=x)
-        # # for throughput
-        # insert_job("NO_WAIT", 'YCSB', use_sgx=False, nodes=2, thread_num=1,
-        #            txn_length=1, theta=99, test_freshness=1, sync_batch=x)
-        # for freshness
+        insert_job("OCC", 'YCSB', use_sgx=True, nodes=2, test_freshness=1, sync_batch=x)
     run_all_test(jobs, "freshness.log")
 
-def run_test_vacuum():
-    global jobs
-    jobs = OrderedDict()
-    x_con = [1, 4, 16, 64, 256]
-    for x in x_con:
-        insert_job("NO_WAIT", 'YCSB', use_sgx=True, theta=0.5, nodes=2, sync_batch=1, vaccum=x, fast_chain=0)
-        insert_job("NO_WAIT", 'YCSB', use_sgx=True, theta=0.8, nodes=2, sync_batch=1, vaccum=x, fast_chain=0)
-    run_all_test(jobs, "vaccum.log")
 
-def run_lazy_offloading():
-    global jobs
-    jobs = OrderedDict()
-    # 1 * GB, 2*GB, 4*GB, 8* GB, 16 * GB, 32 * GB,
-    x_con = [64 * GB, 80 * GB, 100 * GB]
-    for siz in x_con:
-        insert_job("NO_WAIT", 'YCSB', use_sgx=True, database_size = siz,small_cs=True, txn_per_thd=1000)
-        insert_job("NO_WAIT", 'YCSB', use_sgx=True, cs=200*GB, database_size = siz, small_cs=True, txn_per_thd=1000) # No offloading
-    run_all_test(jobs, "ycsb.cache.lazy.offloading")
-
-def run_common_test():
-    global jobs, CompileOnly, max_siz_per_record
-    # CompileOnly = True
-    max_siz_per_record = KB
-    jobs = OrderedDict()
-    x_con = [16 * MB]
-    for cs in x_con:
-        insert_job(index="IDX_BTREE", veri="DEFERRED_MEMORY", table_size=cs)
-        #  enable_data_cache=False
-    run_all_test(jobs, "common.result")
-
-# profiling_4_btree()
-# single node, small mem
-# run_thread_exp()
-# run_tpc_exp()
-# run_theta_exp()
-# run_rw_exp()
-# run_profiling()
-# run_common_test()
+run_thread_exp()
+run_tpc_exp()
+run_theta_exp()
+run_profiling()
 run_full_tpcc_test()
-# run_tmp()
 
-# single node, large mem
-# run_database_c_size_test()
-# run_tamper()
-# run_tamper_interval()
-# run_tamper_txn_length()
-# run_database_size_test()
-# run_large_size()
-# run_cache_size_impact_for_different_methods_test()
-# run_heatmap()
-# run_database_varying_txn_length()
-# run_single_layer_cache_exp()
-# run_database_skew_test()
-
-# RO and RW
-# run_freshness_test()
-# run_test_vacuum()
-# run_lazy_offloading()
+run_database_c_size_test()
+run_tamper()
+run_database_size_test()
+run_cache_size_impact_for_different_methods_test()
+run_heatmap()
+run_database_varying_txn_length()
+run_freshness_test()
 
