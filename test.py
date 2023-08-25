@@ -30,7 +30,7 @@ dbms_cfg = ["config-std.h", "common/config.h"]
 algs = ['OCC']
 count_job = 0
 
-
+# insert_job insert given setting into jobs.
 def insert_job(alg="OCC", workload="YCSB", thread_num=4, theta=0.5, bkt_fac=1, read_perc=0.5, use_sgx=True,
                cs=GB * 4, ds=GB * 4, veri="PAGE_VERI", index="IDX_BTREE", pre_load=1, use_log=0, txn_per_thd=10000,
                table_size=10 * MB, txn_length=16, enable_data_cache=True, pt=1, prof="false", wh=16,
@@ -81,7 +81,7 @@ def insert_job(alg="OCC", workload="YCSB", thread_num=4, theta=0.5, bkt_fac=1, r
         "VERI_BATCH": veri_batch_sec * 1000000000,
     }
 
-
+# test_compile update the config.h according to current setting, build the binaries.
 def test_compile(job):
     os.system("make clean> temp.out 2>&1")
     os.system("cp "+ dbms_cfg[0] +' ' + dbms_cfg[1])
@@ -125,7 +125,7 @@ def test_compile(job):
     print("PASS Compile")
     return True
 
-
+# test_run run an experiment with settings in job.
 def test_run(job, f, test=''):
     global process_store
     print(job)
@@ -136,6 +136,7 @@ def test_run(job, f, test=''):
         app_flags = "-Ac -t4"
 
     if job["USE_LOG"] == 1:
+        # start storage.
         process_store = subprocess.Popen("./Store", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         # process_store = subprocess.Popen(["./Store", ">./store.log"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         time.sleep(5)
@@ -187,7 +188,7 @@ def test_run(job, f, test=''):
 
 testRound = 1
 
-
+# run_all_test run tests in jobs one by one and output the result into filename.
 def run_all_test(jobs, filename):
     filename = "./results/" + filename
     os.system("echo 'thread_cnt, txn_cnt, abort_cnt, execution_time, latency' > %s" % filename)
@@ -204,7 +205,6 @@ def run_all_test(jobs, filename):
     f.close()
 
 
-# Small memory, local machine.
 def run_thread_exp():
     global jobs
     jobs = OrderedDict()
@@ -213,7 +213,6 @@ def run_thread_exp():
         insert_job("OCC", 'YCSB', index="IDX_HASH", thread_num=th, use_sgx=True)
     run_all_test(jobs, "ycsb.thread.result")
 
-# Local machine.
 def run_tpc_exp():
     global jobs
     jobs = OrderedDict()
@@ -320,9 +319,12 @@ def run_full_tpcc_test():
     global jobs, CompileOnly
     insert_job("OCC", 'TPCC', use_sgx=True, full_tpcc="true", index="IDX_BTREE", wh=1)
     insert_job("OCC", 'TPCC', use_sgx=True, full_tpcc="true", index="IDX_BTREE", wh=4)
-    insert_job("OCC", 'TPCC', use_sgx=True, full_tpcc="true", index="IDX_BTREE", wh=16)
-    insert_job("OCC", 'TPCC', use_sgx=True, access_all=True, full_tpcc="true", index="IDX_BTREE", wh=16)
-    insert_job("OCC", 'TPCC', use_sgx=True, replace_payment=True, full_tpcc="true", index="IDX_BTREE", wh=16)
+    insert_job("OCC", 'TPCC', use_sgx=True, full_tpcc="true", index="IDX_BTREE", wh=16, thread_num=1)
+    insert_job("OCC", 'TPCC', use_sgx=True, access_all=True, full_tpcc="true", index="IDX_BTREE", wh=16, thread_num=1)
+    insert_job("OCC", 'TPCC', use_sgx=True, replace_payment=True, full_tpcc="true", index="IDX_BTREE", wh=16, thread_num=1)
+    insert_job("OCC", 'TPCC', use_sgx=True, full_tpcc="true", index="IDX_BTREE", wh=16, thread_num=16)
+    insert_job("OCC", 'TPCC', use_sgx=True, access_all=True, full_tpcc="true", index="IDX_BTREE", wh=16, thread_num=16)
+    insert_job("OCC", 'TPCC', use_sgx=True, replace_payment=True, full_tpcc="true", index="IDX_BTREE", wh=16, thread_num=16)
     run_all_test(jobs, "tpcc.full.result")
 
 def run_freshness_test():
