@@ -32,9 +32,9 @@ count_job = 0
 
 # insert_job insert given setting into jobs.
 def insert_job(alg="OCC", workload="YCSB", thread_num=4, theta=0.5, bkt_fac=1, read_perc=0.5, use_sgx=True,
-               cs=GB * 4, ds=GB * 4, veri="PAGE_VERI", index="IDX_BTREE", pre_load=1, use_log=0, txn_per_thd=10000,
-               table_size=10 * MB, txn_length=16, enable_data_cache=True, pt=1, prof="false", wh=16,
-               full_tpcc="false", nodes=1, test_freshness=0, veri_hash_buf_siz=KB * 4, real_time=0, sync_batch=16,
+               cs=GB * 4, ds=GB * 4, veri="PAGE_VERI", index="IDX_BTREE", pre_load=1, use_log=1, txn_per_thd=10000,
+               table_size=10 * 1000 * 1000, txn_length=16, enable_data_cache=True, pt=1, prof="false", wh=16,
+               full_tpcc="true", nodes=1, test_freshness=0, veri_hash_buf_siz=KB * 4, real_time=0, sync_batch=16,
                vaccum=128, lazy_offloading=1, fast_chain=1, small_cs=False, veri_batch_sec = 1, tamper = 0, tamper_interval = 1,
                tamper_recovery = 1, access_all=False, replace_payment=False):
     global count_job
@@ -336,17 +336,21 @@ def run_freshness_test():
     run_all_test(jobs, "freshness.log")
 
 
-run_thread_exp()
-run_tpc_exp()
-run_theta_exp()
-run_profiling()
-run_full_tpcc_test()
-
-run_database_c_size_test()
-run_tamper()
-run_database_size_test()
+# cache size 
 run_cache_size_impact_for_different_methods_test()
-run_heatmap()
-run_database_varying_txn_length()
-run_freshness_test()
 
+# compare with litmus
+run_thread_exp()
+run_profiling()
+run_theta_exp()
+run_tpc_exp()
+
+
+# run_tamper()
+# run_heatmap()
+
+# run_full_tpcc_test()
+# run_database_varying_txn_length()
+# run_freshness_test()
+# run_database_size_test()
+# run_database_c_size_test()

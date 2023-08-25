@@ -1,7 +1,7 @@
 VeriTxn
 =======
 
-VeriTxn is a cloud-native database that efficiently provides verifiability of transaction correctness. It relies on the trusted hardware (i.e., Intel SGX) to enable verifiable transaction processing. We implemented VeriTxn based on the codebase of [DBx1000](https://github.com/yxymit/DBx1000). 
+VeriTxn is a cloud-native database that efficiently provides verifiability of transaction correctness. It relies on the trusted hardware (i.e., Intel SGX) to enable verifiable transaction processing. We use the codebase of [DBx1000](https://github.com/yxymit/DBx1000) as a starting point and extend it into a SGX-enabled cloud-native databases.
 
 The following paper describes DBx1000: 
 
@@ -11,8 +11,18 @@ The following paper describes DBx1000:
 Dependencies
 ----------------------
 
+The project is written primarily in C++ and was compiled with GNU Make using the GCC compiler. 
+The two primary dependencies for the project are the jemalloc memory allocation library and the libnuma NUMA policy library. 
+
+- Ubuntu 20.04
 - Server equipped with Intel SGX
 - Intel SGX SDK
+
+- Rocksdb (≥ 5.8)
+
+
+We run the experiments in a cluster of up to 8 nodes running Ubuntu 20.04 on Microsoft Azure.
+Each node is a standard DC16s v3 server, equipped with an Intel(R) Platinum 8370C CPU at 2.8GHz (2 $\times$ 8 cores), with 128GB of DRAM. The EPC size is limited to 64GB.
 
 
 Setup & Build
@@ -21,23 +31,6 @@ Setup & Build
 ### Edit IP Address
 
 Edit the ifconfig.txt file. One line corresponds to one node.
-
-### Edit the Configuration file
-
-Configurations can be changed in the config.h file. Please refer to README for the meaning of each configuration. Here we only list several most important ones. 
-
-    NODE_CNT          : Number of compute nodes modeled in the system
-    THREAD_CNT        : Number of worker threads running in the compute node
-    WORKLOAD          : Supported workloads include YCSB and TPCC
-    MAX_TXN_PER_PART  : Number of transactions to run per thread per partition
-    USE_SGX           : Enable verification or not
-    VERIFIED_CACHE_SIZ: Size of verified cache
-    ENABLE_DATA_CACHE : Enable data cache or not
-    VERI_TYPE         : Verification method (MERKLE_TREE or PAGE_VERI)
-    INDEX_STRUCT      : Index structure
-    PRE_LOAD          : Enable preload into verified cache or not
-    PROFILING         : Enable profiling or not
-    REAL_TIME         : Enable real time stats or not
 
 ### Build
 
@@ -61,24 +54,18 @@ To build the database using SGX (prerelease mode)
     make clean && make -j
 
 
-Run & Test
+Run experiments
 ----------------------
 
-VeriTxn can be run in manual with
-
-    # Set NODE_CNT to 1 to run in a single node mode
-    ./App 
-
-To run the experiments
-
-    cd scripts
-
-    # edit the file "run_config.py" to setup the vcloud cluster for experiments, required changes:
+    # edit the file "scripts/run_config.py" to setup the vcloud cluster for experiments, required changes:
     username: ssh username
     port: ssh port
     identity: public key for ssh auth
     vcloud_uname: source code folder path
     vcloud_machines: ips of nodes in the cluster. One line corresponds to one node.
+
+
+### Run all the experiments
 
     # test as single node
     python test.py
@@ -90,8 +77,30 @@ To run the experiments
     python run_experiments.py -e -r -c vcloud <test_case_name>
 
 
-Outputs
-----------------------
+### Manually Edit the Configuration file
+
+Configurations can be changed in the config.h file. 
+
+    NODE_CNT          : Number of compute nodes modeled in the system
+    THREAD_CNT        : Number of worker threads running in the compute node
+    WORKLOAD          : Supported workloads include YCSB and TPCC
+    MAX_TXN_PER_PART  : Number of transactions to run
+    USE_SGX           : Enable verification or not
+    VERIFIED_CACHE_SIZ: Size of verified cache
+    ENABLE_DATA_CACHE : Enable data cache or not
+    VERI_TYPE         : Verification method (MERKLE_TREE or PAGE_VERI)
+    INDEX_STRUCT      : Index structure
+    PROFILING         : Enable profiling or not
+    REAL_TIME         : Enable real time stats or not
+
+
+VeriTxn can be run in manual with
+
+    # Set NODE_CNT to 1 to run in a single node mode
+    ./App 
+
+
+### Outputs
 
 If run VeriTxn in manual, there are some metrics show in the console. Here we list several most important metrics:
 - `txn_cnt`: The total number of committed transactions. This number is close to but smaller than THREAD_CNT * MAX_TXN_PER_PART. When any worker thread commits MAX_TXN_PER_PART transactions, all the other worker threads will be terminated.
@@ -105,3 +114,22 @@ If run VeriTxn in manual, there are some metrics show in the console. Here we li
 
 If you run the experiments, the output file is stored in ```results/<timestamp>```. You can check the `tmp-OCC` file for the results, where each line is the x-axis, RW node throughput, total throughput, abort rate, average latency, and RO node latency.
 
+
+
+TPCC Specification
+----------------------
+
+
+
+
+show no impact of this configuration on performance, as the parsing overhead is negligible.
+All these configurations are consistent with those detailed in our paper.
+
+
+
+YCSB Specification
+----------------------
+
+
+
+Please refer to CONFIGURATION.md for the meaning of each configuration. Here we only list several most important ones. 
