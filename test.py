@@ -219,10 +219,10 @@ def run_tpc_exp():
     x_con = [1, 2, 3, 4, 5, 6, 7, 8]
     for th in x_con:
         for alg in algs:
-            insert_job(alg, 'TPCC', thread_num=th, use_sgx=False)
-            insert_job(alg, 'TPCC', thread_num=th, use_sgx=False, wh=4)
-            insert_job(alg, 'TPCC', thread_num=th, use_sgx=True)
-            insert_job(alg, 'TPCC', thread_num=th, use_sgx=True, wh=4)
+            insert_job(alg, 'TPCC', thread_num=th, use_sgx=False, full_tpcc="false")
+            insert_job(alg, 'TPCC', thread_num=th, use_sgx=False, wh=4, full_tpcc="false")
+            insert_job(alg, 'TPCC', thread_num=th, use_sgx=True, full_tpcc="false")
+            insert_job(alg, 'TPCC', thread_num=th, use_sgx=True, wh=4, full_tpcc="false")
     run_all_test(jobs, "tpcc.thread.wh.result")
 
 def run_theta_exp():
@@ -317,14 +317,9 @@ def run_profiling():
 
 def run_full_tpcc_test():
     global jobs, CompileOnly
-    insert_job("OCC", 'TPCC', use_sgx=True, full_tpcc="true", index="IDX_BTREE", wh=1)
-    insert_job("OCC", 'TPCC', use_sgx=True, full_tpcc="true", index="IDX_BTREE", wh=4)
-    insert_job("OCC", 'TPCC', use_sgx=True, full_tpcc="true", index="IDX_BTREE", wh=16, thread_num=1)
-    insert_job("OCC", 'TPCC', use_sgx=True, access_all=True, full_tpcc="true", index="IDX_BTREE", wh=16, thread_num=1)
-    insert_job("OCC", 'TPCC', use_sgx=True, replace_payment=True, full_tpcc="true", index="IDX_BTREE", wh=16, thread_num=1)
-    insert_job("OCC", 'TPCC', use_sgx=True, full_tpcc="true", index="IDX_BTREE", wh=16, thread_num=16)
-    insert_job("OCC", 'TPCC', use_sgx=True, access_all=True, full_tpcc="true", index="IDX_BTREE", wh=16, thread_num=16)
-    insert_job("OCC", 'TPCC', use_sgx=True, replace_payment=True, full_tpcc="true", index="IDX_BTREE", wh=16, thread_num=16)
+    thrs = [1, 2, 4, 8, 16]
+    for tr in thrs:
+        insert_job("OCC", 'TPCC', use_sgx=True, full_tpcc="true", index="IDX_BTREE", wh=16, thread_num=tr)
     run_all_test(jobs, "tpcc.full.result")
 
 def run_freshness_test():
