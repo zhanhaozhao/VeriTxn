@@ -77,6 +77,7 @@ def insert_job(alg="OCC", workload="YCSB", thread_num=4, theta=0.5, bkt_fac=1, r
         "FAST_VERI_CHAIN_ACCESS" : fast_chain,
         "SMALL_CACHE_SIZE"      : small_cs,
         "VERI_BATCH": veri_batch_sec * 1000000000,
+        "PERC_PAYMENT" : 0.5,
     }
 
 # test_compile update the config.h according to current setting, build the binaries.
@@ -207,8 +208,8 @@ def run_thread_exp():
     global jobs
     jobs = OrderedDict()
     for th in [1, 2, 3, 4, 5, 6, 7, 8]:
-        insert_job("OCC", 'YCSB', index="IDX_HASH", thread_num=th, use_sgx=False)
-        insert_job("OCC", 'YCSB', index="IDX_HASH", thread_num=th, use_sgx=True)
+        insert_job("OCC", 'YCSB', index="IDX_HASH", thread_num=th, use_sgx=False, cs=10*GB)
+        insert_job("OCC", 'YCSB', index="IDX_HASH", thread_num=th, use_sgx=True, cs=10*GB)
     run_all_test(jobs, "ycsb.thread.result")
 
 def run_tpc_exp():
@@ -217,18 +218,18 @@ def run_tpc_exp():
     x_con = [1, 2, 3, 4, 5, 6, 7, 8]
     for th in x_con:
         for alg in algs:
-            insert_job(alg, 'TPCC', thread_num=th, use_sgx=False, full_tpcc="false")
-            insert_job(alg, 'TPCC', thread_num=th, use_sgx=False, wh=4, full_tpcc="false")
-            insert_job(alg, 'TPCC', thread_num=th, use_sgx=True, full_tpcc="false")
-            insert_job(alg, 'TPCC', thread_num=th, use_sgx=True, wh=4, full_tpcc="false")
+            insert_job(alg, 'TPCC', thread_num=th, use_sgx=False, full_tpcc="false", cs=10*GB)
+            insert_job(alg, 'TPCC', thread_num=th, use_sgx=False, wh=4, full_tpcc="false", cs=10*GB)
+            insert_job(alg, 'TPCC', thread_num=th, use_sgx=True, full_tpcc="false", cs=10*GB)
+            insert_job(alg, 'TPCC', thread_num=th, use_sgx=True, wh=4, full_tpcc="false", cs=10*GB)
     run_all_test(jobs, "tpcc.thread.wh.result")
 
 def run_theta_exp():
     global jobs
     jobs = OrderedDict()
     for th in [0.0, 0.3, 0.5, 0.6, 0.8, 0.9]:
-        insert_job("OCC", 'YCSB',index="IDX_HASH", theta=th, use_sgx=False)
-        insert_job("OCC", 'YCSB',index="IDX_HASH", theta=th, use_sgx=True)
+        insert_job("OCC", 'YCSB',index="IDX_HASH", theta=th, use_sgx=False, cs=10*GB)
+        insert_job("OCC", 'YCSB',index="IDX_HASH", theta=th, use_sgx=True, cs=10*GB)
     run_all_test(jobs, "ycsb.theta.result")
 
 
@@ -308,8 +309,8 @@ def run_profiling():
     jobs = OrderedDict()
     x_con = [1, 2, 3, 4, 5, 6, 7, 8]
     for th in x_con:
-        insert_job("OCC", 'YCSB', thread_num=th, index="IDX_HASH", use_sgx=False, prof="true")
-        insert_job("OCC", 'YCSB', thread_num=th, index="IDX_HASH", use_sgx=True, prof="true")
+        insert_job("OCC", 'YCSB', thread_num=th, index="IDX_HASH", use_sgx=False, prof="true", cs=10*GB)
+        insert_job("OCC", 'YCSB', thread_num=th, index="IDX_HASH", use_sgx=True, prof="true", cs=10*GB)
     run_all_test(jobs, "ycsb.profiling.result")
 
 

@@ -110,13 +110,14 @@ RC workload::init_schema(std::string schema_file) {
 			global_table_map->_indexes[iname] = index;
 	#elif WORKLOAD == TPCC
 			assert(tables[tname] != NULL);
-			index->init(part_cnt, tables[tname], stoull( items[1] ) * part_cnt);
+            auto size = stoull( items[1] ) * part_cnt * 10;
+			index->init(part_cnt, tables[tname], size);
 			int n = iname.length();
             index->index_name = new char[n+1];
 			iname.copy(index->index_name, n);
 			index->index_name[n] = 0;
             assert(std::string(index->index_name) == iname);
-            index_init_ecall(part_cnt, (void *) (tables[tname]), iname, (void*)index , (stoull( items[1] ) * part_cnt) / BUCKET_FACTOR);
+            index_init_ecall(part_cnt, (void *) (tables[tname]), iname, (void*)index , size / BUCKET_FACTOR);
 //            printf("%s from %s\n", iname.c_str(), tname.c_str());
             global_table_map->_indexes[iname] = index;
 	#endif
