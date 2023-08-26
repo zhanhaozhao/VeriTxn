@@ -111,7 +111,6 @@ dbms benchmark has the following parameters in the config file. Parameters with 
   // for cache control.
   DATA_CACHE_SIZE     : size of data cache
   ENABLE_DATA_CACHE   : enable data cache
-  PRE_LOAD            : preload data to verified cache
 
 == Key Default Values ==
 

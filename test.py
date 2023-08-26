@@ -32,7 +32,7 @@ count_job = 0
 
 # insert_job insert given setting into jobs.
 def insert_job(alg="OCC", workload="YCSB", thread_num=4, theta=0.5, bkt_fac=1, read_perc=0.5, use_sgx=True,
-               cs=GB * 4, ds=GB * 4, veri="PAGE_VERI", index="IDX_BTREE", pre_load=1, use_log=1, txn_per_thd=10000,
+               cs=GB * 4, ds=GB * 4, veri="PAGE_VERI", index="IDX_BTREE", use_log=1, txn_per_thd=10000,
                table_size=10 * 1000 * 1000, txn_length=16, enable_data_cache=True, pt=1, prof="false", wh=16,
                full_tpcc="true", nodes=1, test_freshness=0, veri_hash_buf_siz=KB * 4, real_time=0, sync_batch=16,
                vaccum=128, lazy_offloading=1, fast_chain=1, small_cs=False, veri_batch_sec = 1, tamper = 0, tamper_interval = 1,
@@ -58,7 +58,6 @@ def insert_job(alg="OCC", workload="YCSB", thread_num=4, theta=0.5, bkt_fac=1, r
         "ENABLE_DATA_CACHE" : "true" if enable_data_cache else "false",
         "VERI_TYPE"			: veri,
         "INDEX_STRUCT"		: index,
-        "PRE_LOAD"			: pre_load,
         "USE_LOG"			: use_log,
         "MAX_TXN_PER_PART"	: txn_per_thd,
         "SYNTH_TABLE_SIZE"	: table_size,
