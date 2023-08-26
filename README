@@ -30,7 +30,7 @@ DBMS BENCHMARK
 == Config File ==
 
 dbms benchmark has the following parameters in the config file. Parameters with a * sign should not be changed.
-
+  NODE_CNT    : number of nodes in the system.
   CORE_CNT		: number of cores modeled in the system.
   PART_CNT		: number of logical partitions in the system
   THREAD_CNT	: number of threads running at the same time
@@ -63,12 +63,13 @@ dbms benchmark has the following parameters in the config file. Parameters with 
   MAX_ROW_PER_TXN	: max number of rows touched per transaction.
   QUERY_INTVL	: the rate at which database queries come
   MAX_TXN_PER_PART	: maximum transactions to run per partition.
+  USE_LOG   : enable duarable transaction log.
   
   // for YCSB Benchmark
   SYNTH_TABLE_SIZE	: table size
   ZIPF_THETA	: theta in zipfian distribution (rows accessed follow zipfian distribution)
-  READ_PERC		:
-  WRITE_PERC	:
+  READ_PERC		: read operation percentage.
+  WRITE_PERC	: write operation percentage.
   SCAN_PERC		: percentage of read/write/scan queries. they should add up to 1.
   SCAN_LEN		: number of rows touched per scan query.
   PART_PER_TXN	: number of logical partitions to touch per transaction
@@ -77,8 +78,8 @@ dbms benchmark has the following parameters in the config file. Parameters with 
   FIRST_PART_LOCAL	: with this being true, the first touched partition is always the local partition.
   
   // for TPCC Benchmark
-  NUM_HW		: number of warehouses being modeled.
-  PERC_PAYMENT	: percentage of payment transactions.
+  NUM_WH		: number of warehouses being modeled.
+  PERC_PAYMENT	: percentage of payment transactions
   DIST_PER_WARE	: number of districts in one warehouse
   MAXITEMS		: number of items modeled.
   CUST_PER_DIST	: number of customers per district
@@ -86,5 +87,61 @@ dbms benchmark has the following parameters in the config file. Parameters with 
   FIRSTNAME_LEN	: length of first name
   MIDDLE_LEN	: length of middle name
   LASTNAME_LEN	: length of last name
+  TPCC_ACCESS_ALL : enable all accesses in TPCC benchmark
+  LONG_PAYMENT : enable complex payment transaction
+  FULL_TPCC : enable full TPCC
+
+  // for test measurement
+  PROFILING   : enable profiling
+  TEST_FRESHNESS  : enable freshness calculation
+  REAL_TIME : enable real time performance measurement
+
+
 
   // !! centralized CC management should be ignored.
+
+  // for verification
+  USE_SGX             : enable SGX for verification
+  VERIFIED_CACHE_SIZ  : size of verified cache
+  TAMPER_PERCENTAGE   : percentage of tampered data
+  TAMPER_RECOVERY     : enable tamper recovery
+  VERI_TYPE           : verification algorithm (DEFERRED_MEMORY, PAGE_VERI, MERKLE_TREE)
+  MSG_SIZE_MAX        : buffer size for messages between nodes
+  SYNC_VERSION_BATCH  : batch size for verified hash synchronization
+
+  // for cache control.
+  DATA_CACHE_SIZE     : size of data cache
+  ENABLE_DATA_CACHE   : enable data cache
+  PRE_LOAD            : preload data to verified cache
+
+== Key Default Values ==
+
+  CORE_CNT  : 4
+  CC_ALG  : OCC
+  THREAD_CNT  : 4
+  ZIPF_THETA  : 0.5
+  READ_PERC : 0.5
+  USE_SGX : 1
+  VERIFIED_CACHE_SIZ  : 4 * 1024 * 1024 * 1024
+  DATA_CACHE_SIZE     : 4 * 1024 * 1024 * 1024
+  TAMPER_PERCENTAGE : 0
+  TAMPER_RECOVERY : 1
+  TPCC_ACCESS_ALL : false
+  LONG_PAYMENT  : 1
+  ENABLE_DATA_CACHE : true
+  VERI_TYPE : PAGE_VERI
+  INDEX_STRUCT  : IDX_BTREE
+  PRE_LOAD  : 1
+  USE_LOG : 1
+  MAX_TXN_PER_PART  : 10000
+  SYNTH_TABLE_SIZE  : 10 * 1000 * 1000
+  REQ_PER_QUERY : 16
+  PART_CNT  : 1
+  PROFILING   : false
+  NUM_WH  : 16
+  FULL_TPCC : true
+  NODE_CNT  : 1
+  TEST_FRESHNESS  : 0
+  MSG_SIZE_MAX  : 4 * 1024
+  REAL_TIME : 0
+  SYNC_VERSION_BATCH  : 16
