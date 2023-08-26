@@ -36,7 +36,7 @@ def insert_job(alg="OCC", workload="YCSB", thread_num=4, theta=0.5, bkt_fac=1, r
                table_size=10 * 1000 * 1000, txn_length=16, enable_data_cache=True, pt=1, prof="false", wh=16,
                full_tpcc="true", nodes=1, test_freshness=0, veri_hash_buf_siz=KB * 4, real_time=0, sync_batch=16,
                vaccum=128, lazy_offloading=1, fast_chain=1, small_cs=False, veri_batch_sec = 1, tamper = 0, tamper_interval = 1,
-               tamper_recovery = 1, access_all=False, replace_payment=False):
+               tamper_recovery = 1, access_all=False):
     global count_job
     count_job = count_job + 1
     jobs[count_job] = {
@@ -55,7 +55,6 @@ def insert_job(alg="OCC", workload="YCSB", thread_num=4, theta=0.5, bkt_fac=1, r
         "TAMPER_INTERVAL" : tamper_interval,
         "TAMPER_RECOVERY" : tamper_recovery,
         "TPCC_ACCESS_ALL" : "true" if access_all else "false",
-        "LONG_PAYMENT"  : 0 if replace_payment else 1,
         "ENABLE_DATA_CACHE" : "true" if enable_data_cache else "false",
         "VERI_TYPE"			: veri,
         "INDEX_STRUCT"		: index,

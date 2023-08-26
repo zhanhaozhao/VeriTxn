@@ -88,7 +88,6 @@ dbms benchmark has the following parameters in the config file. Parameters with 
   MIDDLE_LEN	: length of middle name
   LASTNAME_LEN	: length of last name
   TPCC_ACCESS_ALL : enable all accesses in TPCC benchmark
-  LONG_PAYMENT : enable complex payment transaction
   FULL_TPCC : enable full TPCC
 
   // for test measurement
@@ -127,7 +126,6 @@ dbms benchmark has the following parameters in the config file. Parameters with 
   TAMPER_PERCENTAGE : 0
   TAMPER_RECOVERY : 1
   TPCC_ACCESS_ALL : false
-  LONG_PAYMENT  : 1
   ENABLE_DATA_CACHE : true
   VERI_TYPE : PAGE_VERI
   INDEX_STRUCT  : IDX_BTREE

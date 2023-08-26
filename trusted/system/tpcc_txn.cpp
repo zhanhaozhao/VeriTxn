@@ -41,7 +41,6 @@ RC tpcc_txn_man::run_txn(base_query * query) {
 	}
 }
 
-#if LONG_PAYMENT == 1
 RC tpcc_txn_man::run_payment(tpcc_query * query) {
 	RC rc = RCOK;
 	uint64_t key;
@@ -281,92 +280,6 @@ RC tpcc_txn_man::run_payment(tpcc_query * query) {
 	assert( rc == RCOK );
 	return finish(rc);
 }
-#else
-RC tpcc_txn_man::run_payment(tpcc_query * query) {
-    RC rc = RCOK;
-    uint64_t key;
-    itemid_t * item;
-
-    uint64_t w_id = query->w_id;
-    uint64_t d_id = query->d_id;
-    uint64_t c_id = query->c_w_id;
-
-    key = query->w_id;
-    item = index_read("WAREHOUSE_IDX", key, wh_to_part(w_id));
-    if (item == nullptr) {
-        return finish(Abort);
-    }
-    assert(item != NULL);
-
-    row_t * r_wh = ((row_t *)item->location);
-    row_t * r_wh_local;
-    if (g_wh_update_enc)
-        r_wh_local = get_row(r_wh, WR);
-    else
-        r_wh_local = get_row(r_wh, RD);
-    if (r_wh_local == NULL) {
-        return finish(Abort);
-    }
-    double w_ytd;
-    r_wh_local->get_value(W_YTD, w_ytd);
-    if (g_wh_update_enc) {
-        r_wh_local->set_value(W_YTD, w_ytd + query->h_amount);
-    }
-
-
-    key = distKey(query->d_id, query->d_w_id);
-    item = index_read("DISTRICT_IDX", key, wh_to_part(w_id));
-    if (item == nullptr) {
-        return finish(Abort);
-    }
-    assert(item != NULL);
-    row_t * r_dist = ((row_t *)item->location);
-    row_t * r_dist_local = get_row(r_dist, WR);
-    if (r_dist_local == NULL) {
-        return finish(Abort);
-    }
-    double d_ytd;
-    r_dist_local->get_value(D_YTD, d_ytd);
-    r_dist_local->set_value(D_YTD, d_ytd + query->h_amount);
-    row_t * r_cust;
-
-
-    key = custKey(query->c_id, query->c_d_id, query->c_w_id);
-    item = index_read("CUSTOMER_ID_IDX", key, wh_to_part(query->c_w_id));
-    if (item == nullptr) {
-        return finish(Abort);
-    }
-    assert(item != nullptr);
-    r_cust = (row_t*) item -> location;
-
-    row_t * r_cust_local = get_row(r_cust, WR);
-    if (r_cust_local == NULL) {
-        return finish(Abort);
-    }
-    double c_balance;
-    double c_ytd_payment;
-    double c_payment_cnt;
-
-    r_cust_local->get_value(C_BALANCE, c_balance);
-    r_cust_local->set_value(C_BALANCE, c_balance - query->h_amount);
-    r_cust_local->get_value(C_YTD_PAYMENT, c_ytd_payment);
-    r_cust_local->set_value(C_YTD_PAYMENT, c_ytd_payment + query->h_amount);
-    r_cust_local->get_value(C_PAYMENT_CNT, c_payment_cnt);
-    r_cust_local->set_value(C_PAYMENT_CNT, c_payment_cnt + 1);
-
-    row_t *r_hist;
-    uint64_t row_id;
-    get_new_row("HISTORY", r_hist, 0, row_id);
-    r_hist->set_value(H_C_ID, query->c_id);
-    r_hist->set_value(H_D_ID, query->d_id);
-    r_hist->set_value(H_W_ID, query->w_id);
-    int64_t date = 2013;
-    r_hist->set_value(H_DATE, date);
-    r_hist->set_value(H_AMOUNT, query->h_amount);
-    assert( rc == RCOK );
-    return finish(rc);
-}
-#endif
 
 RC tpcc_txn_man::get_new_row(std::string t_name, row_t *& row, uint64_t part_id, uint64_t &row_id){
     RC rc;

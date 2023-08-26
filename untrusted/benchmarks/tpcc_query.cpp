@@ -70,9 +70,6 @@ void tpcc_query::gen_payment(uint64_t thd_id) {
 		// by last name
 		by_last_name = true;
 		Lastname(NURand(255,0,999,w_id-1),c_last);
-#if LONG_PAYMENT == 0
-        c_id = NURand(1023, 1, g_cust_per_dist,w_id-1);
-#endif
     } else {
 		// by cust id
 		by_last_name = false;
