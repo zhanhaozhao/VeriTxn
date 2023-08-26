@@ -129,17 +129,12 @@ dbms benchmark has the following parameters in the config file. Parameters with 
   ENABLE_DATA_CACHE : true
   VERI_TYPE : PAGE_VERI
   INDEX_STRUCT  : IDX_BTREE
-  PRE_LOAD  : 1
   USE_LOG : 1
-  MAX_TXN_PER_PART  : 10000
   SYNTH_TABLE_SIZE  : 10 * 1000 * 1000
   REQ_PER_QUERY : 16
-  PART_CNT  : 1
   PROFILING   : false
   NUM_WH  : 16
   FULL_TPCC : true
-  NODE_CNT  : 1
+  NODE_CNT  : 4
   TEST_FRESHNESS  : 0
-  MSG_SIZE_MAX  : 4 * 1024
-  REAL_TIME : 0
   SYNC_VERSION_BATCH  : 16
