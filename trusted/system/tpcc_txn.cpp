@@ -364,10 +364,6 @@ RC tpcc_txn_man::run_new_order(tpcc_query * query) {
 	if (r_dist_local == NULL) {
 		return finish(Abort);
 	}
-#if TPCC_ACCESS_ALL
-    double d_tax;
-	d_tax = *(double *) r_dist_local->get_value(D_TAX);
-#endif
 	int64_t o_id;
 	r_dist_local->get_value(D_NEXT_O_ID, o_id);
 	o_id ++;
@@ -381,6 +377,11 @@ RC tpcc_txn_man::run_new_order(tpcc_query * query) {
 	row_t * r_order;
 	uint64_t row_id;
     get_new_row("ORDER", r_order, 0, row_id);
+
+#if TPCC_ACCESS_ALL
+    double d_tax;
+	d_tax = *(double *) r_dist_local->get_value(D_TAX);
+#endif
 
 	r_order->set_value(O_ID, o_id);
 	r_order->set_value(O_C_ID, c_id);
