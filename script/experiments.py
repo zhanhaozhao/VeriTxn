@@ -291,7 +291,6 @@ configs = {
     "SYNTH_TABLE_SIZE": 10*1000*1000,
 #TPCC
     "NUM_WH": 16,
-    "LONG_PAYMENT" : 1,
     "FULL_TPCC" : "true",
     "TPCC_ACCESS_ALL" : "false",
     "PERC_PAYMENT":0.5
