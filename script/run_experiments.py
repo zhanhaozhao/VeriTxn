@@ -35,6 +35,16 @@ perfTime = 60
 fromtimelist=[]
 totimelist=[]
 
+def replace(filename, pattern, replacement):
+    f = open(filename)
+    s = f.read()
+    f.close()
+    s = re.sub(pattern, replacement, s)
+    f = open(filename, 'w')
+    f.write(s)
+    f.close()
+
+
 if len(sys.argv) < 2:
      sys.exit("Usage: %s [-exec/-e/-noexec/-ne] [-c cluster] experiments\n \
             -exec/-e: compile and execute locally (default)\n \
@@ -178,6 +188,18 @@ for exp in exps:
                     cmd = './vcloud_make.sh \'{}\' /{}/ {} {} {} {}'.format(' '.join(machines), uname, cfgs["NODE_CNT"], perfTime, uname2, sgx)
                 print cmd
                 os.system(cmd)
+
+                pattern = r"<HeapMaxSize>.*</HeapMaxSize>"
+                tp = max(cfgs["SYNTH_TABLE_SIZE"]*1024*6, 1*1024*1024*1024)
+                print tp
+                siz = hex(min(tp, 32*1024*1024*1024))
+                print siz
+                replacement = "<HeapMaxSize>"+ siz + "</HeapMaxSize>"
+                replace("trusted/Enclave.config.xml", pattern, replacement)
+                pattern = r"<HeapInitSize>.*</HeapInitSize>"
+                replacement = "<HeapInitSize>"+ siz + "</HeapInitSize>"
+                replace("trusted/Enclave.config.xml", pattern, replacement)
+                os.system("cat trusted/Enclave.config.xml")
 
                 if cluster == 'vcloud':
                     cmd = './vcloud_deploy.sh \'{}\' /{}/ {} {} {}'.format(' '.join(machines), uname, cfgs["NODE_CNT"], perfTime, uname2)
