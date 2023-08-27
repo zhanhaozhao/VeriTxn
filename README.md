@@ -149,7 +149,7 @@ For clarity, we have highlighted key configurations used in our experiments belo
 All these configurations are consistent with those detailed in our paper.
 
 For comprehensive definitions of each setting and the default configurations, please refer to the `README.txt.` 
-**(Note: The original file was named `README`, but due to display issues in the anonymous repo, its name was changed to README.txt.)**
+**(Note: In our revision, we provided a file named `README`. However, due to display issues in the anonymous repository, this file wasn't shown. This might have caused you to overlook some clarifications regarding configurations. To address this, we have now renamed it to `README.txt`.)**
 
 
 ### General Settings
