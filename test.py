@@ -85,10 +85,7 @@ def test_compile(job):
     os.system("make clean> temp.out 2>&1")
     os.system("cp "+ dbms_cfg[0] +' ' + dbms_cfg[1])
     if job["USE_SGX"] == 1:
-        if job["WORKLOAD"] == "TPCC":   # TODO: sgx pre release has bug.
-            os.system("make sgx-debug 2>&1")
-        else:
-            os.system("make sgx-release 2>&1")
+        os.system("make sgx-release 2>&1")
         pattern = r"<HeapMaxSize>.*</HeapMaxSize>"
         tp = max(job["SYNTH_TABLE_SIZE"] * max_siz_per_record * 4, 1*GB)
         # if job["SMALL_CACHE_SIZE"]:
@@ -218,10 +215,10 @@ def run_tpc_exp():
     x_con = [1, 2, 3, 4, 5, 6, 7, 8]
     for th in x_con:
         for alg in algs:
-            insert_job(alg, 'TPCC', thread_num=th, use_sgx=False, full_tpcc="false", cs=10*GB)
-            insert_job(alg, 'TPCC', thread_num=th, use_sgx=False, wh=4, full_tpcc="false", cs=10*GB)
-            insert_job(alg, 'TPCC', thread_num=th, use_sgx=True, full_tpcc="false", cs=10*GB)
-            insert_job(alg, 'TPCC', thread_num=th, use_sgx=True, wh=4, full_tpcc="false", cs=10*GB)
+            insert_job(alg, 'TPCC', index="IDX_HASH", thread_num=th, use_sgx=False, full_tpcc="false", cs=10*GB)
+            insert_job(alg, 'TPCC', index="IDX_HASH", thread_num=th, use_sgx=False, wh=4, full_tpcc="false", cs=10*GB)
+            insert_job(alg, 'TPCC', index="IDX_HASH", thread_num=th, use_sgx=True, full_tpcc="false", cs=10*GB)
+            insert_job(alg, 'TPCC', index="IDX_HASH", thread_num=th, use_sgx=True, wh=4, full_tpcc="false", cs=10*GB)
     run_all_test(jobs, "tpcc.thread.wh.result")
 
 def run_theta_exp():
@@ -321,14 +318,6 @@ def run_full_tpcc_test():
         insert_job("OCC", 'TPCC', use_sgx=True, full_tpcc="true", index="IDX_BTREE", wh=16, thread_num=tr)
     run_all_test(jobs, "tpcc.full.result")
 
-def run_freshness_test():
-    global jobs
-    jobs = OrderedDict()
-    x_con = [1, 2, 4, 8, 16, 32]
-    for x in x_con:
-        insert_job("OCC", 'YCSB', use_sgx=True, nodes=2, test_freshness=1, sync_batch=x)
-    run_all_test(jobs, "freshness.log")
-
 
 # cache size 
 run_cache_size_impact_for_different_methods_test()
@@ -339,12 +328,9 @@ run_profiling()
 run_theta_exp()
 run_tpc_exp()
 
+# full tpcc
+run_full_tpcc_test()
 
-# run_tamper()
-# run_heatmap()
-
-# run_full_tpcc_test()
-# run_database_varying_txn_length()
-# run_freshness_test()
-# run_database_size_test()
-# run_database_c_size_test()
+# for revision response letter
+run_tamper()
+run_heatmap()
