@@ -339,6 +339,38 @@ This approach is consistent with that in Sysbench-TPCC (tpcc\_run.lua, lines 316
 	end
 ```
 
+### Indexing
+
+When `FULL_TPCC` is set to true, it is necessary to set `IDX_INDEX` to `IDX_BTREE` to utilize the B+-tree for supporting range-based queries. 
+This indexing implementation is also derived from the existing works we have referenced.
+
+For example, the `CUSTOMER_LAST_INDEX` serves as a secondary index rooted in the standard TPCC. It links the `C_Last` field to a list containing the primary keys of related data items.
+
+This list is structured as a linked list, with itemid_t as its pointer, which means its size is not fixed.
+
+
+```
+class itemid_t {
+public:
+	itemid_t() { next = nullptr; location = nullptr; valid = false; };
+	itemid_t(Data_type type, void * loc) {
+        this->type = type;
+        this->location = loc;
+        this->next = nullptr;
+    };
+	Data_type type;
+	void * location;
+	itemid_t * next; // next pointer
+	bool valid;
+	void init();
+	bool operator==(const itemid_t &other) const;
+	bool operator!=(const itemid_t &other) const;
+	void operator=(const itemid_t &other);
+};
+```
+
+
+
 
 Outputs
 ----------------------

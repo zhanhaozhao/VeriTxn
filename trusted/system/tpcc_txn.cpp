@@ -275,7 +275,7 @@ RC tpcc_txn_man::run_payment(tpcc_query * query) {
 #if !TPCC_SMALL
 	r_hist->set_value(H_DATA, h_data);
 #endif
-//	no need to update the history.
+
 #endif
 	assert( rc == RCOK );
 	return finish(rc);
@@ -460,7 +460,7 @@ RC tpcc_txn_man::run_new_order(tpcc_query * query) {
 			return finish(Abort);
 		}
 
-		// XXX s_dist_xx are not retrieved.
+
 		UInt64 s_quantity;
 		int64_t s_remote_cnt;
 		s_quantity = *(int64_t *)r_stock_local->get_value(S_QUANTITY);
@@ -496,7 +496,6 @@ RC tpcc_txn_man::run_new_order(tpcc_query * query) {
 				:ol_i_id, :ol_supply_w_id,
 				:ol_quantity, :ol_amount, :ol_dist_info);
 		+====================================================*/
-		// XXX district info is not inserted.
 #if FULL_TPCC
 		row_t * r_ol;
 		uint64_t row_id;
@@ -653,7 +652,7 @@ tpcc_txn_man::run_delivery(tpcc_query * query) {
 		uint64_t no_o_id;
 		row_t * r_orderline = (row_t *)item->location;
         r_orderline->get_value(OL_O_ID, no_o_id);
-		// TODO the orderline row should be removed from the table and indexes.
+
 
 //		index = _wl->i_order;
 		key = orderPrimaryKey(query->w_id, d_id, no_o_id);
@@ -747,7 +746,7 @@ bool tpcc_txn_man::stock_level_getStockCount(uint64_t ol_w_id, uint64_t ol_d_id,
     size_t list_size = 0;
 
 //    auto index = _wl->i_orderline;
-    auto key = orderlineKey(ol_o_id - 1, ol_d_id, ol_w_id);
+    auto key = orderlineKey(ol_w_id, ol_d_id, ol_o_id - 1);
     auto part_id = wh_to_part(ol_w_id);
     uint64_t count = 301;
 
@@ -756,7 +755,7 @@ bool tpcc_txn_man::stock_level_getStockCount(uint64_t ol_w_id, uint64_t ol_d_id,
 
     for (uint64_t i = 0; i < count && cur != nullptr; i++) {
         auto orderline_shared = (row_t*)cur->location;
-        auto row = get_row(orderline_shared, RD); // TODO, previously get_row with index
+        auto row = get_row(orderline_shared, RD);
         if (row->get_primary_key() > key) break;
 
         if (row == nullptr) return false;
