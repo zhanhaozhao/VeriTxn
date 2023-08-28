@@ -204,7 +204,7 @@ def run_all_test(jobs, filename):
 def run_thread_exp():
     global jobs
     jobs = OrderedDict()
-    for th in [1, 2, 3, 4, 5, 6, 7, 8]:
+    for th in [1, 2, 4, 6, 8, 10]:
         insert_job("OCC", 'YCSB', index="IDX_HASH", thread_num=th, use_sgx=False, cs=10*GB)
         insert_job("OCC", 'YCSB', index="IDX_HASH", thread_num=th, use_sgx=True, cs=10*GB)
     run_all_test(jobs, "ycsb.thread.result")
@@ -224,7 +224,7 @@ def run_tpc_exp():
 def run_theta_exp():
     global jobs
     jobs = OrderedDict()
-    for th in [0.0, 0.3, 0.5, 0.6, 0.8, 0.9]:
+    for th in [0.0, 0.3, 0.5, 0.6, 0.7, 0.8, 0.9]:
         insert_job("OCC", 'YCSB',index="IDX_HASH", theta=th, use_sgx=False, cs=10*GB)
         insert_job("OCC", 'YCSB',index="IDX_HASH", theta=th, use_sgx=True, cs=10*GB)
     run_all_test(jobs, "ycsb.theta.result")
@@ -304,7 +304,7 @@ def run_database_varying_txn_length():
 def run_profiling():
     global jobs
     jobs = OrderedDict()
-    x_con = [1, 2, 3, 4, 5, 6, 7, 8]
+    x_con = [1, 2, 4, 6, 8, 10]:
     for th in x_con:
         insert_job("OCC", 'YCSB', thread_num=th, index="IDX_HASH", use_sgx=False, prof="true", cs=10*GB)
         insert_job("OCC", 'YCSB', thread_num=th, index="IDX_HASH", use_sgx=True, prof="true", cs=10*GB)
