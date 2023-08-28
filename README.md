@@ -341,7 +341,8 @@ This approach is consistent with that in Sysbench-TPCC (tpcc\_run.lua, lines 316
 
 ### Indexing
 
-When `FULL_TPCC` is set to true, it is necessary to set `IDX_INDEX` to `IDX_BTREE` to utilize the B+-tree for supporting range-based queries. 
+When `FULL_TPCC` is set to true, it is required to set `IDX_INDEX` to `IDX_BTREE`.
+With these settings, we utilize the B+-tree for supporting range-based queries. 
 This indexing implementation is also derived from the existing works we have referenced.
 
 For example, the `CUSTOMER_LAST_INDEX` serves as a secondary index rooted in the standard TPCC. It links the `C_Last` field to a list containing the primary keys of related data items.
