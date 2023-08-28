@@ -157,7 +157,6 @@ For comprehensive definitions of each setting and the default configurations, pl
     WORKLOAD    : supported workloads include YCSB and TPCC
     NODE_CNT    : number of compute nodes modeled in the system
     THREAD_CNT  : number of worker threads running in the compute node
-    CORE_CNT	: number of CPU cores modeled in the system.
     CC_ALG		: concurrency control algorithm
     USE_SGX     : enable verification or not
     VERIFIED_CACHE_SIZ  : size of verified cache
@@ -175,7 +174,6 @@ The default values are:
 
     NODE_CNT : 4
     THREAD_CNT : 4
-    CORE_CNT : 4
     CC_ALG   : OCC
     USE_SGX : 1
     VERIFIED_CACHE_SIZ  : 4 * 1024 * 1024 * 1024
@@ -242,7 +240,7 @@ TPCC implementation
 ----------------------
 
 
-Our TPCC implementation is derived from several works using the DBx1000 codebase:
+Our TPCC implementation is derived from several transaction processing studies using the DBx1000 codebase:
 
 - [Litmus](https://github.com/yuxiamit/LitmusDB/blob/main/dbx1000_logging/benchmarks/tpcc_txn.cpp): Litmus: Towards a Practical Database Management System with Verifiable ACID Properties and Transaction Correctness, SIGMOD 22
 - [Cornus](https://github.com/CloudOLTP/Cornus/blob/cleanup/src/benchmarks/tpcc_store_procedure.cpp): Atomic commit for a cloud DBMS with storage disaggregation, VLDB 22
@@ -277,9 +275,9 @@ EXEC SQL OPEN c_byname;
 ```
 
 We sought to provide a systematic and fair comparison solely on transaction processing performance. To the best of our knowledge, the cursor is typically used to traverse the result set returned from the database, and therefore, layered on top of transaction processing. 
-
-
 For this reason, VeriTxn and the baseline systems do not support cursor. 
+
+
 We would like to clarify that VeriTxn avoid the cursor but accommodate its essential logic (tpcc\_txn.cpp, lines 145-155):
 
 ```

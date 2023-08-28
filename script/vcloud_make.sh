@@ -19,7 +19,7 @@ for HOSTNAME in ${HOSTS}; do
     if [ "$USE_SGX" != "True" ]; then
         SCRIPT="cd ${PATHE}; make no-sgx; make clean; make -j10"
     else
-        SCRIPT="cd ${PATHE}; sed -i '247c #define USE_SGX 1' common/config.h; make sgx-release; make clean; make -j10"
+        SCRIPT="cd ${PATHE}; sed -i '251c #define USE_SGX 1' common/config.h; make sgx-release; make clean; make -j10"
     fi
 
     echo "${HOSTNAME}: make App"

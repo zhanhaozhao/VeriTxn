@@ -74,7 +74,7 @@ int main(int argc, char* argv[])
     global_init_ecall(&stats); // call enclave
     // if (g_cc_alg == DL_DETECT)
     // 	dl_detector.init();
-	printf("mem_allocator initialized!\n");
+//	printf("mem_allocator initialized!\n");
 
     printf("Initializing trusted log generator... ");
     fflush(stdout);
@@ -144,7 +144,7 @@ int main(int argc, char* argv[])
             assert(false);
     }
     m_wl->init();
-	printf("workload initialized!\n");
+//	printf("workload initialized!\n");
 
     uint64_t thd_cnt = g_thread_cnt;
     uint64_t rthd_cnt = NODE_CNT > 1 ? INPUT_CNT : 0;

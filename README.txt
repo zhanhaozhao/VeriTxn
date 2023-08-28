@@ -2,7 +2,6 @@
 
 dbms benchmark has the following parameters in the config file. Parameters with a * sign should not be changed
   NODE_CNT    : number of nodes in the system
-  CORE_CNT		: number of cores modeled in the system
   PART_CNT		: number of logical partitions in the system
   THREAD_CNT	: number of threads running at the same time
   PAGE_SIZE		: memory page size
@@ -84,7 +83,6 @@ dbms benchmark has the following parameters in the config file. Parameters with 
 
   NODE_CNT : 4
   THREAD_CNT : 4
-  CORE_CNT : 4
   CC_ALG   : OCC
   USE_SGX : 1
   VERIFIED_CACHE_SIZ  : 4 * 1024 * 1024 * 1024

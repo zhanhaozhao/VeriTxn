@@ -40,7 +40,6 @@ RC re_ycsb_txn_man::run_txn(base_query * query) {
 		while ( !finish_req ) {
 			if (iteration == 0) {
 				// m_item = index_read("MAIN_INDEX", req->key, part_id);
-				// zzhTODO:readfrom rocksdb
 			} 
 // #if INDEX_STRUCT == IDX_BTREE
 // 			else {
@@ -155,7 +154,8 @@ re_ycsb_txn_man::recover_txn(char * log_entry, uint64_t tid)
         UNPACK(log_entry, data_length, offset);
 		data = log_entry + offset;
 		offset += data_length;
-        assert(offset <= entrysize);
+		if (offset > entrysize) return;
+        // assert(offset <= entrysize);
 		
 		// Serial has log streams corresponding to the dependency order
 		// itemid_t * m_item = index_read(_wl->the_index, key, 0);

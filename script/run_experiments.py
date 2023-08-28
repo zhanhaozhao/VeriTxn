@@ -195,11 +195,11 @@ for exp in exps:
                 siz = hex(min(tp, 32*1024*1024*1024))
                 print siz
                 replacement = "<HeapMaxSize>"+ siz + "</HeapMaxSize>"
-                replace("trusted/Enclave.config.xml", pattern, replacement)
+                replace("../trusted/Enclave.config.xml", pattern, replacement)
                 pattern = r"<HeapInitSize>.*</HeapInitSize>"
                 replacement = "<HeapInitSize>"+ siz + "</HeapInitSize>"
-                replace("trusted/Enclave.config.xml", pattern, replacement)
-                os.system("cat trusted/Enclave.config.xml")
+                replace("../trusted/Enclave.config.xml", pattern, replacement)
+                os.system("cat ../trusted/Enclave.config.xml")
 
                 if cluster == 'vcloud':
                     cmd = './vcloud_deploy.sh \'{}\' /{}/ {} {} {}'.format(' '.join(machines), uname, cfgs["NODE_CNT"], perfTime, uname2)

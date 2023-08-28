@@ -14,7 +14,7 @@
 using namespace Azure::Storage::Blobs;
 
 void Logger::init_blob() {
-    std::string containerName = "DBx1000-zzhtest";
+    std::string containerName = "DBx1000-test";
 
     // Initialize a new instance of BlobContainerClient
     containerClient
