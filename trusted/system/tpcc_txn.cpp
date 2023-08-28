@@ -747,7 +747,7 @@ bool tpcc_txn_man::stock_level_getStockCount(uint64_t ol_w_id, uint64_t ol_d_id,
     size_t list_size = 0;
 
 //    auto index = _wl->i_orderline;
-    auto key = orderlineKey(ol_o_id - 1, ol_d_id, ol_w_id);
+    auto key = orderlineKey(ol_w_id, ol_o_id - 1, ol_d_id);
     auto part_id = wh_to_part(ol_w_id);
     uint64_t count = 301;
 
