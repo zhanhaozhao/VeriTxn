@@ -237,7 +237,7 @@ The default values are:
 
 
 
-TPCC implementation
+TPCC Implementation and Fair Comparsion
 ----------------------
 
 
@@ -256,8 +256,15 @@ The NewOrder, Payment, and Delivery transactions are read-write transactions, wh
 We use the standard TPCC by default, which consists of 45% of NewOrder, 43% of Payment, and 4% each of the remaining three types of transactions.
 To compare with Litmus, we use a simple mix of 50% of NewOrder and 50% of Payment transactions following the Litmus's paper.
 
+### Fair Comparsion
+
 **Note**: **We sought to provide a systematic and fair comparison solely on transaction processing performance. Consistent with the baseline systems, VeriTxn contains all the components for transaction processing in real-world databases, such as concurrency control, logging, data manipulation, etc.
 That is, all these systems exclude the SQL layer (e.g., cursor) as it is orthogonal to transaction processing.**
+
+- Both VeriTxn and Litmus use identical TPCC codes and settings.
+- Both VeriTxn and LedgerDB conduct experiments using the standard TPCC.
+Both LedgerDB and VeriTxn includes all the operational logics in the standard TPCC transactions.
+<!-- This allows VeriTxn to enable the standard TPCC and employs the B$^{+}$-tree index. -->
 
 ### Cursor in TPCC
 
