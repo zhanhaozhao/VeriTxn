@@ -60,7 +60,7 @@ To run the experiments mentioned in our paper, follow these two steps:
 
 ### Register the server information
 
-Edit the file "scripts/run_config.py" to setup the server cluster for experiments. Please make the following required changes:
+Edit the file `script/run_config.py` to setup the server cluster for experiments. Please make the following required changes:
 
 ```
 username: [Your SSH username]
@@ -79,16 +79,11 @@ Each node is a standard DC16s v3 server, equipped with an Intel(R) Platinum 8370
 ### Run all experiments
 
 We have provided a comprehensive set of scripts to assist you in running the experiments corresponding to the figures in our paper.
-For the experiments in Figure 6, the available `<test_case_name>` options are:
-- `ycsb_thread`: vary thread counts on YCSB workload (Figure 6a);
-- `tpcc_thread`: vary thread counts on TPCC workload (Figure 6b);
-- `ycsb_scaling`: vary the number of nodes on YCSB workload (Figure 6c);
-- `ycsb_freshness`: vary the replication batch size on YCSB workload (Figure 6d).
 
-To run these experiments:
+To run these experiments, please use `script/run_experiments.py`:
 
 ```
-cd scripts
+cd script
 
 # test as VeriTxn (w/o verification)
 python run_experiments.py -e -r -ns -c vcloud <test_case_name>
@@ -96,6 +91,12 @@ python run_experiments.py -e -r -ns -c vcloud <test_case_name>
 # test as VeriTxn
 python run_experiments.py -e -r -c vcloud <test_case_name>
 ```
+
+For the experiments in Figure 6, the available `<test_case_name>` options are:
+- `ycsb_thread`: vary thread counts on YCSB workload (Figure 6a);
+- `tpcc_thread`: vary thread counts on TPCC workload (Figure 6b);
+- `ycsb_scaling`: vary the number of nodes on YCSB workload (Figure 6c);
+- `ycsb_freshness`: vary the replication batch size on YCSB workload (Figure 6d).
 
 
 For the experiments in Figure 7 and Figure 8, you can use the `test.py` script:
