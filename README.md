@@ -342,6 +342,9 @@ This approach is consistent with that in Sysbench-TPCC (tpcc_run.lua, lines 316-
 	end
 ```
 
+This approach is also consistent with that in [LedgerDB](https://github.com/nusdbsystem/LedgerDatabase/blob/main/distributed/exes/tpccClient.cc) (distributed/exes/tpccClient.cc line 209).
+
+
 ### Indexing
 
 When `FULL_TPCC` is set to true, it is required to set `IDX_INDEX` to `IDX_BTREE`.
