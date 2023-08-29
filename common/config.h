@@ -9,7 +9,7 @@
 #define PART_CNT 1
 #define INPUT_CNT					1
 #define OUTPUT_CNT					1
-// each transaction only accesses 1 virtual partition. But the lock/ts manager and index are not aware of such partitioning. VIRTUAL_PART_CNT describes the request distribution and is only used to generate queries. For HSTORE, VIRTUAL_PART_CNT should be the same as PART_CNT.
+
 #define VIRTUAL_PART_CNT			1
 #define PAGE_SIZE					4096
 #define CL_SIZE						64
@@ -17,7 +17,7 @@
 #define CPU_FREQ 					2 	// in GHz/s
 
 
-// # of transactions to run for warmup
+
 #define WARMUP						0
 // YCSB or TPCC
 #define WORKLOAD YCSB
@@ -42,7 +42,7 @@
 // Concurrency Control
 /***********************************************/
 // WAIT_DIE, NO_WAIT, DL_DETECT, TIMESTAMP, MVCC, HEKATON, HSTORE, OCC, VLL, TICTOC, SILO
-// TODO TIMESTAMP does not work at this moment
+
 #define CC_ALG OCC
 #define ISOLATION_LEVEL SERIALIZABLE
 
@@ -60,7 +60,7 @@
 #define ENABLE_LATCH				true
 #define CENTRAL_INDEX				false
 #define CENTRAL_MANAGER 			false
-#define INDEX_STRUCT IDX_HASH
+#define INDEX_STRUCT IDX_BTREE
 #define BTREE_ORDER 				16
 #define INDEX_NAME_LENGTH       	16
 
@@ -115,7 +115,7 @@
 // Logging
 /***********************************************/
 // #define LOG_COMMAND					false
-// #define LOG_REDO					false
+
 #define LOG_BATCH_TIME				10 // in ms
 #define LOG_TYPE                    LOG_DATA
 #define LOG_BUFFER_SIZE				(1048576 * 200)	// in bytes, 200MB
@@ -137,7 +137,7 @@
 #define MAX_TUPLE_SIZE				1024 // in bytes
 // ==== [YCSB] ====
 #define INIT_PARALLELISM 8
-#define SYNTH_TABLE_SIZE 4194304
+#define SYNTH_TABLE_SIZE 10000000
 #define ZIPF_THETA 0.5
 #define READ_PERC 0.5
 #define WRITE_PERC 0.5
@@ -145,7 +145,7 @@
 #define SCAN_LEN					20
 #define PART_PER_TXN 2
 #define PERC_MULTI_PART				1
-#define REQ_PER_QUERY 64
+#define REQ_PER_QUERY 16
 #define FIELD_PER_TUPLE				10
 // ==== [TPCC] ====
 // For large warehouse count, the tables do not fit in memory
@@ -155,7 +155,7 @@
 // Some of the transactions read the data but never use them.
 // If TPCC_ACCESS_ALL == fales, then these parts of the transactions
 // are not modeled.
-#define TPCC_ACCESS_ALL 			false
+#define TPCC_ACCESS_ALL false
 #define WH_UPDATE					true
 #define NUM_WH 16
 //
@@ -168,7 +168,7 @@ enum TPCCTxnType {TPCC_ALL,
 extern enum TPCCTxnType 					g_tpcc_txn_type;
 
 //#define TXN_TYPE					TPCC_ALL
-#define PERC_PAYMENT 0.0
+#define PERC_PAYMENT 0.5
 #define FIRSTNAME_MINLEN 			8
 #define FIRSTNAME_LEN 				16
 #define LASTNAME_LEN 				16
@@ -252,17 +252,17 @@ extern enum TestCases					g_test_case;
 #define TPORT_TYPE tcp
 #define USE_NANOMSG                 1
 #define USE_ASYNC_HASH              1
-#define USE_LOG 0
+#define USE_LOG 1
 #define RPC_SERVER                  "127.0.0.1"
 #define LOG_BATCH_SIZE              10
 
 // cache parameters
-#define VERIFIED_CACHE_SIZ 1073741824
+#define VERIFIED_CACHE_SIZ 4294967296
 #define ENABLE_DATA_CACHE true
-#define DATA_CACHE_SIZE 1073741824
+#define DATA_CACHE_SIZE 4294967296
 #define LAZY_OFFLOADING 1
 #define BASE_LEASE      100
-#define VERI_TYPE DEFERRED_MEMORY
+#define VERI_TYPE PAGE_VERI
 #define VERI_BATCH 1000000000
 #define HOT_RECORD_NUM (SYNTH_TABLE_SIZE / 10 / BTREE_ORDER)  // we let 128K records to be hot ones,
 // too large results in too long verification.
@@ -286,8 +286,8 @@ extern enum TestCases					g_test_case;
 #define MISS_PENALTY 500000UL
 
 #define TAMPER_PERCENTAGE 0
-#define TAMPER_INTERVAL 1000000000
-#define TAMPER_RECOVERY 0
+#define TAMPER_INTERVAL 1
+#define TAMPER_RECOVERY 1
 
 
 // Log queue type
