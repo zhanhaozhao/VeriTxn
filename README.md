@@ -281,7 +281,7 @@ To the best of our knowledge, the cursor is typically used to traverse the resul
 For this reason, VeriTxn and the baseline systems do not support cursor. 
 
 
-We would like to clarify that VeriTxn avoid the cursor but accommodate its essential logic (tpcc\_txn.cpp, lines 145-155):
+We would like to clarify that VeriTxn avoid the cursor but accommodate its essential logic (`trusted/system/tpcc_txn.cpp`, lines 145-155):
 
 ```
 // This code is used to target a customer by the customer last name
@@ -310,7 +310,7 @@ while (it != NULL) {
 r_cust = ((row_t *)mid->location);
 ```
 
-This approach is consistent with that in Sysbench-TPCC (tpcc\_run.lua, lines 316-337):
+This approach is consistent with that in Sysbench-TPCC (tpcc_run.lua, lines 316-337):
 
 
 ```
@@ -350,7 +350,7 @@ This indexing implementation is also derived from the existing works we have ref
 
 For example, the `CUSTOMER_LAST_INDEX` serves as a secondary index rooted in the standard TPCC. It indexes the `C_Last` field to a list containing the primary keys of related data items.
 
-This list is structured as a linked list, with itemid_t as its pointer, which means its size is not fixed.
+This list is structured as a linked list, with `itemid_t` (`common/helper.h`) as its pointer, which means its size is not fixed.
 
 
 ```
