@@ -237,7 +237,7 @@ The default values are:
 
 
 
-TPCC Implementation and Fair Comparsion
+TPCC Implementation and Fair Comparison
 ----------------------
 
 
@@ -256,7 +256,7 @@ The NewOrder, Payment, and Delivery transactions are read-write transactions, wh
 We use the standard TPCC by default, which consists of 45% of NewOrder, 43% of Payment, and 4% each of the remaining three types of transactions.
 To compare with Litmus, we use a simple mix of 50% of NewOrder and 50% of Payment transactions following the Litmus's paper.
 
-### Fair Comparsion
+### Fair Comparison
 
 **Note**: **We sought to provide a systematic and fair comparison solely on transaction processing performance. Consistent with the baseline systems, VeriTxn contains all the components for transaction processing in real-world databases, such as concurrency control, logging, data manipulation, etc.
 That is, all these systems exclude the SQL layer (e.g., cursor) as it is orthogonal to transaction processing.**
@@ -383,7 +383,11 @@ public:
 };
 ```
 
+Note that this secondary index is also used in Sysbench-TPCC (tpcc_common.lua, line 351):
 
+```
+con:query("CREATE INDEX idx_customer"..i.." ON customer"..i.." (c_w_id,c_d_id,c_last,c_first)")
+```
 
 
 Outputs
