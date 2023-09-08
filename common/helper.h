@@ -114,9 +114,7 @@
 
 
 enum Data_type {DT_table, DT_page, DT_row };
-
-// TODO currently, only DR_row supported
-// data item type. 
+ 
 class itemid_t {
 public:
 	itemid_t() { next = nullptr; location = nullptr; valid = false; };

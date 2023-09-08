@@ -60,7 +60,7 @@ To run the experiments mentioned in our paper, follow these two steps:
 
 ### Register the server information
 
-Edit the file "scripts/run_config.py" to setup the server cluster for experiments. Please make the following required changes:
+Edit the file `script/run_config.py` to setup the server cluster for experiments. Please make the following required changes:
 
 ```
 username: [Your SSH username]
@@ -79,16 +79,11 @@ Each node is a standard DC16s v3 server, equipped with an Intel(R) Platinum 8370
 ### Run all experiments
 
 We have provided a comprehensive set of scripts to assist you in running the experiments corresponding to the figures in our paper.
-For the experiments in Figure 6, the available `<test_case_name>` options are:
-- `ycsb_thread`: vary thread counts on YCSB workload (Figure 6a);
-- `tpcc_thread`: vary thread counts on TPCC workload (Figure 6b);
-- `ycsb_scaling`: vary the number of nodes on YCSB workload (Figure 6c);
-- `ycsb_freshness`: vary the replication batch size on YCSB workload (Figure 6d).
 
-To run these experiments:
+To run these experiments, please use `script/run_experiments.py`:
 
 ```
-cd scripts
+cd script
 
 # test as VeriTxn (w/o verification)
 python run_experiments.py -e -r -ns -c vcloud <test_case_name>
@@ -96,6 +91,12 @@ python run_experiments.py -e -r -ns -c vcloud <test_case_name>
 # test as VeriTxn
 python run_experiments.py -e -r -c vcloud <test_case_name>
 ```
+
+For the experiments in Figure 6, the available `<test_case_name>` options are:
+- `ycsb_thread`: vary thread counts on YCSB workload (Figure 6a);
+- `tpcc_thread`: vary thread counts on TPCC workload (Figure 6b);
+- `ycsb_scaling`: vary the number of nodes on YCSB workload (Figure 6c);
+- `ycsb_freshness`: vary the replication batch size on YCSB workload (Figure 6d).
 
 
 For the experiments in Figure 7 and Figure 8, you can use the `test.py` script:
@@ -236,7 +237,7 @@ The default values are:
 
 
 
-TPCC implementation
+TPCC Implementation and Fair Comparison
 ----------------------
 
 
@@ -255,6 +256,15 @@ The NewOrder, Payment, and Delivery transactions are read-write transactions, wh
 We use the standard TPCC by default, which consists of 45% of NewOrder, 43% of Payment, and 4% each of the remaining three types of transactions.
 To compare with Litmus, we use a simple mix of 50% of NewOrder and 50% of Payment transactions following the Litmus's paper.
 
+### Fair Comparison
+
+**Note**: **We sought to provide a systematic and fair comparison solely on transaction processing performance. Consistent with the baseline systems, VeriTxn contains all the components for transaction processing in real-world databases, such as concurrency control, logging, data manipulation, etc.
+That is, all these systems exclude the SQL layer (e.g., cursor) as it is orthogonal to transaction processing.**
+
+- Both VeriTxn and Litmus use identical TPCC codes and settings.
+- Both VeriTxn and LedgerDB conduct experiments using the standard TPCC.
+Both LedgerDB and VeriTxn includes all the operational logics in the standard TPCC transactions.
+<!-- This allows VeriTxn to enable the standard TPCC and employs the B$^{+}$-tree index. -->
 
 ### Cursor in TPCC
 
@@ -274,11 +284,11 @@ EXEC SQL OPEN c_byname;
 ...
 ```
 
-We sought to provide a systematic and fair comparison solely on transaction processing performance. To the best of our knowledge, the cursor is typically used to traverse the result set returned from the database, and therefore, layered on top of transaction processing. 
+To the best of our knowledge, the cursor is typically used to traverse the result set returned from the database, and therefore, layered on top of transaction processing. 
 For this reason, VeriTxn and the baseline systems do not support cursor. 
 
 
-We would like to clarify that VeriTxn avoid the cursor but accommodate its essential logic (tpcc\_txn.cpp, lines 145-155):
+We would like to clarify that VeriTxn avoid the cursor but accommodate its essential logic (`trusted/system/tpcc_txn.cpp`, lines 145-155):
 
 ```
 // This code is used to target a customer by the customer last name
@@ -307,7 +317,7 @@ while (it != NULL) {
 r_cust = ((row_t *)mid->location);
 ```
 
-This approach is consistent with that in Sysbench-TPCC (tpcc\_run.lua, lines 316-337):
+This approach is consistent with that in Sysbench-TPCC (tpcc_run.lua, lines 316-337):
 
 
 ```
@@ -337,6 +347,46 @@ This approach is consistent with that in Sysbench-TPCC (tpcc\_run.lua, lines 316
 		row = rs:fetch_row()
 		c_id = row[1]
 	end
+```
+
+This approach is also consistent with that in [LedgerDB](https://github.com/nusdbsystem/LedgerDatabase/blob/main/distributed/exes/tpccClient.cc) (distributed/exes/tpccClient.cc line 209).
+
+
+### Indexing
+
+When `FULL_TPCC` is set to true, it is required to set `IDX_INDEX` to `IDX_BTREE`.
+With these settings, we utilize the B+-tree for supporting range-based queries. 
+This indexing implementation is also derived from the existing works we have referenced.
+
+For example, the `CUSTOMER_LAST_INDEX` serves as a secondary index rooted in the standard TPCC. It indexes the `C_Last` field to a list containing the primary keys of related data items.
+
+This list is structured as a linked list, with `itemid_t` (`common/helper.h`) as its pointer, which means its size is not fixed.
+
+
+```
+class itemid_t {
+public:
+	itemid_t() { next = nullptr; location = nullptr; valid = false; };
+	itemid_t(Data_type type, void * loc) {
+        this->type = type;
+        this->location = loc;
+        this->next = nullptr;
+    };
+	Data_type type;
+	void * location;
+	itemid_t * next; // next pointer
+	bool valid;
+	void init();
+	bool operator==(const itemid_t &other) const;
+	bool operator!=(const itemid_t &other) const;
+	void operator=(const itemid_t &other);
+};
+```
+
+Note that this secondary index is also used in Sysbench-TPCC (tpcc_common.lua, line 351):
+
+```
+con:query("CREATE INDEX idx_customer"..i.." ON customer"..i.." (c_w_id,c_d_id,c_last,c_first)")
 ```
 
 
@@ -401,7 +451,3 @@ Please edit the `common/config.h` directly following the configurations defined 
 ```
 ./App 
 ```
-
-
-
-
