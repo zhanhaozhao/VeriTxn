@@ -53,6 +53,7 @@ public:
         from = nullptr;
         latch_type = LATCH_NONE;
         share_cnt = 0;
+        version = get_enc_time();
         latch = false;
     }
     ~BucketHeader_ENC(){
@@ -73,6 +74,7 @@ public:
     bool 			locked;
     BucketHeader *  origin;
     int             part;
+    int             version;
     uint64_t        bkt{};
     IndexEnc        *from;
     latch_t latch_type;

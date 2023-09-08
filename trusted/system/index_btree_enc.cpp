@@ -8,6 +8,7 @@
 
 RC IndexBTEnc::init(uint64_t part_cnt) {
     preloading = false;
+    version = get_enc_time();
     this->part_cnt = part_cnt;
     order = BTREE_ORDER;
     // these pointers can be mapped anywhere. They won't be changed
@@ -891,15 +892,21 @@ RC IndexBTEnc::index_insert(idx_key_t key, itemid_t * item, int part_id) {
         rc = insert_into_leaf(params, leaf, key, item);
         // only the leaf should be ex latched.
 //		assert( release_latch(leaf) == LATCH_EX );
-        for (int i = 0; i < depth; i++)
+        int cur_ts = get_enc_time();
+        for (int i = 0; i < depth; i++) {
 //            release_latch(ex_list[i]);
 			assert( release_latch(ex_list[i]) == LATCH_EX );
+            ex_list[i]->version = cur_ts;
+        }
     }
     else { // split the nodes when necessary
         rc = split_lf_insert(params, leaf, key, item);
-        for (int i = 0; i < depth; i++)
+        int cur_ts = get_enc_time();
+        for (int i = 0; i < depth; i++) {
 //            release_latch(ex_list[i]);
-			assert( release_latch(ex_list[i]) == LATCH_EX );
+            assert(release_latch(ex_list[i]) == LATCH_EX);
+            ex_list[i]->version = cur_ts;
+        }
     }
 #if THREAD_CNT == 1
 	assert(leaf->latch_type == LATCH_NONE);
