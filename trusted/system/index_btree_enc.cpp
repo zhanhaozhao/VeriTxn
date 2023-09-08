@@ -8,7 +8,6 @@
 
 RC IndexBTEnc::init(uint64_t part_cnt) {
     preloading = false;
-    version = get_enc_time();
     this->part_cnt = part_cnt;
     order = BTREE_ORDER;
     // these pointers can be mapped anywhere. They won't be changed
