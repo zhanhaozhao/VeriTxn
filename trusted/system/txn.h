@@ -28,6 +28,7 @@ public:
 	row_t * 	orig_row;
 	row_t * 	data;
 	row_t * 	orig_data;
+    int orig_pg_version;
 	void cleanup();
 #if CC_ALG == TICTOC
 	ts_t 		wts;

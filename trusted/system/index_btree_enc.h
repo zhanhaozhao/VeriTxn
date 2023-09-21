@@ -30,6 +30,7 @@ struct BTNode {
     pthread_mutex_t locked;
     latch_t latch_type;
     UInt32  share_cnt;
+    int version;
 
     uint    part;
     uint64_t parent;

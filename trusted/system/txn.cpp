@@ -233,6 +233,7 @@ row_t * txn_man::get_row(row_t * row, access_t type) {
 	}
 	accesses[row_cnt]->type = type;
 	accesses[row_cnt]->orig_row = row;
+    accesses[row_cnt]->orig_pg_version = ((PAGE_ENC*) row->from_page)->version;
 #if CC_ALG == TICTOC
 	accesses[row_cnt]->wts = last_wts;
 	accesses[row_cnt]->rts = last_rts;
@@ -385,6 +386,16 @@ RC txn_man::finish(RC rc) {
 	uint64_t t3 = get_enc_time();
 	INC_TMP_STATS_ENC(0, time_index, t2-t1);
 	INC_TMP_STATS_ENC(0, time_man, t3-t2);
+#endif
+#if FULL_TPCC
+    PAGE_ENC ** pages = new PAGE_ENC* [row_cnt];
+    for (int i = 0; i < row_cnt; i ++) {
+        Access *access = accesses[i];
+        pages[i] = (PAGE_ENC*) access->orig_row->from_page;
+        if (access->orig_pg_version != pages[i]->version) {
+            return finish(Abort);
+        }
+    }
 #endif
 #if CC_ALG == HSTORE
 	return RCOK;
