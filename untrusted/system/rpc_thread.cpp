@@ -129,7 +129,7 @@ RC RPCThread::run() {
               case TPCC :
               // 	// m_txn = (tpcc_txn_man *) aligned_alloc(64, sizeof(tpcc_txn_man));
               	m_txn = (tpcc_txn_man *) malloc(sizeof(tpcc_txn_man));
-              	new(m_txn) tpcc_re_txn_man();
+              	new(m_txn) tpcc_txn_man();
               // 	break;
               default:
                   assert(false);
