@@ -54,7 +54,6 @@ void RemoteStorage::load_page_disk(std::string iname, int part_id, uint64_t pg_i
     auto keys = new char [50];
     sprintf(keys, "%d_%lu_", part_id, pg_id);
     std::string page_id(keys);
-    // std::string reply = pageloader->LoadPage(page_id);
 
     write(sockfd, page_id.data(), page_id.size());
 
