@@ -78,13 +78,8 @@ RC RPCThread::run() {
           char * prefix = (char *) malloc(4);
           uint32_t offset = 0;
           UNPACK_SIZE(buff, prefix, 4, offset);
-//          if (strcmp(prefix, "VACU")) {
-//              std::string page_id(buff);
-//              UNPACK_SIZE(buff, prefix, 4, offset);
-////              eng->DBDeletePrefix(page_id, page_id);
-//          }
-//          else
-              if (strcmp(prefix, "LOGS")) {
+
+          if (strcmp(prefix, "LOGS")) {
             // read page
             std::string page_id(buff);
 //            printf("scanning prefix %s\n", page_id.c_str());
@@ -100,9 +95,8 @@ RC RPCThread::run() {
 //              items.emplace_back(it->value().data());
 //                reply.emplace_back(it->value().data());
                 record_cnt.fetch_add(1);
-              // TODO: encode keys into a page
             };
-//            eng->DBPrefixScan(page_id, f_proc_entry);
+           eng->DBPrefixScan(page_id, f_proc_entry);
 //            printf("scan op = %lu\n", record_cnt.load());
 
             char * response = (char *) malloc(sizeof(long));
@@ -132,10 +126,10 @@ RC RPCThread::run() {
                   m_txn = (re_ycsb_txn_man *) malloc(sizeof(re_ycsb_txn_man));
                   new(m_txn) re_ycsb_txn_man();
                   break;
-              // case TPCC :
+              case TPCC :
               // 	// m_txn = (tpcc_txn_man *) aligned_alloc(64, sizeof(tpcc_txn_man));
-              // 	m_txn = (re_tpcc_txn_man *) malloc(sizeof(re_tpcc_txn_man));
-              // 	new(m_txn) re_tpcc_re_txn_man();
+              	m_txn = (tpcc_txn_man *) malloc(sizeof(tpcc_txn_man));
+              	new(m_txn) tpcc_txn_man();
               // 	break;
               default:
                   assert(false);
