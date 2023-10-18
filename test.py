@@ -85,7 +85,10 @@ def test_compile(job):
     os.system("make clean> temp.out 2>&1")
     os.system("cp "+ dbms_cfg[0] +' ' + dbms_cfg[1])
     if job["USE_SGX"] == 1:
-        os.system("make sgx-release 2>&1")
+        if job["WORKLOAD"] == "TPCC" and job["FULL_TPCC"] == "false":
+            os.system("make sgx-debug 2>&1")
+        else:
+            os.system("make sgx-release 2>&1")
         pattern = r"<HeapMaxSize>.*</HeapMaxSize>"
         tp = max(job["SYNTH_TABLE_SIZE"] * max_siz_per_record * 4, 1*GB)
         # if job["SMALL_CACHE_SIZE"]:
@@ -205,28 +208,29 @@ def run_thread_exp():
     global jobs
     jobs = OrderedDict()
     for th in [1, 2, 4, 6, 8, 10]:
-        insert_job("OCC", 'YCSB', index="IDX_HASH", thread_num=th, use_sgx=False, cs=10*GB)
-        insert_job("OCC", 'YCSB', index="IDX_HASH", thread_num=th, use_sgx=True, cs=10*GB)
+        insert_job("OCC", 'YCSB', index="IDX_HASH", thread_num=th, use_sgx=False, cs=10*GB, use_log=0)
+        insert_job("OCC", 'YCSB', index="IDX_HASH", thread_num=th, use_sgx=True, cs=10*GB, use_log=0)
     run_all_test(jobs, "ycsb.thread.result")
 
 def run_tpc_exp():
-    global jobs
+    global jobs, CompileOnly
     jobs = OrderedDict()
-    x_con = [1, 2, 3, 4, 5, 6, 7, 8]
+    # CompileOnly = True
+    x_con = [2, 4, 8]
     for th in x_con:
         for alg in algs:
-            insert_job(alg, 'TPCC', index="IDX_HASH", thread_num=th, use_sgx=False, full_tpcc="false", cs=10*GB)
-            insert_job(alg, 'TPCC', index="IDX_HASH", thread_num=th, use_sgx=False, wh=4, full_tpcc="false", cs=10*GB)
-            insert_job(alg, 'TPCC', index="IDX_HASH", thread_num=th, use_sgx=True, full_tpcc="false", cs=10*GB)
-            insert_job(alg, 'TPCC', index="IDX_HASH", thread_num=th, use_sgx=True, wh=4, full_tpcc="false", cs=10*GB)
+            insert_job(alg, 'TPCC', index="IDX_HASH", thread_num=th, use_sgx=True, wh=4, full_tpcc="false", cs=10*GB, table_size=10*MB, use_log=0)
+            insert_job(alg, 'TPCC', index="IDX_HASH", thread_num=th, use_sgx=True, full_tpcc="false", cs=10*GB, table_size=10*MB, use_log=0)
+            insert_job(alg, 'TPCC', index="IDX_HASH", thread_num=th, use_sgx=True, wh=4, full_tpcc="false", cs=10*GB, table_size=10*MB, use_log=0)
+            insert_job(alg, 'TPCC', index="IDX_HASH", thread_num=th, use_sgx=True, full_tpcc="false", cs=10*GB, table_size=10*MB, use_log=0)
     run_all_test(jobs, "tpcc.thread.wh.result")
 
 def run_theta_exp():
     global jobs
     jobs = OrderedDict()
     for th in [0.0, 0.3, 0.5, 0.6, 0.7, 0.8, 0.9]:
-        insert_job("OCC", 'YCSB',index="IDX_HASH", theta=th, use_sgx=False, cs=10*GB)
-        insert_job("OCC", 'YCSB',index="IDX_HASH", theta=th, use_sgx=True, cs=10*GB)
+        insert_job("OCC", 'YCSB',index="IDX_HASH", theta=th, use_sgx=False, cs=10*GB, use_log=0)
+        insert_job("OCC", 'YCSB',index="IDX_HASH", theta=th, use_sgx=True, cs=10*GB, use_log=0)
     run_all_test(jobs, "ycsb.theta.result")
 
 
@@ -243,6 +247,7 @@ def run_cache_size_impact_for_different_methods_test():
         insert_job(cs=cs, txn_length=1)
         insert_job(veri="MERKLE_TREE", cs=cs, txn_length=1)
         insert_job(veri="DEFERRED_MEMORY", cs=cs, txn_length=1)
+        insert_job(veri="DEFERRED_MEMORY", cs=cs, txn_length=1, veri_batch_sec=100)
     run_all_test(jobs, "ycsb.cache.size.result")
 
 def run_heatmap():
@@ -262,7 +267,7 @@ def run_tamper():
     jobs = OrderedDict()
     tamper =  [1, 2, 4, 8, 16]
     for tp in tamper:
-        insert_job(tamper=tp, use_log=1)
+        insert_job(tamper=tp)
     run_all_test(jobs, "ycsb.cache.tamper.result")
 
 
@@ -304,10 +309,10 @@ def run_database_varying_txn_length():
 def run_profiling():
     global jobs
     jobs = OrderedDict()
-    x_con = [1, 2, 4, 6, 8, 10]:
+    x_con = [1, 2, 4, 6, 8, 10]
     for th in x_con:
-        insert_job("OCC", 'YCSB', thread_num=th, index="IDX_HASH", use_sgx=False, prof="true", cs=10*GB)
-        insert_job("OCC", 'YCSB', thread_num=th, index="IDX_HASH", use_sgx=True, prof="true", cs=10*GB)
+        insert_job("OCC", 'YCSB', thread_num=th, index="IDX_HASH", use_sgx=False, prof="true", cs=10*GB, use_log=0)
+        insert_job("OCC", 'YCSB', thread_num=th, index="IDX_HASH", use_sgx=True, prof="true", cs=10*GB, use_log=0)
     run_all_test(jobs, "ycsb.profiling.result")
 
 
@@ -332,5 +337,5 @@ run_tpc_exp()
 run_full_tpcc_test()
 
 # for revision response letter
-run_tamper()
-run_heatmap()
+# run_tamper()
+# run_heatmap()
